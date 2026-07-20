@@ -1,5 +1,26 @@
 ---
 import Card from "./Card/index.astro";
+
+interface Stat {
+  _key?: string;
+  label: string;
+  value: string;
+}
+
+interface Props {
+  stats?: Stat[];
+}
+
+const defaultStats: Stat[] = [
+  { label: "Found and reported", value: "50+ Vulnerabilities" },
+  { label: "Certifications", value: "OSCP & CEH" },
+  { label: "Agency Founder", value: "Zebrabyte" },
+];
+
+const emojis = ["🐛", "🏆", "🛡️", "🔍", "📋", "🔒"];
+
+const { stats = defaultStats } = Astro.props;
+const displayStats = (stats && stats.length > 0) ? stats : defaultStats;
 ---
 
 <Card
@@ -9,28 +30,14 @@ import Card from "./Card/index.astro";
   href="/projects"
 >
   <div class="flex flex-col gap-3 mt-4">
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🐛</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">50+ Vulnerabilities</span>
-        <span class="text-xs text-darkslate-300">Found and reported</span>
+    {displayStats.map((stat, i) => (
+      <div class="flex items-center gap-3">
+        <div class="text-xl">{emojis[i % emojis.length]}</div>
+        <div class="flex flex-col">
+          <span class="font-bold text-sm text-neutral-100">{stat.value}</span>
+          <span class="text-xs text-darkslate-300">{stat.label}</span>
+        </div>
       </div>
-    </div>
-    
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🏆</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">OSCP & CEH</span>
-        <span class="text-xs text-darkslate-300">Certifications</span>
-      </div>
-    </div>
-    
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🛡️</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">Zebrabyte</span>
-        <span class="text-xs text-darkslate-300">Agency Founder</span>
-      </div>
-    </div>
+    ))}
   </div>
 </Card>

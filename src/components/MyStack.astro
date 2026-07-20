@@ -1,15 +1,37 @@
 ---
 import Card from "./Card/index.astro";
+
+interface TechItem {
+  name: string;
+  icon?: string;
+}
+
+interface Props {
+  techStack?: TechItem[];
+}
+
+const defaultStack: TechItem[] = [
+  { name: "SolidJS" },
+  { name: "JavaScript" },
+  { name: "Node.js" },
+  { name: "React.js" },
+  { name: "Python" },
+  { name: "Kali Linux" },
+  { name: "Burp Suite" },
+  { name: "Astro" },
+];
+
+const { techStack = [] } = Astro.props;
+const displayStack = (techStack && techStack.length > 0) ? techStack : defaultStack;
 ---
 
 <Card colSpan="md:col-span-2" rowSpan="md:row-span-1" title="My Stack">
   <p class="text-sm font-light">
     Here's a snapshot of the primary tools and technologies I work with:
   </p>
-  <ul class="text-sm font-light pl-5 list-disc">
-    <li ><strong>Solidjs</strong></li>
-    <li><strong>JavaScript</strong></li>
-    <li><strong>Node.js</strong></li>
-    <li><strong>React.js</strong></li>
+  <ul class="text-sm font-light pl-5 list-disc columns-2 mt-1">
+    {displayStack.map((tech) => (
+      <li><strong>{tech.name}</strong></li>
+    ))}
   </ul>
 </Card>

@@ -2,6 +2,20 @@
 import Card from "./Card/index.astro";
 import { LINKS } from "../lib/constants";
 import { SITE } from "../site-config";
+
+interface Props {
+  email?: string;
+  location?: string;
+  github?: string;
+  linkedin?: string;
+}
+
+const {
+  email = SITE.links.email,
+  location = SITE.location.countryName,
+  github = LINKS.github,
+  linkedin = LINKS.linkedin,
+} = Astro.props;
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
@@ -13,24 +27,28 @@ import { SITE } from "../site-config";
     </header>
     <address class="flex flex-col mt-4">
       <h2 class="text-darkslate-300">Contact Details</h2>
-      <p class="text-sm">{SITE.links.email}</p>
-      <p>{SITE.location.countryName}</p>
+      <p class="text-sm">{email}</p>
+      <p>{location}</p>
     </address>
     <div class="flex flex-col mt-4 w-fit">
       <h2 class="text-darkslate-300">Socials</h2>
       <ul>
         <li>
-          <a href={LINKS.linkedin} target="_blank">Linkedin</a>
+          <a href={linkedin} target="_blank">LinkedIn</a>
         </li>
         <li>
-          <a href={LINKS.github} target="_blank">Github</a>
+          <a href={github} target="_blank">GitHub</a>
         </li>
-        <li>
-          <a href={LINKS.medium} target="_blank">Medium</a>
-        </li>
-        <li>
-          <a href={LINKS.discord} target="_blank">Discord</a>
-        </li>
+        {LINKS.medium && (
+          <li>
+            <a href={LINKS.medium} target="_blank">Medium</a>
+          </li>
+        )}
+        {LINKS.discord && (
+          <li>
+            <a href={LINKS.discord} target="_blank">Discord</a>
+          </li>
+        )}
       </ul>
     </div>
   </div>
