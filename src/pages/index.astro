@@ -9,6 +9,7 @@ import AboutMe from "../components/AboutMe.astro";
 import Now from "../components/Now.astro";
 import CyberStatsCard from "../components/CyberStatsCard.astro";
 import DesignWorksCard from "../components/DesignWorksCard.astro";
+import MyStack from "../components/MyStack.astro";
 import { SITE } from "../site-config";
 import { sanityClient } from "../lib/sanity";
 
@@ -62,8 +63,8 @@ const linkedin = socialLinks.find(s => s.platform === "LinkedIn")?.url || SITE.l
 </script>
 
 <Layout
-  description={`I'm a developer based in ${SITE.location.countryName}, passionate about user experience and specializing in engaging animations and micro-interactions. My primary tools of choice include: JavaScript, React, Solid.js, Astro, Svelte, and Node.js.`}
-  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+  description={`${role} from ${location}. ${tagline}`}
+  title={`${fullName} - ${role}`}
 >
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
@@ -72,7 +73,7 @@ const linkedin = socialLinks.find(s => s.platform === "LinkedIn")?.url || SITE.l
     <AboutMe aboutText={aboutText} fullName={fullName} location={location} />
     <ContactsCard email={email} location={location} github={github} linkedin={linkedin} />
     <TimeZone />
-    <DesignWorksCard />
+    <MyStack techStack={techStack} />
     <Now />
     <Card
       href="playground"
