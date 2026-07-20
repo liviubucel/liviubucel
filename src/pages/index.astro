@@ -1,0 +1,95 @@
+---
+import { DEFAULT_LANGUAGE, type Language } from '../lib/i18n';
+import Seo from '../components/Seo.astro';
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card/index.astro";
+import IntroCard from "../components/IntroCard.astro";
+import ContactsCard from "../components/ContactsCard.astro";
+import DonateCard from "../components/DonateCard.astro";
+import TimeZone from "../components/TimeZoneCard.astro";
+import AboutMe from "../components/AboutMe.astro";
+import Now from "../components/Now.astro";
+import CyberStatsCard from "../components/CyberStatsCard.astro";
+import DesignWorksCard from "../components/DesignWorksCard.astro";
+import { SITE } from "../site-config";
+
+const lang: Language = 'en';
+const isRO = false;
+---
+
+<Layout
+  description="Software developer with strong focus on user experience and animations"
+  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+  lang={lang}
+>
+  <Seo
+    title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+    description="Software developer with strong focus on user experience and animations"
+    lang={lang}
+    type="profile"
+    keywords={["developer", "web development", "animations", "frontend"]}
+    canonical={`${SITE.site.url}`}
+  />
+
+  <main
+    class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
+  >
+    <IntroCard />
+    <AboutMe />
+    <ContactsCard />
+    <TimeZone />
+    <DesignWorksCard />
+    <Now />
+    <Card
+      href="/playground"
+      colSpan="md:col-span-1"
+      rowSpan="md:row-span-1"
+      title="Playground"
+    />
+    <Card
+      href="/guestbook"
+      colSpan="md:col-span-1"
+      rowSpan="md:row-span-1"
+      title="Guestbook"
+    />
+    <Card
+      href="/blog"
+      colSpan="md:col-span-1"
+      rowSpan="md:row-span-1"
+      title="Blog"
+    />
+    <CyberStatsCard />
+    <DonateCard />
+
+    <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
+      <p class="text-xs">
+        © 2025 · Crafted with ♥️ using <a
+          class="text-red-500"
+          href="https://astro.build/"
+          target="_blank">Astro</a
+        > by Me.
+      </p>
+    </Card>
+  </main>
+</Layout>
+
+<script>
+  import { stagger, animate, type AnimationSequence } from "motion";
+  import { loaderAnimation } from "../lib/constants";
+  const cards = document.querySelectorAll(".card");
+
+  const sequence = [
+    loaderAnimation,
+    [
+      cards,
+      { y: ["40%", "0%"], opacity: [0, 1] },
+      {
+        type: "spring",
+        at: "-0.1",
+        delay: stagger(0.2),
+      },
+    ],
+  ] as AnimationSequence;
+
+  animate(sequence);
+</script>

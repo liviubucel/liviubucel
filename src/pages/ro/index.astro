@@ -1,5 +1,5 @@
 ---
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../lib/i18n';
+import { DEFAULT_LANGUAGE, type Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import Layout from "../../layouts/Layout.astro";
 import Card from "../../components/Card/index.astro";
@@ -13,30 +13,22 @@ import CyberStatsCard from "../../components/CyberStatsCard.astro";
 import DesignWorksCard from "../../components/DesignWorksCard.astro";
 import { SITE } from "../../site-config";
 
-export const prerender = true;
-
-export function getStaticPaths() {
-  return SUPPORTED_LANGUAGES.map(lang => ({
-    params: { lang }
-  }));
-}
-
-const { lang } = Astro.params as { lang: Language };
-const isRO = lang === 'ro';
+const lang: Language = 'ro';
+const isRO = true;
 ---
 
 <Layout
-  description={isRO ? "Specialist în cyber security și web development" : "Software developer with strong focus on user experience and animations"}
+  description="Specialist în cyber security și web development"
   title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
   <Seo
     title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description={isRO ? "Specialist în cyber security și web development" : "Software developer with strong focus on user experience and animations"}
+    description="Specialist în cyber security și web development"
     lang={lang}
     type="profile"
-    keywords={isRO ? ["cyber security", "web development", "frontend", "security"] : ["developer", "web development", "animations", "frontend"]}
-    canonical={`${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/`}
+    keywords={["cyber security", "web development", "frontend", "security"]}
+    canonical={`${SITE.site.url}ro/`}
   />
 
   <main
@@ -49,33 +41,33 @@ const isRO = lang === 'ro';
     <DesignWorksCard />
     <Now />
     <Card
-      href={`${lang === DEFAULT_LANGUAGE ? '' : `/${lang}`}/playground`}
+      href="/ro/playground"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title={isRO ? "Expozitie" : "Playground"}
+      title="Expozitie"
     />
     <Card
-      href={`${lang === DEFAULT_LANGUAGE ? '' : `/${lang}`}/guestbook`}
+      href="/ro/guestbook"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title={isRO ? "Cartea de Oaspeti" : "Guestbook"}
+      title="Cartea de Oaspeti"
     />
     <Card
-      href={`${lang === DEFAULT_LANGUAGE ? '' : `/${lang}`}/blog`}
+      href="/ro/blog"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title={isRO ? "Blog" : "Blog"}
+      title="Blog"
     />
     <CyberStatsCard />
     <DonateCard />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
-        © 2025 · {isRO ? "Creat cu ♥️ folosind" : "Crafted with ♥️ using"} <a
+        © 2025 · Creat cu ♥️ folosind <a
           class="text-red-500"
           href="https://astro.build/"
           target="_blank">Astro</a
-        > {isRO ? "de mine." : "by Me."}
+        > de mine.
       </p>
     </Card>
   </main>
@@ -97,7 +89,7 @@ const isRO = lang === 'ro';
         delay: stagger(0.2),
       },
     ],
-  ];
+  ] as AnimationSequence;
 
-  animate(sequence as AnimationSequence);
+  animate(sequence);
 </script>

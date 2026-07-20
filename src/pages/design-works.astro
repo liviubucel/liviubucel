@@ -1,0 +1,27 @@
+---
+import type { Language } from '../lib/i18n';
+import Seo from '../components/Seo.astro';
+import Layout from '../layouts/Layout.astro';
+import { SITE } from '../site-config';
+
+const lang: Language = 'en';
+---
+
+<Layout
+  description="Portfolio of design works"
+  title={`${SITE.author.fullName} - Design Works`}
+  lang={lang}
+>
+  <main class="w-screen min-h-screen flex flex-col justify-center items-center max-w-4xl mx-auto p-8">
+    <a
+      class="absolute top-8 left-8 text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 border-1 border-solid border-neutral-600 rounded-lg"
+      href="/">Back</a
+    >
+    <h1 class="text-4xl font-bold mb-8 text-neutral-100">
+      Design Works
+    </h1>
+    <p class="text-neutral-400 text-center">
+      Design works section coming soon.
+    </p>
+  </main>
+</Layout>

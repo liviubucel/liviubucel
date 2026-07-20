@@ -1,30 +1,23 @@
 ---
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
+import { DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
 import Seo from '../../../components/Seo.astro';
-import { sanityClient } from '../../../lib/sanity';
+import { getPosts } from '../../../lib/sanity-queries';
 import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
 
-export const prerender = true;
-
-export function getStaticPaths() {
-  return SUPPORTED_LANGUAGES.map(lang => ({
-    params: { lang }
-  }));
-}
-
-const { lang } = Astro.params as { lang: Language };
-const isRO = lang === 'ro';
+const lang: Language = 'ro';
+const isRO = true;
 
 let posts = [];
 try {
   if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
-    posts = await sanityClient.fetch(`*[_type == "post"] | order(pubDate desc) {
-      "id": slug.current,
-      title,
-      pubDate
-    }`);
+    const allPosts = await getPosts(lang);
+    posts = allPosts.filter(p => p.published).map(p => ({
+      id: p.slug,
+      title: p.title,
+      pubDate: p.pubDate
+    }));
   }
 } catch (error) {
   console.warn('Sanity client error (during prerender, this may be expected):', error);
@@ -41,25 +34,25 @@ try {
 </script>
 
 <Layout
-  description={isRO ? "Articole tehnice și insights despre web development" : "Software developer with strong focus on the user experience animations and micro interactions"}
-  title={`${SITE.author.fullName} - ${isRO ? 'Blog' : 'Blog'}`}
+  description="Articole tehnice și insights despre web development"
+  title={`${SITE.author.fullName} - Blog`}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - ${isRO ? 'Blog' : 'Blog'}`}
-    description={isRO ? "Articole tehnice și insights despre web development" : "Software developer with strong focus on the user experience animations and micro interactions"}
+    title={`${SITE.author.fullName} - Blog`}
+    description="Articole tehnice și insights despre web development"
     lang={lang}
-    canonical={`${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/blog`}
+    canonical={`${SITE.site.url}ro/blog`}
   />
   <main
     class="w-screen h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8"
   >
     <a
       class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg"
-      href={lang === DEFAULT_LANGUAGE ? '/' : `/${lang}/`}>Back</a
+      href="/ro/">Înapoi</a
     >
     <h1 class="text-4xl font-bold mb-4 text-neutral-100">
-      {isRO ? 'Articole' : 'Posts'}
+      Articole
     </h1>
     <ul class="w-full">
       {
@@ -67,7 +60,8 @@ try {
           <PostRow
             date={post.pubDate ? new Date(post.pubDate) : new Date()}
             id={post.id}
-            title={post.title || (isRO ? 'Fără titlu' : 'No title')}
+            title={post.title || 'Fără titlu'}
+            lang={lang}
           />
         ))
       }

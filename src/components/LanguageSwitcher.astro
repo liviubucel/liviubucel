@@ -1,0 +1,157 @@
+---
+import { DEFAULT_LANGUAGE, type Language } from '../lib/i18n';
+
+interface Props {
+  currentLang: Language;
+  pathname: string;
+}
+
+const { currentLang, pathname } = Astro.props;
+
+const getLanguageUrl = (lang: Language): string => {
+  const cleanPath = pathname.replace(/^\/(en|ro)/, '');
+  if (lang === DEFAULT_LANGUAGE) {
+    return cleanPath || '/';
+  }
+  return `/${lang}${cleanPath}` || `/${lang}`;
+};
+---
+
+<div class="language-switcher">
+  <button
+    class="lang-btn"
+    aria-label={currentLang === 'en' ? 'Switch to Romanian' : 'Switch to English'}
+    data-lang={currentLang}
+  >
+    <span class="globe-icon">🌐</span>
+    <span class="lang-code">{currentLang.toUpperCase()}</span>
+  </button>
+
+  <div class="lang-menu">
+    <a
+      href={getLanguageUrl('en')}
+      class:list={['lang-option', { active: currentLang === 'en' }]}
+      data-lang="en"
+    >
+      <span class="flag">🇺🇸</span>
+      <span class="label">English</span>
+    </a>
+    <a
+      href={getLanguageUrl('ro')}
+      class:list={['lang-option', { active: currentLang === 'ro' }]}
+      data-lang="ro"
+    >
+      <span class="flag">🇷🇴</span>
+      <span class="label">Română</span>
+    </a>
+  </div>
+</div>
+
+<style>
+  .language-switcher {
+    position: relative;
+  }
+
+  .lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .lang-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .globe-icon {
+    font-size: 1.125rem;
+  }
+
+  .lang-code {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lang-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.5rem);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    z-index: 50;
+  }
+
+  .language-switcher:hover .lang-menu,
+  .lang-btn:focus-visible ~ .lang-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .lang-option:last-child {
+    border-bottom: none;
+  }
+
+  .lang-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .lang-option.active {
+    background: rgba(250, 204, 21, 0.1);
+    color: #facc15;
+  }
+
+  .flag {
+    font-size: 1.25rem;
+  }
+
+  .label {
+    font-size: 0.875rem;
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll('.lang-btn');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const menu = btn.nextElementSibling;
+      menu?.classList.toggle('show');
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!(e.target as Element).closest('.language-switcher')) {
+      document.querySelectorAll('.lang-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+    }
+  });
+</script>

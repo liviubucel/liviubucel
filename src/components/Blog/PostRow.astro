@@ -1,13 +1,16 @@
 ---
 import { formatDate } from "../../lib/helpers";
+import type { Language } from "../../lib/i18n";
 
 interface Props {
   title: string;
   date: Date;
   id: string;
+  lang?: Language;
 }
 
-const { title, date, id } = Astro.props;
+const { title, date, id, lang = 'en' } = Astro.props;
+const href = lang === 'en' ? `/blog/${id}` : `/ro/blog/${id}`;
 ---
 
 <li
@@ -15,7 +18,7 @@ const { title, date, id } = Astro.props;
 >
   <a
     class="text-sm md:text-base decoration-none flex justify-between"
-    href={`/blog/${id}`}
+    href={href}
   >
     <p class="inline-block whitespace-nowrap">
       {title}

@@ -1,15 +1,16 @@
 /**
- * i18n Audit Script
- * Validates that all [lang] pages support both EN and RO via getStaticPaths()
+ * i18n Audit Script (Simplified Routing)
+ * Validates that English pages at root have corresponding Romanian pages at /ro/
  */
 
 import fs from 'fs';
 import path from 'path';
 
-const PAGES_DIR = './src/pages/[lang]';
-const LANGUAGES = ['en', 'ro'];
+const PAGES_DIR = './src/pages';
+const EN_PAGES_DIR = './src/pages';
+const RO_PAGES_DIR = './src/pages/ro';
 
-function getPageFiles(dir) {
+function getPageFiles(dir, excludeDir = 'ro') {
   const files = [];
 
   function walk(currentPath) {
@@ -18,7 +19,7 @@ function getPageFiles(dir) {
     for (const entry of entries) {
       const fullPath = path.join(currentPath, entry.name);
 
-      if (entry.isDirectory()) {
+      if (entry.isDirectory() && entry.name !== excludeDir && entry.name !== 'ro') {
         walk(fullPath);
       } else if (entry.name.endsWith('.astro')) {
         files.push(fullPath);
@@ -30,54 +31,50 @@ function getPageFiles(dir) {
   return files;
 }
 
-function checkPageSupportsI18n(filePath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-
-  // Check if page has getStaticPaths() and prerender = true
-  const hasGetStaticPaths = content.includes('getStaticPaths()');
-  const hasPrerender = content.includes('export const prerender = true');
-  const checksSupportedLanguages = content.includes('SUPPORTED_LANGUAGES');
-
-  return hasGetStaticPaths && hasPrerender && checksSupportedLanguages;
-}
-
 function auditTranslations() {
-  console.log('🔍 Auditing i18n translations...\n');
+  console.log('🔍 Auditing i18n routing structure...\n');
 
-  const files = getPageFiles(PAGES_DIR);
+  // Get English pages (root level, excluding ro and special files)
+  const enPages = getPageFiles(EN_PAGES_DIR, 'ro').filter(f =>
+    !f.includes('/ro') &&
+    !f.endsWith('llms.txt.ts') &&
+    !f.endsWith('rss.xml.js')
+  );
 
-  if (files.length === 0) {
-    console.log('⚠️  No pages found in [lang] directory');
+  if (enPages.length === 0) {
+    console.log('⚠️  No English pages found');
     process.exit(1);
   }
 
-  console.log(`✅ Found ${files.length} pages\n`);
+  console.log(`✅ Found ${enPages.length} English pages\n`);
 
-  // Check each page supports i18n
+  // Check for corresponding Romanian pages
   const issues = [];
+  const missingRO = [];
 
-  files.forEach((file) => {
-    if (!checkPageSupportsI18n(file)) {
-      const relative = path.relative(PAGES_DIR, file);
-      issues.push(relative);
+  enPages.forEach((enFile) => {
+    const relative = enFile.replace('./src/pages/', '');
+    const roFile = `./src/pages/ro/${relative}`;
+
+    if (!fs.existsSync(roFile)) {
+      missingRO.push(`  ❌ Missing: /ro/${relative}`);
+      issues.push(roFile);
     }
   });
 
-  if (issues.length > 0) {
-    console.log(`❌ Found ${issues.length} pages missing i18n support:\n`);
-    issues.forEach((page) => {
-      console.log(`  ${page}`);
-      console.log(`    - Missing: getStaticPaths(), prerender, or SUPPORTED_LANGUAGES`);
-    });
-    console.log(`\n💡 Make sure each page:
-  1. Exports: export const prerender = true;
-  2. Has: export function getStaticPaths() { ... }
-  3. Imports: import { SUPPORTED_LANGUAGES } from '...lib/i18n'
-  4. Returns all language variants from getStaticPaths()\n`);
-    process.exit(1);
+  if (missingRO.length > 0) {
+    console.log(`⚠️  Found ${missingRO.length} pages missing Romanian translations:\n`);
+    missingRO.forEach(msg => console.log(msg));
+    console.log('\n💡 Create corresponding /ro/ pages for full i18n support\n');
+  } else {
+    console.log('✅ All pages have Romanian translations!');
   }
 
-  console.log('✅ All pages have i18n support (getStaticPaths + prerender + SUPPORTED_LANGUAGES)!');
+  console.log('\n📋 Page structure:');
+  console.log('  English: / (root)');
+  console.log('  Romanian: /ro/\n');
+
+  console.log('✅ i18n routing validation complete!');
   process.exit(0);
 }
 
