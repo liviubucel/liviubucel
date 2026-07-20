@@ -3,8 +3,27 @@ import type { Language } from '../lib/i18n';
 import Seo from '../components/Seo.astro';
 import Layout from '../layouts/Layout.astro';
 import { SITE } from '../site-config';
+import { getProjects } from '../lib/sanity-queries';
 
 const lang: Language = 'en';
+
+let projects = [];
+try {
+  if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
+    const allProjects = await getProjects(lang);
+    projects = allProjects.map(p => ({
+      id: p.slug,
+      title: p.title,
+      description: p.description,
+      image: p.featuredImage?.asset?.url,
+      tags: p.tags || [],
+      links: p.links || {},
+      pubDate: p.pubDate
+    }));
+  }
+} catch (error) {
+  console.warn('Sanity client error (during prerender, this may be expected):', error);
+}
 ---
 
 <Layout
@@ -12,7 +31,13 @@ const lang: Language = 'en';
   title={`${SITE.author.fullName} - Projects`}
   lang={lang}
 >
-  <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8">
+  <Seo
+    title={`${SITE.author.fullName} - Projects`}
+    description="My projects and portfolio"
+    lang={lang}
+    canonical={`${SITE.site.url}projects`}
+  />
+  <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-4xl mx-auto px-4 py-8 md:p-8">
     <a
       class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg"
       href="/">Back</a
@@ -20,8 +45,60 @@ const lang: Language = 'en';
     <h1 class="text-4xl font-bold mb-4 text-neutral-100">
       Projects
     </h1>
-    <p class="text-neutral-400">
-      Projects section coming soon.
-    </p>
+
+    {projects.length === 0 ? (
+      <p class="text-neutral-400 py-8">No projects found. Check back soon!</p>
+    ) : (
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        {projects.map((project) => (
+          <div class="border border-neutral-700 rounded-lg overflow-hidden hover:border-neutral-500 transition bg-neutral-900/50">
+            {project.image && (
+              <img
+                src={project.image}
+                alt={project.title}
+                class="w-full h-48 object-cover"
+              />
+            )}
+            <div class="p-4">
+              <h3 class="text-lg font-semibold text-neutral-100 mb-2">{project.title}</h3>
+              <p class="text-neutral-400 text-sm mb-4">{project.description}</p>
+
+              {project.tags.length > 0 && (
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {project.tags.map((tag) => (
+                    <span class="text-xs bg-neutral-800 text-neutral-300 px-2 py-1 rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div class="flex gap-3 mt-4">
+                {project.links.demo && (
+                  <a
+                    href={project.links.demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-neutral-300 hover:text-neutral-100 text-sm underline"
+                  >
+                    Demo
+                  </a>
+                )}
+                {project.links.github && (
+                  <a
+                    href={project.links.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-neutral-300 hover:text-neutral-100 text-sm underline"
+                  >
+                    GitHub
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
   </main>
 </Layout>
