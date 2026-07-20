@@ -1,9 +1,13 @@
 // Script to seed Sanity with existing site content
-// Run with: node seed.mjs
+// Run with: SANITY_AUTH_TOKEN=your_token node seed.mjs
 
-const PROJECT_ID = "8atrdwjk";
-const DATASET = "production";
-const TOKEN = "skhSbfwhqC6JYYN4IkNIjz4iPJRPKCAQsmI6xVm8IzKEHNCqHb7fic2G64RfiZiPeBcxUUAjhyX0fPUiF6TLme8wW6lX3qNJsqbUXZdhsFa0dVbstmXQ2UzJcs3lBWmOl5CuAmzllDOoiX0o0rtf3MIswf6DbrvvpG0epaxmIyRGuq6m2wkT";
+const PROJECT_ID = process.env.SANITY_PROJECT_ID || "8atrdwjk";
+const DATASET = process.env.SANITY_DATASET || "production";
+const TOKEN = process.env.SANITY_AUTH_TOKEN;
+
+if (!TOKEN) {
+  throw new Error('SANITY_AUTH_TOKEN environment variable is required');
+}
 
 const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2024-03-15/data/mutate/${DATASET}`;
 

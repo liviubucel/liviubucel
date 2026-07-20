@@ -7,7 +7,12 @@ import { SITE } from '../site-config';
 import { getGuestbookEntries } from '../lib/sanity-queries';
 
 const lang: Language = 'en';
-const entries = await getGuestbookEntries(lang);
+let entries = [];
+try {
+  entries = await getGuestbookEntries(lang);
+} catch (error) {
+  console.error('Failed to fetch guestbook entries:', error);
+}
 
 const labels = {
   en: {
