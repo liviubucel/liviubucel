@@ -22,11 +22,24 @@ This document summarizes the work done by the Antigravity agent today to serve a
   - Updated `PostRow.astro` and `ProjectRow.astro` to use the `getLocalizedPath()` helper, ensuring links retain their locale prefix (e.g., pointing to `/ro/blog/slug` instead of `/blog/slug` when on the Romanian site).
 
 ## 3. UI & Theming Updates
-- **Primary Color Scheme**: The user requested a shift away from the default red accent. The `--primary-*` CSS variables in `src/style.css` have been updated to a sleek, premium slate/gray palette (Slate 500: `#94a3b8`). This affects all buttons, borders, the "Now" pulse indicator, and hover states.
+- **Primary Color Scheme**: The user requested a shift away from the default red accent. The `--primary-*` CSS variables in `src/style.css` have been updated to a sleek, premium slate/gray palette (Slate 500: `#94a3b8`). This affects all buttons, borders, the "Now" pulse indicator, and hover states. **IMPORTANT**: If modifying `src/style.css`, do NOT revert `--primary-500` back to red.
 - **Footer**: Changed the red heart to a white heart (`🤍`) and updated the "Astro" link class to use `text-primary-500` instead of `text-red-500`.
 - **Custom 404**: Created a custom `src/pages/404.astro` page matching the new sleek slate theme, replacing the default Astro error page.
 
-## 4. Current State & Next Steps
+## 4. Bento Grid Architecture (CRITICAL FOR UI)
+- **Constraint**: The `index.astro` and `ro/index.astro` homepages utilize a highly rigid CSS Grid (Bento style). The main container is exactly **8 rows by 4 columns (32 total cells)** on desktop (`lg:grid-rows-8 lg:grid-cols-4`).
+- **Mathematical Balance**: Every single `colSpan` and `rowSpan` assigned to a `<Card>` component must mathematically fit into exactly 32 cells.
+- **Current Distribution**:
+  - `IntroCard`: 3 cols x 4 rows = 12 cells
+  - `AboutMe`: 1 col x 5 rows = 5 cells
+  - `ContactsCard`: 1 col x 3 rows = 3 cells
+  - `TimeZone`: 1 col x 2 rows = 2 cells
+  - `MyStack`: 1 col x 2 rows = 2 cells
+  - 8 small cards (`DesignWorksCard`, `Now`, `Playground`, `Guestbook`, `Blog`, `CyberStats`, `Donate`, `Footer`): 1 cell each = 8 cells
+  - **Total**: 12 + 5 + 3 + 2 + 2 + 8 = **32 cells**.
+- **Rule for Future Agents**: If you add, remove, or resize ANY component on the homepage, you MUST recalculate the row spans and col spans of the surrounding elements to equal exactly 32. Failure to do so will cause CSS Grid to automatically push components downward, completely breaking the layout grid.
+
+## 5. Current State & Next Steps
 - The build is stable (`npm run build` succeeds without issues).
 - Sanity CMS is fully populated and dictates the content of the Homepage, Blog, and Projects.
 - i18n is functioning correctly on the static directory structure.
