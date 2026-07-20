@@ -46,14 +46,20 @@ function auditTranslations() {
     process.exit(1);
   }
 
-  console.log(`✅ Found ${enPages.length} English pages\n`);
+  console.log(`✅ Found ${enPages.length} English pages`);
+  if (process.env.DEBUG) {
+    console.log('Debug - English pages:');
+    enPages.forEach(p => console.log(`  ${p}`));
+  }
+  console.log();
 
   // Check for corresponding Romanian pages
   const issues = [];
   const missingRO = [];
 
   enPages.forEach((enFile) => {
-    const relative = enFile.replace('./src/pages/', '');
+    // Remove the 'src/pages/' prefix to get the relative path
+    let relative = enFile.replace(/^\.?\/?(src\/pages\/)?/, '');
     const roFile = `./src/pages/ro/${relative}`;
 
     if (!fs.existsSync(roFile)) {
