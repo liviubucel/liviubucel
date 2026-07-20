@@ -1,16 +1,6 @@
----
-interface Props {
-  status?: "working" | "idle";
-}
-
-const { status = "working" } = Astro.props;
-const baseColor = status === "working" ? "bg-green-500" : "bg-red-500";
-const pingColor = status === "working" ? "bg-green-400" : "bg-red-400";
----
-
 <span class="relative flex h-3 w-3">
   <span
-    class={`animate-ping absolute inline-flex h-full w-full rounded-full ${pingColor} opacity-75`}
+    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-darkslate-200 opacity-75"
   ></span>
-  <span class={`relative inline-flex rounded-full h-3 w-3 ${baseColor}`}></span>
+  <span class="relative inline-flex rounded-full h-3 w-3 bg-darkslate-100"></span>
 </span>
