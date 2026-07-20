@@ -10,6 +10,7 @@ const lang: Language = 'en';
 const isRO = false;
 
 let posts = [];
+let debugError = "";
 try {
     const allPosts = await getPosts(lang);
     posts = allPosts.filter(p => p.published).map(p => ({
@@ -18,6 +19,7 @@ try {
       pubDate: p.pubDate
     }));
 } catch (error) {
+  debugError = error instanceof Error ? error.message : String(error);
   console.warn('Sanity client error (during prerender, this may be expected):', error);
 }
 ---
@@ -56,6 +58,7 @@ try {
     <div style="background: red; padding: 10px; margin-bottom: 20px;">
       <p>Debug Sanity API:</p>
       <pre>{JSON.stringify(posts || [], null, 2)}</pre>
+      {debugError && <p style="color: white; font-weight: bold;">Error: {debugError}</p>}
     </div>
 
     <ul class="w-full">
