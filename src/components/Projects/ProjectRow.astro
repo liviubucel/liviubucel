@@ -14,15 +14,15 @@ const { title, date, id } = Astro.props;
   class="list-none w-full text-neutral-100 hover:text-neutral-400 ease-in-out transition-colors border-b-neutral-400 border-dashed border-b-1 my-2"
 >
   <a
-    class="text-sm md:text-base decoration-none flex justify-between"
+    class="text-sm md:text-base decoration-none flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 py-2"
     href={`/projects/${id}`}
   >
-    <p class="inline-block whitespace-nowrap">
+    <p class="flex-1 min-w-0 pr-4">
       {title}
     </p>
     {date && (
       <time
-        class="text-right tabular-nums"
+        class="text-xs text-neutral-400 whitespace-nowrap flex-shrink-0"
         data-date={date.toISOString()}
         datetime={date.toISOString()}
       >
