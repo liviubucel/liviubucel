@@ -1,0 +1,133 @@
+---
+import { getCurrentTimeInTimezone, formatTimeTo12H } from "../lib/helpers";
+import Card from "./Card/index.astro";
+import { SITE } from "../site-config";
+---
+
+<script>
+  import { onCleanup, onMount } from "solid-js";
+  import { getCurrentTimeInTimezone } from "../lib/helpers";
+
+  let interval: ReturnType<typeof setInterval>;
+  let homeTimezone = "";
+
+  function getHomeTimezoneFromDom(): string {
+    const el = document.getElementById("homeTzDisplay");
+    const tz = (el as HTMLSpanElement | null)?.dataset?.timezone;
+    return tz || "";
+  }
+
+  function getVisitorTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  function uses24HourFormat(): boolean {
+    const formatter = new Intl.DateTimeFormat(navigator.language, {
+      hour: "numeric",
+    });
+    const parts = formatter.formatToParts(new Date());
+    const hourPart = parts.find((part) => part.type === "hour");
+    return hourPart ? !parts.some((part) => part.type === "dayPeriod") : false;
+  }
+
+  function formatTimeForTimezone(date: Date, timezone: string, use24Hour: boolean): string {
+    const options: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: !use24Hour,
+      timeZone: timezone,
+    };
+    return new Intl.DateTimeFormat(navigator.language, options).format(date);
+  }
+
+  function getTimezoneAbbreviation(timezone: string): string {
+    const date = new Date();
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      timeZoneName: "short",
+    });
+    const parts = formatter.formatToParts(date);
+    const tzName = parts.find((part) => part.type === "timeZoneName");
+    return tzName ? tzName.value : timezone.split("/").pop() || timezone;
+  }
+
+  function updateClock() {
+    const italyTimeDisplay = document.getElementById("italyTimeDisplay");
+    const visitorTimeDisplay = document.getElementById("visitorTimeDisplay");
+    const visitorTzDisplay = document.getElementById("visitorTzDisplay");
+    const homeTzDisplay = document.getElementById("homeTzDisplay");
+
+    if (!homeTimezone) homeTimezone = getHomeTimezoneFromDom() || "UTC";
+
+    const visitorTimezone = getVisitorTimezone();
+    const homeTime = getCurrentTimeInTimezone(homeTimezone);
+    const visitorTime = getCurrentTimeInTimezone(visitorTimezone);
+    const use24Hour = uses24HourFormat();
+
+    if (italyTimeDisplay) {
+      italyTimeDisplay.textContent = formatTimeForTimezone(homeTime, homeTimezone, use24Hour);
+      italyTimeDisplay.setAttribute("datetime", homeTime.toISOString());
+    }
+
+    if (visitorTimeDisplay) {
+      visitorTimeDisplay.textContent = formatTimeForTimezone(visitorTime, visitorTimezone, use24Hour);
+      visitorTimeDisplay.setAttribute("datetime", visitorTime.toISOString());
+    }
+
+    if (visitorTzDisplay) {
+      visitorTzDisplay.textContent = getTimezoneAbbreviation(visitorTimezone);
+    }
+
+    if (homeTzDisplay) {
+      homeTzDisplay.textContent = getTimezoneAbbreviation(homeTimezone);
+    }
+  }
+
+  onMount(() => {
+    updateClock();
+    interval = setInterval(updateClock, 60_000);
+  });
+
+  onCleanup(() => {
+    clearInterval(interval);
+  });
+</script>
+
+<Card colSpan="lg:col-span-1" rowSpan="md:row-span-2">
+  <div class="flex flex-col gap-2 justify-center h-full">
+    <div class="flex flex-col">
+      <span class="text-sm font-light text-darkslate-300 m-0">my time</span>
+      <div class="flex items-baseline gap-2">
+        <time
+          datetime=""
+          id="italyTimeDisplay"
+          class="whitespace-nowrap text-4xl font-bold tabular-nums"
+        >
+          {formatTimeTo12H(getCurrentTimeInTimezone(SITE.location.timezone))}
+        </time>
+        <span
+          id="homeTzDisplay"
+          data-timezone={SITE.location.timezone}
+          class="text-sm font-light text-darkslate-300"
+        >
+          ---
+        </span>
+      </div>
+    </div>
+    
+    <div class="flex flex-col">
+      <span class="text-sm font-light text-darkslate-300 m-0">your time</span>
+      <div class="flex items-baseline gap-2">
+        <time
+          datetime=""
+          id="visitorTimeDisplay"
+          class="whitespace-nowrap text-4xl font-bold tabular-nums"
+        >
+          {formatTimeTo12H(getCurrentTimeInTimezone(SITE.location.timezone))}
+        </time>
+        <span id="visitorTzDisplay" class="text-sm font-light text-darkslate-300">---</span>
+      </div>
+    </div>
+    
+  </div>
+</Card>
