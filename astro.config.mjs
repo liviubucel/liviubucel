@@ -1,3 +1,4 @@
+import sanity from "@sanity/astro";
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import cloudflare from "@astrojs/cloudflare";
@@ -64,6 +65,12 @@ export default defineConfig({
     icon(),
     svelte(),
     db(),
+    sanity({
+      projectId: process.env.SANITY_PROJECT_ID || "YOUR_PROJECT_ID",
+      dataset: process.env.SANITY_DATASET || "production",
+      useCdn: true,
+      apiVersion: "2024-03-15"
+    }),
   ],
   markdown: {
     remarkPlugins: [remarkReadingTime],
