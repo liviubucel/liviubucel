@@ -4,5 +4,6 @@ export default defineCliConfig({
   api: {
     projectId: '8atrdwjk',
     dataset: 'production'
-  }
+  },
+  studioHost: 'liviubucel'
 })
