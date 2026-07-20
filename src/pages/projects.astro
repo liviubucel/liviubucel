@@ -19,20 +19,18 @@ interface Project {
 
 let projects: Project[] = [];
 try {
-  if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
-    const allProjects = await getProjects(lang);
-    projects = allProjects.map(p => ({
-      id: p.slug,
-      title: p.title,
-      description: p.description,
-      image: p.featuredImage?.asset?.url,
-      tags: p.tags || [],
-      links: p.links || {},
-      pubDate: p.pubDate
-    }));
-  }
+  const allProjects = await getProjects(lang);
+  projects = allProjects.map(p => ({
+    id: p.slug,
+    title: p.title,
+    description: p.description,
+    image: p.featuredImage?.asset?.url,
+    tags: p.tags || [],
+    links: p.links || {},
+    pubDate: p.pubDate
+  }));
 } catch (error) {
-  console.warn('Sanity client error (during prerender, this may be expected):', error);
+  console.warn('Failed to fetch projects from Sanity:', error);
 }
 ---
 

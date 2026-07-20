@@ -1,0 +1,50 @@
+---
+import type { Language } from '../../lib/i18n';
+import { getPost } from '../../lib/sanity-queries';
+import LayoutBlogPost from '../../layouts/LayoutBlogPost.astro';
+import { PortableText } from 'astro-portabletext';
+import { SITE } from '../../site-config';
+
+const { slug } = Astro.params;
+const lang: Language = 'en';
+
+if (!slug) {
+  return Astro.redirect('/blog');
+}
+
+const post = await getPost(slug, lang).catch(() => null);
+
+if (!post) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const pubDate = post.pubDate ? new Date(post.pubDate) : new Date();
+
+function estimateReadingTime(body: any[]): string {
+  if (!body || body.length === 0) return '1 min read';
+  const text = body
+    .filter((b) => b._type === 'block')
+    .map((b) => b.children?.map((c: any) => c.text).join('') ?? '')
+    .join(' ');
+  const words = text.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.ceil(words / 200));
+  return `${mins} min read`;
+}
+
+const minutesRead = estimateReadingTime(post.body ?? []);
+const canonical = `${SITE.site.url}blog/${slug}`;
+---
+
+<LayoutBlogPost
+  title={post.title}
+  description={post.description ?? post.title}
+  pubDate={pubDate}
+  minutesRead={minutesRead}
+  url={canonical}
+>
+  {post.body && post.body.length > 0 ? (
+    <PortableText value={post.body} />
+  ) : (
+    <p class="text-neutral-400">No content available.</p>
+  )}
+</LayoutBlogPost>

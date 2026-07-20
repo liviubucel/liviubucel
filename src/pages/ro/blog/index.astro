@@ -17,16 +17,18 @@ interface Post {
 
 let posts: Post[] = [];
 try {
-  if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
-    const allPosts = await getPosts(lang);
-    posts = allPosts.filter(p => p.published).map(p => ({
-      id: p.slug,
-      title: p.title,
-      pubDate: p.pubDate
-    }));
+  // Try RO posts first, fall back to EN (no separate RO posts yet)
+  let allPosts = await getPosts(lang);
+  if (allPosts.length === 0) {
+    allPosts = await getPosts('en');
   }
+  posts = allPosts.map(p => ({
+    id: p.slug,
+    title: p.title,
+    pubDate: p.pubDate
+  }));
 } catch (error) {
-  console.warn('Sanity client error (during prerender, this may be expected):', error);
+  console.warn('Failed to fetch posts from Sanity:', error);
 }
 ---
 
