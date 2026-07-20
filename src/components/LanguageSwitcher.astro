@@ -70,10 +70,10 @@ const getLanguageUrl = (lang: Language): string => {
     width: 56px;
     height: 56px;
     padding: 0;
-    background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(250, 204, 21, 0.05));
-    border: 2px solid rgba(250, 204, 21, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
-    color: #facc15;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     font-weight: 600;
     font-size: 0.75rem;
@@ -83,10 +83,11 @@ const getLanguageUrl = (lang: Language): string => {
   }
 
   .lang-toggle:hover {
-    background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(250, 204, 21, 0.1));
-    border-color: rgba(250, 204, 21, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
     transform: scale(1.08);
-    box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   }
 
   .lang-toggle:active {
