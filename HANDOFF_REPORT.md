@@ -45,7 +45,16 @@ This document summarizes the work done by the Antigravity agent today to serve a
   2. Pass the `lang` prop to these components from `index.astro` and `ro/index.astro`.
   3. Use the `getTranslation(lang, 'key')` function inside the components to render the correct text dynamically.
 
-## 6. Current State & Next Steps
+## 6. Current State & Recent Fixes
+- **Layout & Design Engine**:
+  - The Bento grid was perfectly stabilized for a 32-cell layout (8 rows x 4 columns). All components (`IntroCard`, `AboutMe`, `ContactsCard`, etc.) have perfectly calculated `colSpan` and `rowSpan` properties on both English and Romanian index pages.
+  - Re-applied the premium Slate/Gray dynamic theme via `index.css`, replacing the default red theme.
+  - Removed duplicate social links from `ContactsCard` to fix content overflow.
+- **Sanity API Integration on Cloudflare**:
+  - Addressed a major bug where Sanity posts/projects would not load on the live site.
+  - Removed unnecessary `process.env.SANITY_PROJECT_ID` checks from route endpoints that blocked API calls on Edge Workers.
+  - Disabled Sanity CDN (`useCdn: false`) and attached custom `User-Agent` headers in `sanityClient` to prevent `HTTP 525 SSL Handshake` drops from Cloudflare Workers interacting with Sanity APIs.
+  - Seeded and repaired the entire Sanity dataset (via `fix-sanity.mjs`) to ensure all posts have `published: true` and `language: "en"` to prevent empty queries.
 - The build is stable (`npm run build` succeeds without issues).
 - Sanity CMS is fully populated and dictates the content of the Homepage, Blog, and Projects.
 - i18n is functioning correctly on the static directory structure.
