@@ -38,98 +38,94 @@ const { Content, remarkPluginFrontmatter } = await render(entry);
 </LayoutBlogPost>
 
 <style is:global>
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    margin-top: 20px;
-    margin-bottom: 10px;
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
     font-weight: bold;
+    color: var(--darkslate-100, #f8fafc);
   }
-
-  h1 {
-    font-size: 32px;
-  }
-
-  h2 {
-    font-size: 28px;
-  }
-
-  h3 {
-    font-size: 24px;
-  }
-
-  h4 {
-    font-size: 20px;
-  }
-
-  h5 {
-    font-size: 18px;
-  }
-
-  h6 {
-    font-size: 16px;
-  }
-
+  h1 { font-size: 2.25rem; line-height: 2.5rem; }
+  h2 { font-size: 1.875rem; line-height: 2.25rem; }
+  h3 { font-size: 1.5rem; line-height: 2rem; }
+  h4 { font-size: 1.25rem; line-height: 1.75rem; }
+  h5 { font-size: 1.125rem; line-height: 1.5rem; }
+  h6 { font-size: 1rem; line-height: 1.5rem; }
+  
   p {
-    margin: 0 0 10px 0;
+    margin-bottom: 1.25rem;
+    color: var(--darkslate-300, #cbd5e1);
+    line-height: 1.75;
   }
-
+  
   a {
-    color: #1a0dab;
-    text-decoration: none;
-  }
-
-  a:hover {
+    color: var(--primary-500, #facc15);
     text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
   }
-
-  ul,
-  ol {
-    margin-left: 20px;
-    margin-bottom: 10px;
+  a:hover {
+    color: var(--primary-400, #fde047);
   }
-
+  
+  ul, ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--darkslate-300, #cbd5e1);
+  }
+  li {
+    margin-bottom: 0.5rem;
+  }
+  
   blockquote {
-    margin: 20px 0;
-    padding-left: 15px;
-    border-left: 5px solid #ccc;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    border-left: 4px solid var(--primary-500, #facc15);
+    font-style: italic;
+    color: var(--darkslate-400, #94a3b8);
   }
-
-  pre,
-  code {
-    font-family: "Courier New", monospace;
-    background-color: #f4f4f4;
-    border-radius: 5px;
+  
+  pre, code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background-color: var(--darkslate-800, #1e293b);
+    border-radius: 0.375rem;
   }
-
   pre {
-    padding: 10px;
+    padding: 1rem;
     overflow-x: auto;
+    border: 1px solid var(--darkslate-700, #334155);
+    margin-bottom: 1.5rem;
   }
-
   code {
-    padding: 2px 4px;
-    font-size: 90%;
-    color: #d63384;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875em;
+    color: var(--primary-400, #fde047);
   }
-
+  pre code {
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+  }
+  
   img {
     max-width: 100%;
     height: auto;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
   }
-
+  
   table {
     border-collapse: collapse;
     width: 100%;
+    margin-bottom: 1.5rem;
+    color: var(--darkslate-300, #cbd5e1);
   }
-
-  th,
-  td {
+  th, td {
     text-align: left;
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--darkslate-700, #334155);
+  }
+  th {
+    font-weight: 600;
+    color: var(--darkslate-100, #f8fafc);
   }
 </style>

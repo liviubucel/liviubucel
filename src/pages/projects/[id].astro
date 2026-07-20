@@ -1,0 +1,60 @@
+---
+import { getEntry, render } from "astro:content";
+import { getCollection } from "astro:content";
+import LayoutBlogPost from "../../layouts/LayoutBlogPost.astro";
+import { SITE } from "../../site-config";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return (await getCollection("projects")).map(({ id }) => ({
+    params: { id: id as string },
+  }));
+}
+
+const { id } = Astro.params;
+
+if (!id) {
+  throw new Error("id is missing");
+}
+
+const entry = await getEntry("projects", id);
+
+if (!entry) {
+  return Astro.redirect("/404");
+}
+
+const { Content, remarkPluginFrontmatter } = await render(entry);
+---
+
+<LayoutBlogPost
+  description={entry.data.description!}
+  minutesRead={remarkPluginFrontmatter.minutesRead}
+  pubDate={entry.data.pubDate!}
+  title={`${entry.data.title} | ${SITE.author.fullName}`}
+  url={`projects/${entry.id}`}
+>
+  <div class="prose prose-invert prose-neutral mx-auto">
+    <Content />
+  </div>
+</LayoutBlogPost>
+
+<style is:global>
+  /* Base typography is handled by the prose classes. Add custom overrides here if needed. */
+  .prose a {
+    color: var(--primary-500, #facc15);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
+  }
+  .prose a:hover {
+    color: var(--primary-400, #fde047);
+  }
+  .prose pre {
+    background-color: var(--darkslate-800, #1e293b);
+    border: 1px solid var(--darkslate-700, #334155);
+  }
+  .prose blockquote {
+    border-left-color: var(--primary-500, #facc15);
+  }
+</style>

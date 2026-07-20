@@ -31,3 +31,6 @@ pnpm-debug.log*
 
 # dump files
 *.zip
+*.sql
+dump-extracted/
+master-temp/
