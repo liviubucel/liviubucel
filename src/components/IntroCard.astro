@@ -40,40 +40,34 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
       </div>
       <div class="flex flex-col lg:flex-row gap-2 lg:gap-4">
         <div class="flex gap-2 lg:gap-4">
-          {LINKS.github && (
-            <a href={LINKS.github} aria-label="github profile" target="_blank">
-              <Button aria-label="github profile">
-                <Icon name="ri:github-fill" />
-                <span class="sr-only" data-umami-event="github button"
-                  >GitHub Profile</span
-                >
-              </Button>
-            </a>
-          )}
-          {LINKS.linkedin && (
-            <a
-              href={LINKS.linkedin}
-              aria-label="linkedin profile"
-              target="_blank"
-            >
-              <Button aria-label="linkedin profile">
-                <Icon name="ri:linkedin-box-fill" />
-                <span class="sr-only" data-umami-event="linkedin button"
-                  >Linkedin Profile</span
-                >
-              </Button>
-            </a>
-          )}
-          {LINKS.dribble && (
-            <a href={LINKS.dribble} aria-label="dribble profile" target="_blank">
-              <Button aria-label="dribble profile">
-                <Icon name="ri:dribbble-fill" />
-                <span class="sr-only" data-umami-event="Dribble button"
-                  >Dribble Profile</span
-                >
-              </Button>
-            </a>
-          )}
+          <a href={LINKS.github} aria-label="github profile" target="_blank">
+            <Button aria-label="github profile">
+              <Icon name="ri:github-fill" />
+              <span class="sr-only" data-umami-event="github button"
+                >GitHub Profile</span
+              >
+            </Button>
+          </a>
+          <a
+            href={LINKS.linkedin}
+            aria-label="linkedin profile"
+            target="_blank"
+          >
+            <Button aria-label="linkedin profile">
+              <Icon name="ri:linkedin-box-fill" />
+              <span class="sr-only" data-umami-event="linkedin button"
+                >Linkedin Profile</span
+              >
+            </Button>
+          </a>
+          <a href={LINKS.dribble} aria-label="dribble profile" target="_blank">
+            <Button aria-label="dribble profile">
+              <Icon name="ri:dribbble-fill" />
+              <span class="sr-only" data-umami-event="Dribble button"
+                >Dribble Profile</span
+              >
+            </Button>
+          </a>
           <Tooltip client:visible>
             <Button aria-label="easter egg btn">
               <Icon name="ri:emotion-laugh-line" />
@@ -83,23 +77,16 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
             </Button>
           </Tooltip>
         </div>
-        {SITE.cal.username ? (
-          <Button
-            aria-label="book a call"
+        <Button
+          aria-label="book a call"
+          data-cal-link={SITE.cal.username}
+        >
+          <span
+            data-umami-event="Book a call"
             data-cal-link={SITE.cal.username}
+            class="font-bold whitespace-nowrap">Book a call</span
           >
-            <span
-              data-umami-event="Book a call"
-              data-cal-link={SITE.cal.username}
-              class="font-bold whitespace-nowrap">Book a call</span>
-          </Button>
-        ) : (
-          <a href={`mailto:${LINKS.email}`}>
-            <Button aria-label="contact me">
-              <span class="font-bold whitespace-nowrap">Contact me</span>
-            </Button>
-          </a>
-        )}
+        </Button>
       </div>
     </div>
     <Image
