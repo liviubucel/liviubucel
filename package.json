@@ -5,13 +5,16 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "npm run i18n:audit && npm run security:scan && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "site-setup": "node scripts/setup.mjs",
     "eslint": "eslint 'src/**/*.{js,astro}'",
     "check": "astro check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "i18n:audit": "node scripts/i18n-audit.mjs",
+    "security:scan": "node scripts/security-scan.mjs",
+    "sitemap:generate": "SITE_URL=https://liviubucel.com/ node scripts/generate-sitemap.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
