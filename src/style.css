@@ -10,15 +10,15 @@
   --darkslate-800: #0e0e0e;
   --darkslate-900: #0b0b0b;
 
-  --primary-100: #f9cdd3;
-  --primary-200: #f3a3aa;
-  --primary-300: #ec7981;
-  --primary-400: #e64f59;
-  --primary-500: #e63946;
-  --primary-600: #cf2f3d;
-  --primary-700: #b82534;
-  --primary-800: #a01b2b;
-  --primary-900: #891321;
+  --primary-100: #ffffff;
+  --primary-200: #fafafa;
+  --primary-300: #f5f5f5;
+  --primary-400: #eeeeee;
+  --primary-500: #e8e8e8;
+  --primary-600: #e0e0e0;
+  --primary-700: #d8d8d8;
+  --primary-800: #d0d0d0;
+  --primary-900: #c8c8c8;
 
   --font-cabinet-grotesk: "CabinetGrotesk", "Cabinet Grotesk", sans-serif;
   --font-satoshi: "Satoshi", sans-serif;
@@ -70,6 +70,18 @@
   --primary-700: #7b1fa2;
   --primary-800: #6a1b9a;
   --primary-900: #4a148c;
+}
+
+.white-theme {
+  --primary-100: #ffffff;
+  --primary-200: #fafafa;
+  --primary-300: #f5f5f5;
+  --primary-400: #eeeeee;
+  --primary-500: #e8e8e8;
+  --primary-600: #e0e0e0;
+  --primary-700: #d8d8d8;
+  --primary-800: #d0d0d0;
+  --primary-900: #c8c8c8;
 }
 
 html {
@@ -125,13 +137,13 @@ body::before {
 
 .switchboard .star::before {
   background: theme("colors.primary.500");
-  box-shadow: 0px 0px 2px 1px theme("colors.primary.800");
+  box-shadow: 0px 0px 2px 1px theme("colors.primary.600");
 }
 
 .switchboard .star::after {
   background: #ffffff;
   box-shadow: 0px 0px 1px 1px theme("colors.primary.500"),
-    0px 0px 2px 1px theme("colors.primary.800");
+    0px 0px 2px 1px theme("colors.primary.600");
 }
 
 .switchboard .star[data-state="off"] {
