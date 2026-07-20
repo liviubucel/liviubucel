@@ -82,7 +82,7 @@ export async function getPosts(lang?: Language): Promise<Post[]> {
   return sanityClient.fetch(`*[_type == "post"${langFilter}] | order(pubDate desc) {
     _id,
     title,
-    slug,
+    "slug": slug.current,
     language,
     description,
     metaDescription,
@@ -116,7 +116,7 @@ export async function getPost(slug: string, lang?: Language): Promise<Post | nul
     `*[_type == "post" && slug.current == $slug${langFilter}][0] {
       _id,
       title,
-      slug,
+      "slug": slug.current,
       language,
       description,
       metaDescription,
@@ -151,7 +151,7 @@ export async function getProjects(lang?: Language): Promise<Project[]> {
   return sanityClient.fetch(`*[_type == "project"${langFilter}] | order(pubDate desc) {
     _id,
     title,
-    slug,
+    "slug": slug.current,
     language,
     description,
     metaDescription,
@@ -175,7 +175,7 @@ export async function getProject(slug: string, lang?: Language): Promise<Project
     `*[_type == "project" && slug.current == $slug${langFilter}][0] {
       _id,
       title,
-      slug,
+      "slug": slug.current,
       language,
       description,
       metaDescription,
@@ -199,7 +199,7 @@ export async function getCategories(): Promise<Category[]> {
   return sanityClient.fetch(`*[_type == "category"] | order(title asc) {
     _id,
     title,
-    slug,
+    "slug": slug.current,
     description
   }`);
 }
