@@ -1,6 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../lib/i18n';
-import { getSEOMeta, getPersonSchema, generateAlternateLinks } from '../../lib/seo';
+import Seo from '../../components/Seo.astro';
 import Layout from "../../layouts/Layout.astro";
 import Card from "../../components/Card/index.astro";
 import IntroCard from "../../components/IntroCard.astro";
@@ -22,37 +22,22 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params as { lang: Language };
-
-// SEO metadata
-const seoMeta = getSEOMeta({
-  title: `${SITE.author.fullName} - ${SITE.author.jobTitle}`,
-  description: `I'm a developer based in ${SITE.location.countryName}, passionate about user experience and specializing in engaging animations and micro-interactions.`,
-  lang,
-  canonical: `${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/`,
-});
-
-const personSchema = getPersonSchema(lang);
-const alternateLinks = generateAlternateLinks(Astro.url.pathname, SITE.site.url);
-
 const isRO = lang === 'ro';
 ---
 
 <Layout
-  description={seoMeta.description}
-  title={seoMeta.title}
+  description={isRO ? "Specialist în cyber security și web development" : "Software developer with strong focus on user experience and animations"}
+  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
-  <script is:inline define:vars={{ personSchema }}>
-    const schema = document.createElement('script');
-    schema.type = 'application/ld+json';
-    schema.textContent = JSON.stringify(personSchema);
-    document.head.appendChild(schema);
-  </script>
-
-  <!-- Alternate links for SEO -->
-  {alternateLinks.map(link => (
-    <link rel="alternate" hreflang={link.hreflang} href={link.href} />
-  ))}
+  <Seo
+    title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+    description={isRO ? "Specialist în cyber security și web development" : "Software developer with strong focus on user experience and animations"}
+    lang={lang}
+    type="profile"
+    keywords={isRO ? ["cyber security", "web development", "frontend", "security"] : ["developer", "web development", "animations", "frontend"]}
+    canonical={`${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/`}
+  />
 
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"

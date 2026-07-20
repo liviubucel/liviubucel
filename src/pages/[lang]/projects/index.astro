@@ -1,5 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
+import Seo from '../../../components/Seo.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { SITE } from '../../../site-config';
 
@@ -18,6 +19,12 @@ const isRO = lang === 'ro';
   title={`${SITE.author.fullName} - ${isRO ? 'Proiecte' : 'Projects'}`}
   lang={lang}
 >
+  <Seo
+    title={`${SITE.author.fullName} - ${isRO ? 'Proiecte' : 'Projects'}`}
+    description={isRO ? "Proiectele mele de web development" : "My web development projects"}
+    lang={lang}
+    canonical={`${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/projects`}
+  />
   <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-4xl mx-auto p-8">
     <a
       class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg"
