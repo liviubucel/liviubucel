@@ -52,12 +52,6 @@ export default defineConfig({
   },
   presets: [
     presetWind3(),
-    presetWebFonts({
-      provider: "fontshare",
-      fonts: {
-        sans: ["Cabinet Grotesk", "Satoshi"],
-        serif: "Zodiak",
-      },
-    }),
+    // presetWebFonts disabled - using local fonts via Astro fonts config instead
   ],
 });

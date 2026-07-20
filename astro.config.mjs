@@ -52,8 +52,23 @@ export default defineConfig({
     },
   ],
   site,
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en", "ro"],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
   integrations: [
-    sitemap(),
+    sitemap({
+      i18n: {
+        defaultLocale: "en",
+        locales: {
+          en: "en-US",
+          ro: "ro-RO",
+        },
+      },
+    }),
     robotsTxt({
       sitemap: [
         `${siteNoTrailingSlash}/sitemap-index.xml`,
@@ -66,10 +81,12 @@ export default defineConfig({
     svelte(),
     db(),
     sanity({
-      projectId: process.env.SANITY_PROJECT_ID || "default-id",
+      projectId: process.env.SANITY_PROJECT_ID,
       dataset: process.env.SANITY_DATASET || "production",
       useCdn: true,
-      apiVersion: "2024-03-15"
+      apiVersion: "2025-02-20",
+      // Crisis 404 fallback: client redirects to /en if projectId is missing
+      studioUrl: "/studio",
     }),
   ],
   markdown: {
