@@ -9,7 +9,7 @@ interface Props {
 const { currentLang, pathname } = Astro.props;
 
 const getLanguageUrl = (lang: Language): string => {
-  const cleanPath = pathname.replace(/^\/(en|ro)/, '');
+  const cleanPath = pathname.replace(/^\/(ro)/, '');
   if (lang === DEFAULT_LANGUAGE) {
     return cleanPath || '/';
   }
@@ -19,139 +19,196 @@ const getLanguageUrl = (lang: Language): string => {
 
 <div class="language-switcher">
   <button
-    class="lang-btn"
+    class="lang-toggle"
     aria-label={currentLang === 'en' ? 'Switch to Romanian' : 'Switch to English'}
-    data-lang={currentLang}
+    title={currentLang === 'en' ? 'RO' : 'EN'}
   >
-    <span class="globe-icon">🌐</span>
-    <span class="lang-code">{currentLang.toUpperCase()}</span>
+    <svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+    </svg>
+    <span class="code">{currentLang.toUpperCase()}</span>
   </button>
 
-  <div class="lang-menu">
+  <div class="lang-dropdown">
     <a
       href={getLanguageUrl('en')}
-      class:list={['lang-option', { active: currentLang === 'en' }]}
-      data-lang="en"
+      class:list={['lang-item', { active: currentLang === 'en' }]}
     >
-      <span class="flag">🇺🇸</span>
-      <span class="label">English</span>
+      <span class="lang-flag">🇺🇸</span>
+      <div>
+        <div class="lang-name">English</div>
+        <div class="lang-native">English</div>
+      </div>
     </a>
     <a
       href={getLanguageUrl('ro')}
-      class:list={['lang-option', { active: currentLang === 'ro' }]}
-      data-lang="ro"
+      class:list={['lang-item', { active: currentLang === 'ro' }]}
     >
-      <span class="flag">🇷🇴</span>
-      <span class="label">Română</span>
+      <span class="lang-flag">🇷🇴</span>
+      <div>
+        <div class="lang-name">Română</div>
+        <div class="lang-native">Romanian</div>
+      </div>
     </a>
   </div>
 </div>
 
 <style>
   .language-switcher {
-    position: relative;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 40;
   }
 
-  .lang-btn {
+  .lang-toggle {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
-    color: inherit;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(250, 204, 21, 0.05));
+    border: 2px solid rgba(250, 204, 21, 0.3);
+    border-radius: 50%;
+    color: #facc15;
     cursor: pointer;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(10px);
+    font-family: system-ui, -apple-system, sans-serif;
   }
 
-  .lang-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+  .lang-toggle:hover {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.2), rgba(250, 204, 21, 0.1));
+    border-color: rgba(250, 204, 21, 0.6);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.2);
   }
 
-  .globe-icon {
-    font-size: 1.125rem;
+  .lang-toggle:active {
+    transform: scale(0.95);
   }
 
-  .lang-code {
-    font-variant-numeric: tabular-nums;
+  .globe {
+    width: 20px;
+    height: 20px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .lang-menu {
+  .code {
+    display: none;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 640px) {
+    .language-switcher {
+      bottom: 1rem;
+      right: 1rem;
+    }
+
+    .lang-toggle {
+      width: 48px;
+      height: 48px;
+    }
+
+    .globe {
+      display: none;
+    }
+
+    .code {
+      display: block;
+    }
+  }
+
+  .lang-dropdown {
     position: absolute;
-    top: 100%;
+    bottom: 100%;
     right: 0;
-    margin-top: 0.5rem;
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    background: rgba(15, 23, 42, 0.98);
+    border: 1px solid rgba(250, 204, 21, 0.2);
+    border-radius: 12px;
     overflow: hidden;
-    min-width: 160px;
+    min-width: 200px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-0.5rem);
-    transition: all 0.2s ease;
-    backdrop-filter: blur(10px);
-    z-index: 50;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   }
 
-  .language-switcher:hover .lang-menu,
-  .lang-btn:focus-visible ~ .lang-menu {
+  .language-switcher:hover .lang-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
   }
 
-  .lang-option {
+  .lang-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: inherit;
+    padding: 0.875rem 1.125rem;
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
   }
 
-  .lang-option:last-child {
+  .lang-item:last-child {
     border-bottom: none;
   }
 
-  .lang-option:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  .lang-option.active {
-    background: rgba(250, 204, 21, 0.1);
+  .lang-item:hover {
+    background: rgba(250, 204, 21, 0.08);
     color: #facc15;
   }
 
-  .flag {
-    font-size: 1.25rem;
+  .lang-item.active {
+    background: rgba(250, 204, 21, 0.15);
+    color: #facc15;
   }
 
-  .label {
-    font-size: 0.875rem;
+  .lang-flag {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+  }
+
+  .lang-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .lang-native {
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 640px) {
+    .lang-dropdown {
+      min-width: 160px;
+    }
+
+    .lang-item {
+      padding: 0.75rem 1rem;
+    }
+
+    .lang-name {
+      font-size: 0.85rem;
+    }
+
+    .lang-native {
+      display: none;
+    }
   }
 </style>
-
-<script>
-  const buttons = document.querySelectorAll('.lang-btn');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const menu = btn.nextElementSibling;
-      menu?.classList.toggle('show');
-    });
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!(e.target as Element).closest('.language-switcher')) {
-      document.querySelectorAll('.lang-menu').forEach(menu => {
-        menu.classList.remove('show');
-      });
-    }
-  });
-</script>
