@@ -9,7 +9,13 @@ import { SITE } from '../../site-config';
 const lang: Language = 'en';
 const isRO = false;
 
-let posts = [];
+interface Post {
+  id: string;
+  title: string;
+  pubDate: string | Date;
+}
+
+let posts: Post[] = [];
 try {
   if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
     const allPosts = await getPosts(lang);

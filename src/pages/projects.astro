@@ -7,7 +7,17 @@ import { getProjects } from '../lib/sanity-queries';
 
 const lang: Language = 'en';
 
-let projects = [];
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  tags?: string[];
+  links?: Record<string, string>;
+  pubDate?: string | Date;
+}
+
+let projects: Project[] = [];
 try {
   if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
     const allProjects = await getProjects(lang);
