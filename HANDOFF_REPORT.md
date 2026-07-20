@@ -31,12 +31,11 @@ This document summarizes the work done by the Antigravity agent today to serve a
 - **Mathematical Balance**: Every single `colSpan` and `rowSpan` assigned to a `<Card>` component must mathematically fit into exactly 32 cells.
 - **Current Distribution**:
   - `IntroCard`: 3 cols x 4 rows = 12 cells
-  - `AboutMe`: 1 col x 5 rows = 5 cells
+  - `AboutMe`: 1 col x 7 rows = 7 cells
   - `ContactsCard`: 1 col x 3 rows = 3 cells
   - `TimeZone`: 1 col x 2 rows = 2 cells
-  - `MyStack`: 1 col x 2 rows = 2 cells
   - 8 small cards (`DesignWorksCard`, `Now`, `Playground`, `Guestbook`, `Blog`, `CyberStats`, `Donate`, `Footer`): 1 cell each = 8 cells
-  - **Total**: 12 + 5 + 3 + 2 + 2 + 8 = **32 cells**.
+  - **Total**: 12 + 7 + 3 + 2 + 8 = **32 cells**.
 - **Rule for Future Agents**: If you add, remove, or resize ANY component on the homepage, you MUST recalculate the row spans and col spans of the surrounding elements to equal exactly 32. Failure to do so will cause CSS Grid to automatically push components downward, completely breaking the layout grid.
 
 ## 5. Current State & Next Steps
