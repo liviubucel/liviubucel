@@ -30,6 +30,7 @@
     "@sanity/astro": "^3.4.2",
     "@sanity/client": "^7.24.0",
     "@sentry/astro": "^10.67.0",
+    "@sentry/cloudflare": "^10.67.0",
     "@sentry/tracing": "^7.120.4",
     "@swup/astro": "^1.8.0",
     "@swup/overlay-theme": "^2.0.2",

@@ -1,6 +1,6 @@
 /**
  * i18n Audit Script
- * Validates that all pages have translations for RO and EN
+ * Validates that all [lang] pages support both EN and RO via getStaticPaths()
  */
 
 import fs from 'fs';
@@ -20,7 +20,7 @@ function getPageFiles(dir) {
 
       if (entry.isDirectory()) {
         walk(fullPath);
-      } else if (entry.name.endsWith('.astro') || entry.name.endsWith('.ts')) {
+      } else if (entry.name.endsWith('.astro')) {
         files.push(fullPath);
       }
     }
@@ -28,6 +28,17 @@ function getPageFiles(dir) {
 
   walk(dir);
   return files;
+}
+
+function checkPageSupportsI18n(filePath) {
+  const content = fs.readFileSync(filePath, 'utf-8');
+
+  // Check if page has getStaticPaths() and prerender = true
+  const hasGetStaticPaths = content.includes('getStaticPaths()');
+  const hasPrerender = content.includes('export const prerender = true');
+  const checksSupportedLanguages = content.includes('SUPPORTED_LANGUAGES');
+
+  return hasGetStaticPaths && hasPrerender && checksSupportedLanguages;
 }
 
 function auditTranslations() {
@@ -40,49 +51,33 @@ function auditTranslations() {
     process.exit(1);
   }
 
-  // Extract page routes
-  const pages = new Set();
+  console.log(`✅ Found ${files.length} pages\n`);
+
+  // Check each page supports i18n
+  const issues = [];
+
   files.forEach((file) => {
-    const relative = path.relative(PAGES_DIR, file);
-    const pagePath = relative
-      .replace(/\[(lang)\]/g, ':lang')
-      .replace(/\/index\.(astro|ts)$/, '')
-      .replace(/\.(astro|ts)$/, '');
-
-    pages.add(pagePath);
+    if (!checkPageSupportsI18n(file)) {
+      const relative = path.relative(PAGES_DIR, file);
+      issues.push(relative);
+    }
   });
 
-  console.log(`✅ Found ${pages.size} pages\n`);
-
-  // Check for missing translations
-  let issues = 0;
-  const missingTranslations = {};
-
-  pages.forEach((page) => {
-    LANGUAGES.forEach((lang) => {
-      const pattern = new RegExp(`:lang/${page}.*\\.astro$`.replace(':lang', lang));
-      const hasTranslation = Array.from(files).some((f) => {
-        const relative = path.relative(PAGES_DIR, f);
-        return relative.includes(lang) && relative.includes(page);
-      });
-
-      if (!hasTranslation && page !== '') {
-        if (!missingTranslations[page]) missingTranslations[page] = [];
-        missingTranslations[page].push(lang);
-        issues++;
-      }
+  if (issues.length > 0) {
+    console.log(`❌ Found ${issues.length} pages missing i18n support:\n`);
+    issues.forEach((page) => {
+      console.log(`  ${page}`);
+      console.log(`    - Missing: getStaticPaths(), prerender, or SUPPORTED_LANGUAGES`);
     });
-  });
-
-  if (issues > 0) {
-    console.log(`❌ Found ${issues} missing translations:\n`);
-    Object.entries(missingTranslations).forEach(([page, langs]) => {
-      console.log(`  ${page}: missing [${langs.join(', ')}]`);
-    });
+    console.log(`\n💡 Make sure each page:
+  1. Exports: export const prerender = true;
+  2. Has: export function getStaticPaths() { ... }
+  3. Imports: import { SUPPORTED_LANGUAGES } from '...lib/i18n'
+  4. Returns all language variants from getStaticPaths()\n`);
     process.exit(1);
   }
 
-  console.log('✅ All pages have translations for EN and RO!');
+  console.log('✅ All pages have i18n support (getStaticPaths + prerender + SUPPORTED_LANGUAGES)!');
   process.exit(0);
 }
 
