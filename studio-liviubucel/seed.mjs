@@ -5,7 +5,7 @@ const PROJECT_ID = "8atrdwjk";
 const DATASET = "production";
 const TOKEN = "skhSbfwhqC6JYYN4IkNIjz4iPJRPKCAQsmI6xVm8IzKEHNCqHb7fic2G64RfiZiPeBcxUUAjhyX0fPUiF6TLme8wW6lX3qNJsqbUXZdhsFa0dVbstmXQ2UzJcs3lBWmOl5CuAmzllDOoiX0o0rtf3MIswf6DbrvvpG0epaxmIyRGuq6m2wkT";
 
-const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2024-03-15/data/mutate/${DATASET}`;
+const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2025-02-20/data/mutate/${DATASET}`;
 
 async function mutate(mutations) {
   const response = await fetch(API_URL, {
