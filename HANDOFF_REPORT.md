@@ -38,7 +38,14 @@ This document summarizes the work done by the Antigravity agent today to serve a
   - **Total**: 12 + 7 + 3 + 2 + 8 = **32 cells**.
 - **Rule for Future Agents**: If you add, remove, or resize ANY component on the homepage, you MUST recalculate the row spans and col spans of the surrounding elements to equal exactly 32. Failure to do so will cause CSS Grid to automatically push components downward, completely breaking the layout grid.
 
-## 5. Current State & Next Steps
+## 5. i18n Translations (Pending Tasks)
+- **Hardcoded Strings**: While the static routing is set up (`/ro/` vs `/`), several components (e.g. `IntroCard.astro`, `AboutMe.astro`, `ContactsCard.astro`) still contain hardcoded English strings (e.g., "welcome", "Book a call", "Contact Details"). 
+- **Next Steps for Translations**: The next agent should:
+  1. Add new keys to `TRANSLATIONS` in `src/lib/i18n.ts` for these strings.
+  2. Pass the `lang` prop to these components from `index.astro` and `ro/index.astro`.
+  3. Use the `getTranslation(lang, 'key')` function inside the components to render the correct text dynamically.
+
+## 6. Current State & Next Steps
 - The build is stable (`npm run build` succeeds without issues).
 - Sanity CMS is fully populated and dictates the content of the Homepage, Blog, and Projects.
 - i18n is functioning correctly on the static directory structure.
