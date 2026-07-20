@@ -11,19 +11,7 @@ if (!projectId) {
 export const sanityClient = createClient({
   projectId,
   dataset,
-  useCdn: false,
+  useCdn: true,
   apiVersion: "2025-02-20",
   token: token,
-  fetch: async (url, options) => {
-    try {
-      const response = await fetch(url, options);
-      return response;
-    } catch (error) {
-      console.error("Sanity API fetch error:", {
-        url,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
-  },
 });
