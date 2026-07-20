@@ -1,4 +1,5 @@
 ---
+import type { Language } from "../lib/i18n";
 import "../style.css";
 import { LINKS } from "../lib/constants";
 import { SITE } from "../site-config";
@@ -9,9 +10,10 @@ interface Props {
   page?: "travel" | "blog";
   slug?: string | undefined;
   pubDate?: string;
+  lang?: Language;
 }
 
-const { title, description, page, pubDate } = Astro.props;
+const { title, description, page, pubDate, lang = 'en' } = Astro.props;
 const image = `${Astro.url.origin}/og-image.png`;
 
 const schema =
@@ -70,7 +72,7 @@ const schema =
 
 <!doctype html>
 <html
-  lang="en"
+  lang={lang}
   data-cal-namespace={SITE.cal.durationNamespace}
   data-cal-origin={SITE.cal.origin}
 >

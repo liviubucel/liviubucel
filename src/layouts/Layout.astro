@@ -1,4 +1,5 @@
 ---
+import type { Language } from '../lib/i18n';
 import BasicLayout from "./BasicLayout.astro";
 
 interface Props {
@@ -6,9 +7,10 @@ interface Props {
   description: string;
   page?: "travel";
   fullScreen?: string;
+  lang?: Language;
 }
 
-const { title, description } = Astro.props;
+const { title, description, lang = 'en' } = Astro.props;
 ---
 
 <BasicLayout description={description} title={title}>
