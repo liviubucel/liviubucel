@@ -77,4 +77,26 @@ const formatDate = (dateString: string) => {
     width: 100%;
     max-width: 600px;
   }
+
+  @media (max-width: 768px) {
+    .guestbook-entries {
+      max-width: 100%;
+    }
+
+    .space-y-6 > div {
+      padding: 1rem 0;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .text-xs {
+      font-size: 0.75rem;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+  }
 </style>

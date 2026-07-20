@@ -1,6 +1,14 @@
 import type { APIRoute } from 'astro';
-import { sanityClient } from '../../lib/sanity';
+import { createClient } from '@sanity/client';
 import type { Language } from '../../lib/i18n';
+
+const sanityClient = createClient({
+  projectId: process.env.SANITY_PROJECT_ID || '8atrdwjk',
+  dataset: process.env.SANITY_DATASET || 'production',
+  useCdn: false,
+  apiVersion: '2025-02-20',
+  token: process.env.SANITY_AUTH_TOKEN,
+});
 
 interface GuestbookSubmission {
   name: string;

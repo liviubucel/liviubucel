@@ -119,6 +119,7 @@ const t = labels[lang];
   .guestbook-form-container {
     width: 100%;
     max-width: 600px;
+    padding: 0;
   }
 
   #message-box {
@@ -135,6 +136,25 @@ const t = labels[lang];
     background-color: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: rgb(252, 165, 165);
+  }
+
+  @media (max-width: 768px) {
+    .guestbook-form-container {
+      padding: 0;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    input,
+    textarea {
+      font-size: 16px !important;
+    }
+
+    button {
+      padding: 0.75rem 1rem !important;
+    }
   }
 </style>
 
