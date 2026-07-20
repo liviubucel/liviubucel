@@ -8,7 +8,6 @@ import icon from "astro-icon";
 import solidJs from "@astrojs/solid-js";
 import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 import svelte from "@astrojs/svelte";
-import db from "@astrojs/db";
 import sentry from "@sentry/astro";
 
 const envSiteUrl = process.env.SITE_URL ?? "https://gianmarcocavallo.com/";
@@ -85,15 +84,18 @@ export default defineConfig({
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
-    db(),
-    sanity({
-      projectId: process.env.SANITY_PROJECT_ID,
-      dataset: process.env.SANITY_DATASET || "production",
-      useCdn: true,
-      apiVersion: "2025-02-20",
-      // Crisis 404 fallback: client redirects to /en if projectId is missing
-      studioUrl: "/studio",
-    }),
+    // db() integration commented out due to CommonJS/ESM incompatibility
+    // Use alternative guestbook storage (e.g., external API)
+    ...(process.env.SANITY_PROJECT_ID ? [
+      sanity({
+        projectId: process.env.SANITY_PROJECT_ID,
+        dataset: process.env.SANITY_DATASET || "production",
+        useCdn: true,
+        apiVersion: "2025-02-20",
+        // Crisis 404 fallback: client redirects to /en if projectId is missing
+        studioUrl: "/studio",
+      }),
+    ] : []),
   ],
   markdown: {
     remarkPlugins: [remarkReadingTime],
@@ -102,5 +104,11 @@ export default defineConfig({
   adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
+    ssr: {
+      external: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
+    optimizeDeps: {
+      exclude: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
   },
 });

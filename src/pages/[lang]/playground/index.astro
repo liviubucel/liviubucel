@@ -1,7 +1,10 @@
 ---
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
+import Seo from '../../../components/Seo.astro';
 import Layout from '../../../layouts/Layout.astro';
 import { SITE } from '../../../site-config';
+
+export const prerender = true;
 
 export function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map(lang => ({

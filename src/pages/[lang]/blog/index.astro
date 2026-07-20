@@ -6,6 +6,8 @@ import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
 
+export const prerender = true;
+
 export function getStaticPaths() {
   return SUPPORTED_LANGUAGES.map(lang => ({
     params: { lang }
@@ -17,13 +19,15 @@ const isRO = lang === 'ro';
 
 let posts = [];
 try {
-  posts = await sanityClient.fetch(`*[_type == "post"] | order(pubDate desc) {
-    "id": slug.current,
-    title,
-    pubDate
-  }`);
+  if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
+    posts = await sanityClient.fetch(`*[_type == "post"] | order(pubDate desc) {
+      "id": slug.current,
+      title,
+      pubDate
+    }`);
+  }
 } catch (error) {
-  console.error('Sanity client error:', error);
+  console.warn('Sanity client error (during prerender, this may be expected):', error);
 }
 ---
 
