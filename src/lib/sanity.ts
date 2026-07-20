@@ -10,6 +10,6 @@ if (!projectId) {
 export const sanityClient = createClient({
   projectId,
   dataset,
-  useCdn: true,
+  useCdn: false, // Set to false to bypass Sanity edge cache issues
   apiVersion: "2025-02-20",
 });
