@@ -12,6 +12,8 @@ import svelte from "@astrojs/svelte";
 
 import db from "@astrojs/db";
 
+import cloudflare from "@astrojs/cloudflare";
+
 const envSiteUrl = process.env.SITE_URL ?? "https://gianmarcocavallo.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
@@ -72,7 +74,7 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   output: "server",
-  adapter: netlify({ middlewareMode: "edge" }),
+  adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
   },
