@@ -56,7 +56,8 @@
     "motion": "^12.38.0",
     "sanitize-html": "^2.17.2",
     "typescript": "^6.0.2",
-    "unocss": "^66.6.7"
+    "unocss": "^66.6.7",
+    "wrangler": "^4.112.0"
   },
   "lint-staged": {
     "src/**/*.{js,astro}": [
