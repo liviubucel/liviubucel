@@ -12,4 +12,13 @@ export const sanityClient = createClient({
   dataset,
   useCdn: false, // Set to false to bypass Sanity edge cache issues
   apiVersion: "2025-02-20",
+  fetch: (url, init) => {
+    return fetch(url, {
+      ...init,
+      headers: {
+        ...(init?.headers || {}),
+        "User-Agent": "cloudflare-workers",
+      },
+    });
+  }
 });

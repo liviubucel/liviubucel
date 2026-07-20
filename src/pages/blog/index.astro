@@ -52,6 +52,12 @@ try {
     <h1 class="text-4xl font-bold mb-4 text-neutral-100">
       Posts
     </h1>
+    
+    <div style="background: red; padding: 10px; margin-bottom: 20px;">
+      <p>Debug Sanity API:</p>
+      <pre>{JSON.stringify(posts || [], null, 2)}</pre>
+    </div>
+
     <ul class="w-full">
       {
         posts?.map((post) => (
