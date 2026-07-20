@@ -1,6 +1,6 @@
 import { defineConfig, fontProviders } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import netlify from "@astrojs/netlify";
+import cloudflare from "@astrojs/cloudflare";
 import robotsTxt from "astro-robots-txt";
 import UnoCSS from "@unocss/astro";
 import icon from "astro-icon";
@@ -72,7 +72,7 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   output: "server",
-  adapter: netlify({ middlewareMode: "edge" }),
+  adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
   },

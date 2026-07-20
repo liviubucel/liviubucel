@@ -20,54 +20,60 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
         <h6 class="text-sm font-light m-0 text-darkslate-300">welcome</h6>
 
         <p class="sr-only">
-          Hi, I'm {SITE.author.fullName}, a software developer with strong focus on
-          the user experience, animations, micro interactions and SEO. Feel
-          free to reach out to me if you have any project in mind, want to
+          Hi, I'm {SITE.author.fullName}, a Cyber Security Specialist focused on
+          Ethical Hacking, Digital Forensics, Cryptography and Infosec. Feel
+          free to reach out to me if you have any inquiries, want to
           collaborate, or just want to say hello.
         </p>
         <p aria-hidden="true" class="m-0 font-light text-md">
           <span>
-            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a software
-            developer with strong focus on the user experience, animations,
-            micro interactions and SEO.
+            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a Cyber Security
+            Specialist with a strong focus on Ethical Hacking, Digital Forensics,
+            and Cryptography.
           </span>
           <br />
           <span class="block mt-2">
-            Feel free to reach out to me if you have any project in mind, want
+            Feel free to reach out to me if you have a security inquiry, want
             to collaborate, or just want to say hello.
           </span>
         </p>
       </div>
       <div class="flex flex-col lg:flex-row gap-2 lg:gap-4">
         <div class="flex gap-2 lg:gap-4">
-          <a href={LINKS.github} aria-label="github profile" target="_blank">
-            <Button aria-label="github profile">
-              <Icon name="ri:github-fill" />
-              <span class="sr-only" data-umami-event="github button"
-                >GitHub Profile</span
-              >
-            </Button>
-          </a>
-          <a
-            href={LINKS.linkedin}
-            aria-label="linkedin profile"
-            target="_blank"
-          >
-            <Button aria-label="linkedin profile">
-              <Icon name="ri:linkedin-box-fill" />
-              <span class="sr-only" data-umami-event="linkedin button"
-                >Linkedin Profile</span
-              >
-            </Button>
-          </a>
-          <a href={LINKS.dribble} aria-label="dribble profile" target="_blank">
-            <Button aria-label="dribble profile">
-              <Icon name="ri:dribbble-fill" />
-              <span class="sr-only" data-umami-event="Dribble button"
-                >Dribble Profile</span
-              >
-            </Button>
-          </a>
+          {LINKS.github && (
+            <a href={LINKS.github} aria-label="github profile" target="_blank">
+              <Button aria-label="github profile">
+                <Icon name="ri:github-fill" />
+                <span class="sr-only" data-umami-event="github button"
+                  >GitHub Profile</span
+                >
+              </Button>
+            </a>
+          )}
+          {LINKS.linkedin && (
+            <a
+              href={LINKS.linkedin}
+              aria-label="linkedin profile"
+              target="_blank"
+            >
+              <Button aria-label="linkedin profile">
+                <Icon name="ri:linkedin-box-fill" />
+                <span class="sr-only" data-umami-event="linkedin button"
+                  >Linkedin Profile</span
+                >
+              </Button>
+            </a>
+          )}
+          {LINKS.dribble && (
+            <a href={LINKS.dribble} aria-label="dribble profile" target="_blank">
+              <Button aria-label="dribble profile">
+                <Icon name="ri:dribbble-fill" />
+                <span class="sr-only" data-umami-event="Dribble button"
+                  >Dribble Profile</span
+                >
+              </Button>
+            </a>
+          )}
           <Tooltip client:visible>
             <Button aria-label="easter egg btn">
               <Icon name="ri:emotion-laugh-line" />
@@ -77,16 +83,23 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
             </Button>
           </Tooltip>
         </div>
-        <Button
-          aria-label="book a call"
-          data-cal-link={SITE.cal.username}
-        >
-          <span
-            data-umami-event="Book a call"
+        {SITE.cal.username ? (
+          <Button
+            aria-label="book a call"
             data-cal-link={SITE.cal.username}
-            class="font-bold whitespace-nowrap">Book a call</span
           >
-        </Button>
+            <span
+              data-umami-event="Book a call"
+              data-cal-link={SITE.cal.username}
+              class="font-bold whitespace-nowrap">Book a call</span>
+          </Button>
+        ) : (
+          <a href={`mailto:${LINKS.email}`}>
+            <Button aria-label="contact me">
+              <span class="font-bold whitespace-nowrap">Contact me</span>
+            </Button>
+          </a>
+        )}
       </div>
     </div>
     <Image

@@ -25,3 +25,9 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# wrangler
+.wrangler/
+
+# dump files
+*.zip
