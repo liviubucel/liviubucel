@@ -3,6 +3,7 @@ import Card from "./Card/index.astro";
 import Button from "./Button.astro";
 import { LINKS } from "../lib/constants";
 import { Icon } from "astro-icon/components";
+import Tooltip from "./Tooltip/index";
 import { Image } from "astro:assets";
 import { SITE } from "../site-config";
 import MemojiAvatarDefault from "../assets/me.webp";
@@ -10,6 +11,22 @@ import MemojiAvatarBlue from "../assets/me-blue.webp";
 import MemojiAvatarGreen from "../assets/me-green.webp";
 import MemojiAvatarPurple from "../assets/me-purple.webp";
 import MemojiAvatarYellow from "../assets/me-yellow.webp";
+
+interface Props {
+  fullName?: string;
+  role?: string;
+  tagline?: string;
+  github?: string;
+  linkedin?: string;
+}
+
+const {
+  fullName = SITE.author.fullName,
+  role = SITE.author.jobTitle,
+  tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
+  github = LINKS.github,
+  linkedin = LINKS.linkedin,
+} = Astro.props;
 ---
 
 <Card colSpan="md:col-span-3" rowSpan="md:row-span-4">
@@ -19,17 +36,21 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
         <h6 class="text-sm font-light m-0 text-darkslate-300">welcome</h6>
 
         <p class="sr-only">
-          Hi, I'm {SITE.author.fullName}, a BSc Cyber Security student at De Montfort University
-          focused on Digital Forensics, Incident Response, Security Operations and Network Analysis.
-          Open to graduate, internship and junior opportunities in cybersecurity.
+          Hi, I'm {SITE.author.fullName}, a Cyber Security Specialist focused on
+          Ethical Hacking, Digital Forensics, Cryptography and Infosec. Feel
+          free to reach out to me if you have any inquiries, want to
+          collaborate, or just want to say hello.
         </p>
         <p aria-hidden="true" class="m-0 font-light text-md">
           <span>
-            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a BSc Cyber Security student at De Montfort University focused on Digital Forensics, Incident Response, Security Operations and Network Analysis.
+            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a Cyber Security
+            Specialist with a strong focus on Ethical Hacking, Digital Forensics,
+            and Cryptography.
           </span>
           <br />
           <span class="block mt-2">
-            Open to graduate, internship and junior opportunities in cybersecurity — feel free to reach out.
+            Feel free to reach out to me if you have a security inquiry, want
+            to collaborate, or just want to say hello.
           </span>
         </p>
       </div>
@@ -55,13 +76,33 @@ import MemojiAvatarYellow from "../assets/me-yellow.webp";
               >
             </Button>
           </a>
+          <a href={LINKS.dribble} aria-label="dribble profile" target="_blank">
+            <Button aria-label="dribble profile">
+              <Icon name="ri:dribbble-fill" />
+              <span class="sr-only" data-umami-event="Dribble button"
+                >Dribble Profile</span
+              >
+            </Button>
+          </a>
+          <Tooltip client:visible>
+            <Button aria-label="easter egg btn">
+              <Icon name="ri:emotion-laugh-line" />
+              <span class="sr-only" data-umami-event="Easter egg button"
+                >Easter egg button</span
+              >
+            </Button>
+          </Tooltip>
         </div>
-        <a href="/cv" aria-label="download cv">
-          <Button aria-label="download cv">
-            <Icon name="ri:download-line" />
-            <span data-umami-event="Download CV" class="font-bold whitespace-nowrap">Download CV</span>
-          </Button>
-        </a>
+        <Button
+          aria-label="book a call"
+          data-cal-link={SITE.cal.username}
+        >
+          <span
+            data-umami-event="Book a call"
+            data-cal-link={SITE.cal.username}
+            class="font-bold whitespace-nowrap">Book a call</span
+          >
+        </Button>
       </div>
     </div>
     <Image

@@ -18,16 +18,16 @@ const isRO = true;
 ---
 
 <Layout
-  description={`${SITE.author.fullName} — Student BSc Cyber Security la De Montfort University, focusat pe criminalistică digitală, operațiuni de securitate și analiză de rețea.`}
+  description="Specialist în cyber security și web development"
   title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
   <Seo
     title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description={`${SITE.author.fullName} — Student BSc Cyber Security la De Montfort University, focusat pe criminalistică digitală, răspuns la incidente, operațiuni de securitate și analiză de rețea.`}
+    description="Specialist în cyber security și web development"
     lang={lang}
     type="profile"
-    keywords={["cyber security", "DFIR", "criminalistică digitală", "răspuns la incidente", "SOC", "operațiuni de securitate", "student cyber security", "De Montfort University"]}
+    keywords={["cyber security", "web development", "frontend", "security"]}
     canonical={`${SITE.site.url}ro/`}
   />
 
@@ -44,26 +44,30 @@ const isRO = true;
       href="/ro/playground"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Security Lab"
+      title="Expozitie"
     />
     <Card
       href="/ro/guestbook"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Testimoniale"
+      title="Cartea de Oaspeti"
     />
     <Card
       href="/ro/blog"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Write-ups"
+      title="Blog"
     />
     <CyberStatsCard />
     <DonateCard />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
-        © 2026 · {SITE.author.fullName} · BSc Cyber Security, DMU
+        © 2025 · Creat cu ♥️ folosind <a
+          class="text-red-500"
+          href="https://astro.build/"
+          target="_blank">Astro</a
+        > de mine.
       </p>
     </Card>
   </main>
