@@ -16,14 +16,14 @@ try {
 
 const labels = {
   en: {
-    title: 'Guestbook',
-    description: 'Sign my guestbook',
-    entriesTitle: 'Recent Entries',
+    title: 'Testimonials',
+    description: 'Success stories from people I\'ve worked with or helped',
+    entriesTitle: 'What people say',
   },
   ro: {
-    title: 'Cartea de Oaspeți',
-    description: 'Semnează cartea mea de oaspeți',
-    entriesTitle: 'Intrări Recente',
+    title: 'Testimoniale',
+    description: 'Povești de succes de la persoane cu care am lucrat sau pe care le-am ajutat',
+    entriesTitle: 'Ce spun oamenii',
   },
 };
 
@@ -43,9 +43,12 @@ const t = labels[lang];
       Back
     </a>
 
-    <h1 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-neutral-100 text-center mt-12 md:mt-0">
+    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-neutral-100 text-center mt-12 md:mt-0">
       {t.title}
     </h1>
+    <p class="text-darkslate-300 text-center mb-8 md:mb-12 max-w-lg">
+      {t.description}
+    </p>
 
     <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
       <div class="flex flex-col">

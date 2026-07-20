@@ -8,13 +8,15 @@ import { SITE } from "../site-config";
   <div class="h-full">
     <header class="flex items-center">
       <h2 class="text-white text-xl font-bold">
-        Let's start working together!
+        Open to Opportunities
       </h2>
     </header>
-    <address class="flex flex-col mt-4">
-      <h2 class="text-darkslate-300">Contact Details</h2>
-      <p class="text-sm">{SITE.links.email}</p>
-      <p>{SITE.location.countryName}</p>
-    </address>
+    <div class="flex flex-col mt-4">
+      <p class="text-sm text-darkslate-300">Open to graduate, internship and junior opportunities in cybersecurity, digital forensics and security operations.</p>
+      <address class="flex flex-col mt-3 not-italic">
+        <p class="text-sm">{SITE.links.email}</p>
+        <p class="text-sm">{SITE.location.countryName}</p>
+      </address>
+    </div>
   </div>
 </Card>

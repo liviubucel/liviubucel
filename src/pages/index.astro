@@ -18,16 +18,16 @@ const isRO = false;
 ---
 
 <Layout
-  description="Software developer with strong focus on user experience and animations"
+  description={`${SITE.author.fullName} — BSc Cyber Security student at De Montfort University, focused on DFIR, Security Operations and Network Analysis.`}
   title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
   <Seo
     title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="Software developer with strong focus on user experience and animations"
+    description={`${SITE.author.fullName} — BSc Cyber Security student at De Montfort University, focused on Digital Forensics, Incident Response, Security Operations and Network Analysis.`}
     lang={lang}
     type="profile"
-    keywords={["developer", "web development", "animations", "frontend"]}
+    keywords={["cyber security", "DFIR", "digital forensics", "incident response", "SOC", "security operations", "cybersecurity student", "De Montfort University"]}
     canonical={`${SITE.site.url}`}
   />
 
@@ -44,30 +44,26 @@ const isRO = false;
       href="/playground"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Playground"
+      title="Security Lab"
     />
     <Card
       href="/guestbook"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Guestbook"
+      title="Testimonials"
     />
     <Card
       href="/blog"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Blog"
+      title="Write-ups"
     />
     <CyberStatsCard />
     <DonateCard />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
-        © 2025 · Crafted with ♥️ using <a
-          class="text-red-500"
-          href="https://astro.build/"
-          target="_blank">Astro</a
-        > by Me.
+        © 2026 · {SITE.author.fullName} · BSc Cyber Security, DMU
       </p>
     </Card>
   </main>
