@@ -61,9 +61,9 @@ export default defineConfig({
   },
   integrations: [
     sentry({
-      dsn: process.env.SENTRY_DSN,
-      environment: process.env.NODE_ENV || "production",
-      enabled: !!process.env.SENTRY_DSN,
+      project: "liviubucelcom",
+      org: "zebrabyte",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
     sitemap({
       i18n: {

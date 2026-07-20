@@ -24,9 +24,12 @@ const { title, description, lang = 'en' } = Astro.props;
 </BasicLayout>
 
 <script>
+  import { animate } from "motion";
+
   document.addEventListener("DOMContentLoaded", () => {
     const theme = localStorage.getItem("theme");
-
     if (theme) document.body.classList.add(theme);
+
+    animate(".loader", { opacity: [1, 0], pointerEvents: "none" }, { ease: "easeOut", duration: 0.4 });
   });
 </script>
