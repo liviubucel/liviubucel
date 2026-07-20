@@ -79,7 +79,7 @@ export interface Category {
 // Queries
 export async function getPosts(lang?: Language): Promise<Post[]> {
   const langFilter = lang ? ` && language == "${lang}"` : '';
-  return sanityClient.fetch(`*[_type == "post"${langFilter}] | order(pubDate desc) {
+  return sanityClient.fetch(`*[_type == "post" && published == true${langFilter}] | order(pubDate desc) {
     _id,
     title,
     "slug": slug.current,
@@ -113,7 +113,7 @@ export async function getPosts(lang?: Language): Promise<Post[]> {
 export async function getPost(slug: string, lang?: Language): Promise<Post | null> {
   const langFilter = lang ? ` && language == "${lang}"` : '';
   return sanityClient.fetch(
-    `*[_type == "post" && slug.current == $slug${langFilter}][0] {
+    `*[_type == "post" && published == true && slug.current == $slug${langFilter}][0] {
       _id,
       title,
       "slug": slug.current,
