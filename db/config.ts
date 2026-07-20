@@ -1,3 +1,4 @@
+// @ts-ignore - astro:db module not available in this environment
 import { defineDb, defineTable, column } from 'astro:db';
 
 const Guestbook = defineTable({

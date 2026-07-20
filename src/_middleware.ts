@@ -1,10 +1,10 @@
-import type { Context } from '@astrojs/cloudflare';
+import type { MiddlewareNext } from 'astro';
 import { getSecurityHeaders, getPerformanceHeaders, getCacheControl } from './middleware/headers';
 
 /**
  * Cloudflare Workers middleware for security & performance headers
  */
-export async function onRequest(context: Context, next: () => Promise<Response>) {
+export async function onRequest(context: any, next: MiddlewareNext) {
   const request = context.request;
   const url = new URL(request.url);
 

@@ -16,12 +16,12 @@ export default defineConfig({
       "custom-hover": `1px 1px 0`,
     },
     fontFamily: {
-      sans: ["CabinetGrotesk", "Satoshi"],
+      sans: 'CabinetGrotesk, Satoshi',
     },
-    gridTemplateRows: {
+    gridTemplateRow: {
       "auto-250": "repeat(auto-fill, 250px)",
     },
-    gridTemplateColumns: {
+    gridTemplateColumn: {
       "4-minmax": "repeat(4, minmax(150px, 1fr))",
     },
     colors: {
