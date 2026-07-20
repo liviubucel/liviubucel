@@ -318,6 +318,82 @@ export default defineConfig({
           },
         ],
       },
+
+      // Homepage Singleton
+      {
+        name: 'homepage',
+        title: 'Homepage',
+        type: 'document',
+        fields: [
+          { name: 'fullName', title: 'Full Name', type: 'string' },
+          { name: 'role', title: 'Role/Title', type: 'string' },
+          { name: 'tagline', title: 'Tagline', type: 'text' },
+          { name: 'location', title: 'Location', type: 'string' },
+          { name: 'email', title: 'Email', type: 'string' },
+          { name: 'cvUrl', title: 'CV URL', type: 'url' },
+          {
+            name: 'aboutText',
+            title: 'About Text',
+            type: 'array',
+            of: [{ type: 'block' }],
+          },
+        ],
+      },
+
+      // Tech Stack
+      {
+        name: 'techStack',
+        title: 'Tech Stack',
+        type: 'document',
+        fields: [
+          { name: 'name', title: 'Name', type: 'string', validation: (Rule) => Rule.required() },
+          { name: 'icon', title: 'Icon', type: 'string' },
+          { name: 'order', title: 'Order', type: 'number' },
+        ],
+      },
+
+      // Social Links
+      {
+        name: 'socialLink',
+        title: 'Social Link',
+        type: 'document',
+        fields: [
+          { name: 'platform', title: 'Platform', type: 'string', validation: (Rule) => Rule.required() },
+          { name: 'url', title: 'URL', type: 'url', validation: (Rule) => Rule.required() },
+          { name: 'icon', title: 'Icon', type: 'string' },
+          { name: 'order', title: 'Order', type: 'number' },
+        ],
+      },
+
+      // Cyber Security Stats
+      {
+        name: 'cyberStats',
+        title: 'Cyber Security Stats',
+        type: 'document',
+        fields: [
+          { name: 'title', title: 'Title', type: 'string' },
+          {
+            name: 'stats',
+            title: 'Stats',
+            type: 'array',
+            of: [
+              {
+                type: 'object',
+                fields: [
+                  { name: 'label', title: 'Label', type: 'string' },
+                  { name: 'value', title: 'Value', type: 'string' },
+                ],
+              },
+            ],
+          },
+          {
+            name: 'certifications',
+            title: 'Certifications',
+            type: 'array',
+            of: [{ type: 'string' }],
+          },
+        ],
+      },
     ],
   },
 });
