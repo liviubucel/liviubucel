@@ -9,6 +9,7 @@ import solidJs from "@astrojs/solid-js";
 import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 import svelte from "@astrojs/svelte";
 import db from "@astrojs/db";
+import sentry from "@sentry/astro";
 
 const envSiteUrl = process.env.SITE_URL ?? "https://gianmarcocavallo.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
@@ -60,6 +61,11 @@ export default defineConfig({
     },
   },
   integrations: [
+    sentry({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV || "production",
+      enabled: !!process.env.SENTRY_DSN,
+    }),
     sitemap({
       i18n: {
         defaultLocale: "en",
