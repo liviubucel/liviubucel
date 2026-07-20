@@ -11,6 +11,22 @@ import MemojiAvatarBlue from "../assets/me-blue.webp";
 import MemojiAvatarGreen from "../assets/me-green.webp";
 import MemojiAvatarPurple from "../assets/me-purple.webp";
 import MemojiAvatarYellow from "../assets/me-yellow.webp";
+
+interface Props {
+  fullName?: string;
+  role?: string;
+  tagline?: string;
+  github?: string;
+  linkedin?: string;
+}
+
+const {
+  fullName = SITE.author.fullName,
+  role = SITE.author.jobTitle,
+  tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
+  github = LINKS.github,
+  linkedin = LINKS.linkedin,
+} = Astro.props;
 ---
 
 <Card colSpan="md:col-span-3" rowSpan="md:row-span-4">
