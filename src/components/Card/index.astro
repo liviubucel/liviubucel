@@ -29,7 +29,7 @@ const {
 ---
 
 <div
-  class={`card group overflow-hidden transfor-y-[-40%] ${bgColor || "bg-darkslate-500"} shadow-lg rounded-lg border border-darkslate-400 hover:border-primary-500 align-start flex-none ${
+  class={`card group overflow-hidden transfor-y-[-40%] ${bgColor || "bg-darkslate-500"} shadow-lg rounded-lg border border-darkslate-400 hover:border-darkslate-300 align-start flex-none ${
     height || "h-full"
   } justify-start relative transform perspective-1200 w-full transition-all duration-300 ease-out col-span-1 ${
     colSpan || "md:col-span-2"
@@ -39,7 +39,7 @@ const {
     href ? (
       <a class={`h-full w-full ${colorText || ""}`} href={href}>
         <Icon
-          class="h-6 float-right group-hover:text-primary-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ease-in-out duration-100 z-20"
+          class="h-6 float-right text-darkslate-300 group-hover:text-darkslate-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ease-in-out duration-100 z-20"
           name="ri:arrow-right-up-line"
         />
         <Content body={body} title={title}>

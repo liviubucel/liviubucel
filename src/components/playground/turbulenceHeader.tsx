@@ -90,7 +90,7 @@ const turbulenceHeader = () => {
               filter: "url(#turbulenceFilter)",
             }}
             ref={ref}
-            class="absolute left-0 top-0 w-full h-8 bg-primary-500 pointer-events-none"
+            class="absolute left-0 top-0 w-full h-8 bg-darkslate-300 pointer-events-none"
             role="tablist"
             aria-orientation="horizontal"
           >
