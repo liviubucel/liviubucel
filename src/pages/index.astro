@@ -11,20 +11,49 @@ import AboutMe from "../components/AboutMe.astro";
 import Now from "../components/Now.astro";
 import CyberStatsCard from "../components/CyberStatsCard.astro";
 import DesignWorksCard from "../components/DesignWorksCard.astro";
+import MyStack from "../components/MyStack.astro";
 import { SITE } from "../site-config";
+import { sanityClient } from "../lib/sanity";
 
 const lang: Language = 'en';
 const isRO = false;
+
+// Fetch all data from Sanity once
+let homepage = null;
+let techStack = [];
+let socialLinks = [];
+let cyberStats = null;
+
+try {
+  [homepage, techStack, socialLinks, cyberStats] = await Promise.all([
+    sanityClient.fetch(`*[_type == "homepage"][0]`),
+    sanityClient.fetch(`*[_type == "techStack"] | order(order asc)`),
+    sanityClient.fetch(`*[_type == "socialLink"] | order(order asc)`),
+    sanityClient.fetch(`*[_type == "cyberStats"][0]`),
+  ]);
+} catch (e) {
+  console.error("Sanity fetch error:", e);
+}
+
+// Fallbacks from site-config if Sanity is empty
+const fullName = homepage?.fullName || SITE.author.fullName;
+const role = homepage?.role || SITE.author.jobTitle;
+const tagline = homepage?.tagline || "";
+const aboutText = homepage?.aboutText || null;
+const email = homepage?.email || SITE.links.email;
+const location = homepage?.location || SITE.location.countryName;
+const github = socialLinks.find(s => s.platform === "GitHub")?.url || SITE.links.github;
+const linkedin = socialLinks.find(s => s.platform === "LinkedIn")?.url || SITE.links.linkedin;
 ---
 
 <Layout
-  description="Software developer with strong focus on user experience and animations"
-  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+  description={`${role} from ${location}. ${tagline}`}
+  title={`${fullName} - ${role}`}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="Software developer with strong focus on user experience and animations"
+    title={`${fullName} - ${role}`}
+    description={`${role} from ${location}. ${tagline}`}
     lang={lang}
     type="profile"
     keywords={["developer", "web development", "animations", "frontend"]}
@@ -34,12 +63,12 @@ const isRO = false;
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
   >
-    <IntroCard />
-    <AboutMe />
-    <ContactsCard />
+    <IntroCard fullName={fullName} role={role} tagline={tagline} github={github} linkedin={linkedin} lang={lang} />
+    <AboutMe aboutText={aboutText} fullName={fullName} location={location} />
+    <ContactsCard email={email} location={location} github={github} linkedin={linkedin} lang={lang} />
     <TimeZone />
-    <DesignWorksCard />
-    <Now />
+    <MyStack techStack={techStack} />
+    <Now lang={lang} />
     <Card
       href="/playground"
       colSpan="md:col-span-1"
@@ -58,13 +87,13 @@ const isRO = false;
       rowSpan="md:row-span-1"
       title="Blog"
     />
-    <CyberStatsCard />
+    <CyberStatsCard stats={cyberStats?.stats} lang={lang} />
     <DonateCard />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
-        © 2025 · Crafted with ♥️ using <a
-          class="text-red-500"
+        © 2025 · Crafted with 🤍 using <a
+          class="text-primary-500"
           href="https://astro.build/"
           target="_blank">Astro</a
         > by Me.

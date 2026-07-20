@@ -1,0 +1,72 @@
+---
+import Seo from "../../../components/Seo.astro";
+import LayoutBlogPost from "../../../layouts/LayoutBlogPost.astro";
+import { SITE } from "../../../site-config";
+import { getProjects, getProject } from "../../../lib/sanity-queries";
+import { PortableText } from "astro-portabletext";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const lang = "ro";
+  const projects = await getProjects(lang);
+  
+  if (!projects || projects.length === 0) {
+    return [{ params: { id: "placeholder" } }];
+  }
+
+  return projects.map((project) => ({
+    params: { id: project.slug },
+  }));
+}
+
+const { id } = Astro.params;
+const lang = "ro";
+const entry = await getProject(id, lang);
+
+if (!entry) {
+  if (id === "placeholder") {
+    return Astro.redirect("/404");
+  } else {
+    return Astro.redirect("/404");
+  }
+}
+---
+
+<LayoutBlogPost
+  description={entry.description || entry.metaDescription || ""}
+  minutesRead="5 min citire"
+  pubDate={entry.pubDate ? new Date(entry.pubDate) : new Date()}
+  title={`${entry.title} | ${SITE.author.fullName}`}
+  url={`ro/projects/${id}`}
+  lang={lang}
+>
+  <Seo
+    title={`${entry.title} | ${SITE.author.fullName}`}
+    description={entry.description || entry.metaDescription || ""}
+    lang={lang}
+    canonical={`${SITE.site.url}ro/projects/${id}`}
+  />
+  <div class="prose prose-invert prose-neutral mx-auto">
+    <PortableText value={entry.body || []} />
+  </div>
+</LayoutBlogPost>
+
+<style is:global>
+  .prose a {
+    color: var(--primary-500, #facc15);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
+  }
+  .prose a:hover {
+    color: var(--primary-400, #fde047);
+  }
+  .prose pre {
+    background-color: var(--darkslate-800, #1e293b);
+    border: 1px solid var(--darkslate-700, #334155);
+  }
+  .prose blockquote {
+    border-left-color: var(--primary-500, #facc15);
+  }
+</style>

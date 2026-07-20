@@ -1,0 +1,110 @@
+---
+import Seo from "../../../components/Seo.astro";
+import LayoutBlogPost from "../../../layouts/LayoutBlogPost.astro";
+import { SITE } from "../../../site-config";
+import { getPosts, getPost } from "../../../lib/sanity-queries";
+import { PortableText } from "astro-portabletext";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const lang = "ro";
+  const posts = await getPosts(lang);
+  
+  if (!posts || posts.length === 0) {
+    return [{ params: { id: "placeholder" } }];
+  }
+
+  return posts.map((post) => ({
+    params: { id: post.slug },
+  }));
+}
+
+const { id } = Astro.params;
+const lang = "ro";
+const entry = await getPost(id, lang);
+
+if (!entry) {
+  if (id === "placeholder") {
+    return Astro.redirect("/404");
+  } else {
+    return Astro.redirect("/404");
+  }
+}
+---
+
+<LayoutBlogPost
+  description={entry.description || entry.metaDescription || ""}
+  minutesRead="5 min citire"
+  pubDate={entry.pubDate ? new Date(entry.pubDate) : new Date()}
+  title={`${entry.title} | ${SITE.author.fullName}`}
+  url={`ro/blog/${id}`}
+  lang={lang}
+>
+  <Seo
+    title={`${entry.title} | ${SITE.author.fullName}`}
+    description={entry.description || entry.metaDescription || ""}
+    lang={lang}
+    canonical={`${SITE.site.url}ro/blog/${id}`}
+  />
+  <PortableText value={entry.body || []} />
+</LayoutBlogPost>
+
+<style is:global>
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: var(--darkslate-100, #f8fafc);
+  }
+  h1 { font-size: 2.25rem; line-height: 2.5rem; }
+  h2 { font-size: 1.875rem; line-height: 2.25rem; }
+  h3 { font-size: 1.5rem; line-height: 2rem; }
+  
+  p {
+    margin-bottom: 1.25rem;
+    color: var(--darkslate-300, #cbd5e1);
+    line-height: 1.75;
+  }
+  
+  a {
+    color: var(--primary-500, #facc15);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s ease;
+  }
+  a:hover {
+    color: var(--primary-400, #fde047);
+  }
+  
+  ul, ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--darkslate-300, #cbd5e1);
+  }
+  li {
+    margin-bottom: 0.5rem;
+  }
+  
+  pre, code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    background-color: var(--darkslate-800, #1e293b);
+    border-radius: 0.375rem;
+  }
+  pre {
+    padding: 1rem;
+    overflow-x: auto;
+    border: 1px solid var(--darkslate-700, #334155);
+    margin-bottom: 1.5rem;
+  }
+  code {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.875em;
+    color: var(--primary-400, #fde047);
+  }
+  pre code {
+    padding: 0;
+    color: inherit;
+    background-color: transparent;
+  }
+</style>
