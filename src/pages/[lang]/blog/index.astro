@@ -1,5 +1,6 @@
 ---
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
+import Seo from '../../../components/Seo.astro';
 import { sanityClient } from '../../../lib/sanity';
 import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
@@ -40,6 +41,12 @@ try {
   title={`${SITE.author.fullName} - ${isRO ? 'Blog' : 'Blog'}`}
   lang={lang}
 >
+  <Seo
+    title={`${SITE.author.fullName} - ${isRO ? 'Blog' : 'Blog'}`}
+    description={isRO ? "Articole tehnice și insights despre web development" : "Software developer with strong focus on the user experience animations and micro interactions"}
+    lang={lang}
+    canonical={`${SITE.site.url}${lang === DEFAULT_LANGUAGE ? '' : lang}/blog`}
+  />
   <main
     class="w-screen h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8"
   >

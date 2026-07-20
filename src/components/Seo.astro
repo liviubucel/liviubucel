@@ -1,0 +1,101 @@
+---
+import type { Language } from '../lib/i18n';
+import { getArticleSchema, getPersonSchema, generateAlternateLinks } from '../lib/seo';
+import { SITE } from '../site-config';
+
+interface Props {
+  title: string;
+  description: string;
+  lang?: Language;
+  ogImage?: string;
+  canonical?: string;
+  type?: 'website' | 'article' | 'profile';
+  articleDate?: Date;
+  articleModified?: Date;
+  articleAuthor?: string;
+  keywords?: string[];
+  robots?: string;
+}
+
+const {
+  title,
+  description,
+  lang = 'en',
+  ogImage,
+  canonical,
+  type = 'website',
+  articleDate,
+  articleModified,
+  articleAuthor,
+  keywords,
+  robots = 'index, follow',
+} = Astro.props;
+
+const url = new URL(Astro.request.url);
+const canonicalUrl = canonical || url.href;
+const image = ogImage || `${SITE.site.url}og-image.jpg`;
+const alternateLinks = generateAlternateLinks(url.pathname, SITE.site.url);
+
+// Generate JSON-LD
+let jsonLd: any;
+
+if (type === 'article' && articleDate) {
+  jsonLd = getArticleSchema({
+    title,
+    description,
+    publishedAt: articleDate,
+    updatedAt: articleModified,
+    image: ogImage,
+    author: articleAuthor || SITE.author.fullName,
+    url: canonicalUrl,
+  });
+} else {
+  jsonLd = getPersonSchema(lang);
+}
+---
+
+<!-- Meta Tags -->
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+<meta name="language" content={lang === 'ro' ? 'Romanian' : 'English'} />
+{keywords && <meta name="keywords" content={keywords.join(', ')} />}
+<meta name="author" content={SITE.author.fullName} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalUrl} />
+
+<!-- Open Graph -->
+<meta property="og:type" content={type === 'article' ? 'article' : 'website'} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={image} />
+<meta property="og:site_name" content={SITE.author.fullName} />
+<meta
+  property="og:locale"
+  content={lang === 'ro' ? 'ro_RO' : 'en_US'}
+/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:creator" content={`@${SITE.author.twitterHandle}`} />
+
+<!-- Alternate Links for i18n SEO -->
+{
+  alternateLinks.map((link) => (
+    <link rel="alternate" hreflang={link.hreflang} href={link.href} />
+  ))
+}
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+<!-- Author -->
+<link rel="author" href={SITE.links.github} />
+
+<!-- Verify -->
+<meta name="theme-color" content="#171717" />
