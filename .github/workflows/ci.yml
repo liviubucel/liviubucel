@@ -95,6 +95,12 @@ jobs:
         run: pnpm security:scan
         continue-on-error: true
 
+      - name: Deploy Sanity schema
+        run: cd studio-liviubucel && npx sanity@latest schema deploy
+        env:
+          SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+        continue-on-error: true
+
       - name: Build
         run: pnpm build
         env:
