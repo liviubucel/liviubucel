@@ -5,5 +5,8 @@ export default defineCliConfig({
     projectId: '8atrdwjk',
     dataset: 'production'
   },
-  studioHost: 'liviubucel'
+  studioHost: 'liviubucel',
+  deployment: {
+    appId: 'j8op5lyjp17amfespxygqfyq',
+  }
 })
