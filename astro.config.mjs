@@ -66,7 +66,7 @@ export default defineConfig({
     svelte(),
     db(),
     sanity({
-      projectId: process.env.SANITY_PROJECT_ID || "YOUR_PROJECT_ID",
+      projectId: process.env.SANITY_PROJECT_ID || "default-id",
       dataset: process.env.SANITY_DATASET || "production",
       useCdn: true,
       apiVersion: "2024-03-15"
