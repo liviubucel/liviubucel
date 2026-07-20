@@ -241,6 +241,62 @@ export default defineConfig({
         ],
       },
 
+      // Guestbook Entry type
+      {
+        name: 'guestbookEntry',
+        title: 'Guestbook Entry',
+        type: 'document',
+        fields: [
+          {
+            name: 'name',
+            title: 'Name',
+            type: 'string',
+            validation: (Rule) => Rule.required(),
+          },
+          {
+            name: 'email',
+            title: 'Email',
+            type: 'string',
+            validation: (Rule) => Rule.required().email(),
+          },
+          {
+            name: 'message',
+            title: 'Message',
+            type: 'text',
+            validation: (Rule) => Rule.required().min(5).max(500),
+          },
+          {
+            name: 'website',
+            title: 'Website (Optional)',
+            type: 'url',
+          },
+          {
+            name: 'language',
+            title: 'Language',
+            type: 'string',
+            options: {
+              list: [
+                { title: 'English', value: 'en' },
+                { title: 'Română', value: 'ro' },
+              ],
+            },
+            initialValue: 'en',
+          },
+          {
+            name: 'approved',
+            title: 'Approved',
+            type: 'boolean',
+            initialValue: false,
+          },
+          {
+            name: 'submittedAt',
+            title: 'Submitted At',
+            type: 'datetime',
+            initialValue: () => new Date().toISOString(),
+          },
+        ],
+      },
+
       // Global Settings
       {
         name: 'settings',

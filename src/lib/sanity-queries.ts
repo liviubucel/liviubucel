@@ -235,3 +235,31 @@ export async function getSettings() {
     }
   }`);
 }
+
+export async function getGuestbookEntries(lang?: Language): Promise<any[]> {
+  const langFilter = lang ? ` && language == "${lang}"` : '';
+  return sanityClient.fetch(`*[_type == "guestbookEntry" && approved == true${langFilter}] | order(submittedAt desc) {
+    _id,
+    name,
+    email,
+    message,
+    website,
+    language,
+    submittedAt
+  }`);
+}
+
+export async function submitGuestbookEntry(entry: {
+  name: string;
+  email: string;
+  message: string;
+  website?: string;
+  language: Language;
+}) {
+  return sanityClient.create({
+    _type: 'guestbookEntry',
+    ...entry,
+    approved: false,
+    submittedAt: new Date().toISOString(),
+  });
+}

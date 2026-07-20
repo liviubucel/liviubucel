@@ -1,0 +1,221 @@
+---
+import type { Language } from '../lib/i18n';
+
+interface Props {
+  lang: Language;
+  apiEndpoint?: string;
+}
+
+const { lang, apiEndpoint = '/api/guestbook' } = Astro.props;
+
+const labels = {
+  en: {
+    title: 'Sign My Guestbook',
+    subtitle: 'Leave a message and let me know you visited!',
+    name: 'Your Name',
+    email: 'Your Email',
+    website: 'Your Website (optional)',
+    message: 'Your Message',
+    submit: 'Sign Guestbook',
+    submitting: 'Submitting...',
+    success: 'Thank you! Your message has been submitted for review.',
+    error: 'Failed to submit. Please try again.',
+  },
+  ro: {
+    title: 'Semnează Cartea mea de Oaspeți',
+    subtitle: 'Lasă un mesaj și spune-mi că ai vizitat!',
+    name: 'Numele tău',
+    email: 'Email-ul tău',
+    website: 'Site-ul tău (opțional)',
+    message: 'Mesajul tău',
+    submit: 'Semnează Cartea de Oaspeți',
+    submitting: 'Se trimite...',
+    success: 'Mulțumesc! Mesajul tău a fost trimis pentru revizuire.',
+    error: 'Nu s-a putut trimite. Încearcă din nou.',
+  },
+};
+
+const t = labels[lang];
+---
+
+<div class="guestbook-form-container">
+  <h2 class="text-2xl font-bold mb-2 text-neutral-100">{t.title}</h2>
+  <p class="text-neutral-400 mb-8">{t.subtitle}</p>
+
+  <form id="guestbook-form" class="space-y-6 max-w-lg">
+    <div class="form-group">
+      <label for="name" class="block text-sm font-medium text-neutral-200 mb-2">
+        {t.name}
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        class="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-500 transition"
+        placeholder="John Doe"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="email" class="block text-sm font-medium text-neutral-200 mb-2">
+        {t.email}
+      </label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        required
+        class="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-500 transition"
+        placeholder="john@example.com"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="website" class="block text-sm font-medium text-neutral-200 mb-2">
+        {t.website}
+      </label>
+      <input
+        type="url"
+        id="website"
+        name="website"
+        class="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-500 transition"
+        placeholder="https://example.com"
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="message" class="block text-sm font-medium text-neutral-200 mb-2">
+        {t.message}
+      </label>
+      <textarea
+        id="message"
+        name="message"
+        required
+        rows={5}
+        minlength={5}
+        maxlength={500}
+        class="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:outline-none focus:border-neutral-500 transition resize-none"
+        placeholder="Your message here..."
+      ></textarea>
+      <p class="text-xs text-neutral-500 mt-1">
+        <span id="char-count">0</span>/500
+      </p>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full px-6 py-3 bg-neutral-700 hover:bg-neutral-600 text-neutral-100 font-medium rounded-lg transition"
+      id="submit-btn"
+    >
+      {t.submit}
+    </button>
+
+    <div id="message-box" class="hidden px-4 py-3 rounded-lg text-sm"></div>
+  </form>
+</div>
+
+<style>
+  .guestbook-form-container {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  #message-box {
+    margin-top: 1rem;
+  }
+
+  #message-box.success {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: rgb(134, 239, 172);
+  }
+
+  #message-box.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: rgb(252, 165, 165);
+  }
+</style>
+
+<script define:vars={{ apiEndpoint, lang }}>
+  const form = document.getElementById('guestbook-form');
+  const messageBox = document.getElementById('message-box');
+  const submitBtn = document.getElementById('submit-btn');
+  const charCount = document.getElementById('char-count');
+  const messageInput = document.getElementById('message');
+
+  const labels = {
+    en: {
+      submit: 'Sign Guestbook',
+      submitting: 'Submitting...',
+      success: 'Thank you! Your message has been submitted for review.',
+      error: 'Failed to submit. Please try again.',
+    },
+    ro: {
+      submit: 'Semnează Cartea de Oaspeți',
+      submitting: 'Se trimite...',
+      success: 'Mulțumesc! Mesajul tău a fost trimis pentru revizuire.',
+      error: 'Nu s-a putut trimite. Încearcă din nou.',
+    },
+  };
+
+  const t = labels[lang] || labels.en;
+
+  // Update character count
+  if (messageInput) {
+    messageInput.addEventListener('input', (e) => {
+      charCount.textContent = e.target.value.length;
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      website: formData.get('website') || undefined,
+      message: formData.get('message'),
+      language: lang,
+    };
+
+    // Disable button and show submitting state
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = t.submitting;
+
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      messageBox.classList.remove('hidden', 'error');
+      messageBox.classList.add('success');
+
+      if (response.ok) {
+        messageBox.textContent = t.success;
+        form.reset();
+        charCount.textContent = '0';
+      } else {
+        const error = await response.json();
+        messageBox.textContent = error.error || t.error;
+        messageBox.classList.remove('success');
+        messageBox.classList.add('error');
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      messageBox.classList.remove('hidden', 'success');
+      messageBox.classList.add('error');
+      messageBox.textContent = t.error;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  });
+</script>

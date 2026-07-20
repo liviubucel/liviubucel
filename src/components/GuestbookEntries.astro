@@ -1,0 +1,80 @@
+---
+import type { Language } from '../lib/i18n';
+
+interface Entry {
+  _id: string;
+  name: string;
+  email: string;
+  message: string;
+  website?: string;
+  submittedAt: string;
+}
+
+interface Props {
+  entries: Entry[];
+  lang: Language;
+}
+
+const { entries, lang } = Astro.props;
+
+const labels = {
+  en: {
+    noEntries: 'No entries yet. Be the first to sign!',
+    by: 'by',
+  },
+  ro: {
+    noEntries: 'Fără intrări încă. Fii primul care semnează!',
+    by: 'de',
+  },
+};
+
+const t = labels[lang];
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(lang === 'ro' ? 'ro-RO' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+---
+
+<div class="guestbook-entries">
+  {entries.length === 0 ? (
+    <p class="text-center text-neutral-400 py-8">{t.noEntries}</p>
+  ) : (
+    <div class="space-y-6">
+      {entries.map((entry) => (
+        <div class="border-l-4 border-neutral-700 pl-6 py-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <h3 class="font-semibold text-neutral-100">{entry.name}</h3>
+              {entry.website && (
+                <a
+                  href={entry.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-xs text-neutral-500 hover:text-neutral-400 break-all"
+                >
+                  {entry.website}
+                </a>
+              )}
+            </div>
+            <span class="text-xs text-neutral-500 whitespace-nowrap ml-4">
+              {formatDate(entry.submittedAt)}
+            </span>
+          </div>
+          <p class="text-neutral-300 text-sm leading-relaxed">{entry.message}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .guestbook-entries {
+    width: 100%;
+    max-width: 600px;
+  }
+</style>
