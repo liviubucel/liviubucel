@@ -1,14 +1,19 @@
 ---
-import { getCollection } from "astro:content";
+import { sanityClient } from "sanity:client";
 import Layout from "../../layouts/Layout.astro";
 import PostRow from "../../components/Blog/PostRow.astro";
 import { SITE } from "../../site-config";
 
-const posts = (await getCollection("blog"))?.sort(
-  (blogEntryA, blogEntryB) =>
-    (blogEntryB.data.pubDate || new Date()).getTime() -
-    (blogEntryA.data.pubDate || new Date()).getTime()
-);
+let posts = [];
+try {
+  posts = await sanityClient.fetch(`*[_type == "post"] | order(pubDate desc) {
+    "id": slug.current,
+    title,
+    pubDate
+  }`);
+} catch (error) {
+  console.error("Sanity client error:", error);
+}
 ---
 
 <script>
@@ -36,9 +41,9 @@ const posts = (await getCollection("blog"))?.sort(
       {
         posts?.map((post) => (
           <PostRow
-            date={post.data.pubDate || new Date()}
+            date={post.pubDate ? new Date(post.pubDate) : new Date()}
             id={post.id}
-            title={post.data.title || "No title"}
+            title={post.title || "No title"}
           />
         ))
       }

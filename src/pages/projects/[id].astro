@@ -1,41 +1,55 @@
 ---
-import { getEntry, render } from "astro:content";
-import { getCollection } from "astro:content";
+import { sanityClient } from "sanity:client";
+import { PortableText } from "astro-portabletext";
 import LayoutBlogPost from "../../layouts/LayoutBlogPost.astro";
 import { SITE } from "../../site-config";
 
 export const prerender = true;
 
 export async function getStaticPaths() {
-  return (await getCollection("projects")).map(({ id }) => ({
-    params: { id: id as string },
+  let projects = [];
+  try {
+    projects = await sanityClient.fetch(`*[_type == "project"] { "id": slug.current }`);
+  } catch (error) {
+    console.error("Sanity error fetching paths:", error);
+  }
+  
+  if (!projects || projects.length === 0) {
+    return [{ params: { id: "placeholder" } }];
+  }
+
+  return projects.map(({ id }) => ({
+    params: { id },
   }));
 }
 
 const { id } = Astro.params;
 
-if (!id) {
-  throw new Error("id is missing");
+let entry = null;
+try {
+  entry = await sanityClient.fetch(`*[_type == "project" && slug.current == $id][0]`, { id });
+} catch(e) {
+  console.error(e);
 }
-
-const entry = await getEntry("projects", id);
 
 if (!entry) {
-  return Astro.redirect("/404");
+  if (id === "placeholder") {
+    entry = { title: "Placeholder", pubDate: new Date().toISOString(), description: "Placeholder", body: [] };
+  } else {
+    return Astro.redirect("/404");
+  }
 }
-
-const { Content, remarkPluginFrontmatter } = await render(entry);
 ---
 
 <LayoutBlogPost
-  description={entry.data.description!}
-  minutesRead={remarkPluginFrontmatter.minutesRead}
-  pubDate={entry.data.pubDate!}
-  title={`${entry.data.title} | ${SITE.author.fullName}`}
-  url={`projects/${entry.id}`}
+  description={entry.description || ""}
+  minutesRead="5 min read"
+  pubDate={entry.pubDate ? new Date(entry.pubDate) : new Date()}
+  title={`${entry.title} | ${SITE.author.fullName}`}
+  url={`projects/${id}`}
 >
   <div class="prose prose-invert prose-neutral mx-auto">
-    <Content />
+    <PortableText value={entry.body} />
   </div>
 </LayoutBlogPost>
 

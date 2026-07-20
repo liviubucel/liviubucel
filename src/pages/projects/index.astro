@@ -1,14 +1,19 @@
 ---
-import { getCollection } from "astro:content";
+import { sanityClient } from "sanity:client";
 import Layout from "../../layouts/Layout.astro";
 import ProjectRow from "../../components/Projects/ProjectRow.astro";
 import { SITE } from "../../site-config";
 
-const projects = (await getCollection("projects"))?.sort((a, b) => {
-  const dateA = a.data.pubDate?.getTime() || 0;
-  const dateB = b.data.pubDate?.getTime() || 0;
-  return dateB - dateA;
-});
+let projects = [];
+try {
+  projects = await sanityClient.fetch(`*[_type == "project"] | order(pubDate desc) {
+    "id": slug.current,
+    title,
+    pubDate
+  }`);
+} catch (error) {
+  console.error("Sanity client error:", error);
+}
 ---
 
 <script>
@@ -36,9 +41,9 @@ const projects = (await getCollection("projects"))?.sort((a, b) => {
       {
         projects?.map((project) => (
           <ProjectRow
-            date={project.data.pubDate}
+            date={project.pubDate ? new Date(project.pubDate) : new Date()}
             id={project.id}
-            title={project.data.title || "No title"}
+            title={project.title || "No title"}
           />
         ))
       }
