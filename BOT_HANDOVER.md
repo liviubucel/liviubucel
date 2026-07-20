@@ -149,7 +149,7 @@ Co-Authored-By: [Bot Name] <bot@email.com>
 
 ## 📝 Session Audit Log
 
-### Session: 2026-07-20 (Claude Code Session)
+### Session: 2026-07-20 (Claude Code Session - Updated)
 
 #### Problem Identified
 - **HTTP 525 SSL Handshake Failures** from Cloudflare Workers to Sanity API
@@ -222,6 +222,22 @@ Co-Authored-By: [Bot Name] <bot@email.com>
 
 ---
 
+## 🎨 Color Scheme Requirements (CRITICAL)
+
+**Theme: Premium Slate/Silver/Gray ONLY**
+
+- ❌ NO RED COLORS - ever
+- ✅ Use only: darkslate-100, darkslate-200, darkslate-300, darkslate-400, etc.
+- ✅ For accents: --primary-500 from style.css (which is elegant slate, NOT red)
+- ✅ CSS variables: --primary-* in src/style.css are locked to slate palette
+- ✅ Backgrounds: bg-darkslate-800, Borders: border-darkslate-700, Text: text-neutral-100
+
+**When changing colors:**
+1. Just swap the color (red → gray), don't modify design structure
+2. Respect the existing color definitions
+3. Maintain professional Cybersecurity aesthetic
+4. If unsure about a color, ask user first
+
 ## ❓ Questions for Bots
 
 Before any future modifications:
@@ -229,6 +245,7 @@ Before any future modifications:
 2. **Is this user content or configuration?** → User content = OK, Config = Ask first
 3. **Will this affect the production site?** → Ask user first
 4. **Does this require new dependencies?** → Ask user first
+5. **Does it use RED colors?** → NO - Always use slate/gray theme instead
 
 ---
 
