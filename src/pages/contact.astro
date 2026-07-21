@@ -216,7 +216,13 @@ const topics = [
 
     try {
       const response = await fetch('/api/contact', { method: 'POST', body: new FormData(form) });
-      const data = (await response.json()) as { success: boolean; error?: string };
+
+      let data: { success: boolean; error?: string };
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Something went wrong. Please try again or email directly.');
+      }
 
       if (!data.success) throw new Error(data.error || 'Something went wrong. Please try again.');
 

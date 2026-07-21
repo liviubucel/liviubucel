@@ -204,7 +204,13 @@ const topics = [
 
     try {
       const response = await fetch('/api/contact', { method: 'POST', body: new FormData(form) });
-      const data = (await response.json()) as { success: boolean; error?: string };
+
+      let data: { success: boolean; error?: string };
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Ceva a mers greșit. Te rog încearcă din nou sau trimite-mi un email direct.');
+      }
 
       if (!data.success) throw new Error(data.error || 'Ceva a mers greșit. Te rog încearcă din nou.');
 

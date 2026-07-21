@@ -49,7 +49,24 @@ interface CloudflareEnv {
   CONTACT_FROM_EMAIL?: string;
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async (context) => {
+  try {
+    return await handleContactSubmission(context);
+  } catch (error) {
+    console.error('[contact] Unhandled error', error);
+    try {
+      Sentry.captureException(error);
+    } catch {
+      // ignore secondary Sentry failure
+    }
+    return Response.json(
+      { success: false, error: 'Something went wrong. Please try again or email directly.' },
+      { status: 500 },
+    );
+  }
+};
+
+const handleContactSubmission: APIRoute = async ({ request, locals }) => {
   const formData = await request.formData();
 
   const name = sanitize((formData.get('name') ?? '').toString());

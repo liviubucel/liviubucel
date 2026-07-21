@@ -28,25 +28,21 @@ if (!certs.length) {
 const displayCerts = certs.slice(0, 3);
 ---
 
-<Card colSpan="md:col-span-1" rowSpan="md:row-span-1" title="Certifications">
-  <div class="flex flex-col gap-2.5 mt-3">
+<Card colSpan="md:col-span-1" rowSpan="md:row-span-1" title="Certifications" padding="p-4">
+  <div class="flex flex-col gap-1.5 mt-2">
     {displayCerts.map((cert) => (
-      <div class="flex items-center gap-2.5">
-        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-darkslate-700 shrink-0">
-          {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400" />}
-          {!['shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400" />}
-        </div>
-        <div class="flex flex-col min-w-0">
-          <span class="font-semibold text-xs text-neutral-100 truncate">{cert.name}</span>
-          <span class={`text-xs ${STATUS_COLOR[cert.status] ?? 'text-darkslate-300'}`}>
-            {cert.status === 'earned' ? cert.issuer : STATUS_LABEL[cert.status] ?? cert.status}
-          </span>
-        </div>
+      <div class="flex items-center gap-1.5 min-w-0">
+        {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        {!['shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400 shrink-0" />}
+        <span class="font-medium text-xs text-neutral-100 truncate">{cert.name}</span>
+        <span class={`text-[10px] shrink-0 ml-auto ${STATUS_COLOR[cert.status] ?? 'text-darkslate-300'}`}>
+          {cert.status === 'earned' ? '✓' : STATUS_LABEL[cert.status] ?? cert.status}
+        </span>
       </div>
     ))}
   </div>
