@@ -335,6 +335,9 @@ export default defineConfig({
             description: 'Visual icon for this certification',
             options: {
               list: [
+                { title: 'OWASP (official logo)', value: 'owasp' },
+                { title: 'CompTIA (official logo)', value: 'comptia' },
+                { title: 'Cisco (official logo)', value: 'cisco' },
                 { title: 'Shield (Security)', value: 'shield' },
                 { title: 'Network / Router (Networking)', value: 'network' },
                 { title: 'Bug (Ethical Hacking)', value: 'bug' },

@@ -10,9 +10,9 @@ let certs = await getCertifications();
 
 if (!certs.length) {
   certs = [
-    { _id: '1', name: 'CompTIA Security+', issuer: 'CompTIA', status: 'in-progress', iconType: 'shield' },
-    { _id: '2', name: 'CompTIA Network+', issuer: 'CompTIA', status: 'planned', iconType: 'network' },
-    { _id: '3', name: 'CCNA', issuer: 'Cisco', status: 'planned', iconType: 'network' },
+    { _id: '1', name: 'OWASP Member', issuer: 'OWASP', status: 'earned', iconType: 'owasp' },
+    { _id: '2', name: 'CompTIA Security+', issuer: 'CompTIA', status: 'in-progress', iconType: 'comptia' },
+    { _id: '3', name: 'CCNA', issuer: 'Cisco', status: 'planned', iconType: 'cisco' },
   ] as any;
 }
 
@@ -55,13 +55,16 @@ if (!certs.length) {
               title={cert.name}
               {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
+              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-5 w-5 text-primary-400" />}
               {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
-              {!['shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
+              {!['owasp','comptia','cisco','shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
             </Tag>
           );
         })}
