@@ -304,6 +304,11 @@ export interface ProfileSettings {
   isCurrentlyEmployed: boolean;
   cvUrl?: string;
   phone?: string;
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+  youtube?: string;
+  tryhackme?: string;
   openToWorkMessage?: string;
 }
 
@@ -331,6 +336,11 @@ export async function getProfileSettings(): Promise<ProfileSettings | null> {
       isCurrentlyEmployed,
       cvUrl,
       phone,
+      github,
+      linkedin,
+      twitter,
+      youtube,
+      tryhackme,
       openToWorkMessage
     }`);
   } catch (error) {

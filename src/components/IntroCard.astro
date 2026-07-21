@@ -5,6 +5,7 @@ import { LINKS } from "../lib/constants";
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
 import { SITE } from "../site-config";
+import { getProfileSettings } from "../lib/sanity-queries";
 import MemojiAvatarDefault from "../assets/me.webp";
 import MemojiAvatarBlue from "../assets/me-blue.webp";
 import MemojiAvatarGreen from "../assets/me-green.webp";
@@ -19,13 +20,19 @@ interface Props {
   linkedin?: string;
 }
 
+const profile = await getProfileSettings();
+
 const {
   fullName = SITE.author.fullName,
   role = SITE.author.jobTitle,
   tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
-  github = LINKS.github,
-  linkedin = LINKS.linkedin,
+  github = profile?.github || LINKS.github,
+  linkedin = profile?.linkedin || LINKS.linkedin,
 } = Astro.props;
+
+const twitter = profile?.twitter;
+const youtube = profile?.youtube;
+const tryhackme = profile?.tryhackme;
 ---
 
 <Card colSpan="md:col-span-3" rowSpan="md:row-span-4">
@@ -54,7 +61,7 @@ const {
         </p>
       </div>
       <div class="flex gap-2 lg:gap-4">
-        <a href={LINKS.github} aria-label="github profile" target="_blank">
+        <a href={github} aria-label="github profile" target="_blank">
           <Button aria-label="github profile">
             <Icon name="ri:github-fill" />
             <span class="sr-only" data-umami-event="github button"
@@ -63,7 +70,7 @@ const {
           </Button>
         </a>
         <a
-          href={LINKS.linkedin}
+          href={linkedin}
           aria-label="linkedin profile"
           target="_blank"
         >
@@ -74,6 +81,30 @@ const {
             >
           </Button>
         </a>
+        {twitter && (
+          <a href={twitter} aria-label="x profile" target="_blank">
+            <Button aria-label="x profile">
+              <Icon name="ri:twitter-x-fill" />
+              <span class="sr-only" data-umami-event="x button">X Profile</span>
+            </Button>
+          </a>
+        )}
+        {youtube && (
+          <a href={youtube} aria-label="youtube channel" target="_blank">
+            <Button aria-label="youtube channel">
+              <Icon name="ri:youtube-fill" />
+              <span class="sr-only" data-umami-event="youtube button">YouTube Channel</span>
+            </Button>
+          </a>
+        )}
+        {tryhackme && (
+          <a href={tryhackme} aria-label="tryhackme profile" target="_blank">
+            <Button aria-label="tryhackme profile">
+              <Icon name="ri:terminal-box-fill" />
+              <span class="sr-only" data-umami-event="tryhackme button">TryHackMe Profile</span>
+            </Button>
+          </a>
+        )}
       </div>
     </div>
     <Image

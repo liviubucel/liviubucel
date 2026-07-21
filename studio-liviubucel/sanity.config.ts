@@ -386,6 +386,34 @@ export default defineConfig({
             description: 'Shown next to the contact email. Leave empty to hide.',
           },
           {
+            name: 'github',
+            title: 'GitHub URL',
+            type: 'url',
+          },
+          {
+            name: 'linkedin',
+            title: 'LinkedIn URL',
+            type: 'url',
+          },
+          {
+            name: 'twitter',
+            title: 'X (Twitter) URL',
+            type: 'url',
+            description: 'Leave empty to hide the icon.',
+          },
+          {
+            name: 'youtube',
+            title: 'YouTube URL',
+            type: 'url',
+            description: 'Leave empty to hide the icon.',
+          },
+          {
+            name: 'tryhackme',
+            title: 'TryHackMe URL',
+            type: 'url',
+            description: 'Leave empty to hide the icon.',
+          },
+          {
             name: 'openToWorkMessage',
             title: 'Status Message',
             type: 'string',
