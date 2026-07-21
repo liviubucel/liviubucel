@@ -55,7 +55,7 @@ if (!certs.length) {
               title={cert.name}
               {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
-              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-12 w-12" />}
+              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-10 w-10" />}
               {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-16 w-16" />}
               {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-12 w-12" />}
               {cert.iconType === 'isc2' && <Icon name="simple-icons:isc2" class="h-12 w-12" />}
