@@ -46,25 +46,25 @@ if (!certs.length) {
 
     <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-darkslate-700">
       <h2 class="text-white text-base font-bold">Certifications</h2>
-      <div class="grid grid-cols-3 gap-2">
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
         {certs.map((cert) => {
           const Tag = cert.credentialUrl ? 'a' : 'div';
           return (
             <Tag
-              class="flex items-center justify-center aspect-square rounded-lg border border-neutral-700 bg-neutral-800/50 hover:border-primary-400 hover:bg-neutral-800 transition-colors duration-150"
+              class="flex items-center justify-center text-neutral-300 hover:text-white transition-colors duration-150 shrink-0"
               title={cert.name}
               {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
-              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-5 w-5 text-primary-400" />}
-              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
-              {!['owasp','comptia','cisco','shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-9 w-9" />}
+              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-9 w-9" />}
+              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-9 w-9" />}
+              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-8 w-8" />}
+              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-8 w-8" />}
+              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-8 w-8" />}
+              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-8 w-8" />}
+              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-8 w-8" />}
+              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-8 w-8" />}
+              {!['owasp','comptia','cisco','shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-8 w-8" />}
             </Tag>
           );
         })}
