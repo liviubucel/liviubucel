@@ -51,40 +51,40 @@ if (!certs.length) {
           const Tag = cert.credentialUrl ? 'a' : 'div';
           return (
             <Tag
-              class="flex items-center justify-center h-11 w-11 text-neutral-300 hover:text-white transition-colors duration-150 shrink-0"
+              class="flex items-center justify-center text-neutral-300 hover:text-white transition-colors duration-150 shrink-0"
               title={cert.name}
               {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
-              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="max-h-full max-w-full" />}
-              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="max-h-full max-w-full" />}
-              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="max-h-full max-w-full" />}
-              {cert.iconType === 'isc2' && <Icon name="simple-icons:isc2" class="max-h-full max-w-full" />}
-              {cert.iconType === 'fortinet' && <Icon name="simple-icons:fortinet" class="max-h-full max-w-full" />}
-              {cert.iconType === 'paloaltonetworks' && <Icon name="simple-icons:paloaltonetworks" class="max-h-full max-w-full" />}
-              {cert.iconType === 'microsoft' && <Icon name="simple-icons:microsoft" class="max-h-full max-w-full" />}
-              {cert.iconType === 'googlecloud' && <Icon name="simple-icons:googlecloud" class="max-h-full max-w-full" />}
-              {cert.iconType === 'ibm' && <Icon name="simple-icons:ibm" class="max-h-full max-w-full" />}
-              {cert.iconType === 'redhat' && <Icon name="simple-icons:redhat" class="max-h-full max-w-full" />}
-              {cert.iconType === 'vmware' && <Icon name="simple-icons:vmware" class="max-h-full max-w-full" />}
-              {cert.iconType === 'junipernetworks' && <Icon name="simple-icons:junipernetworks" class="max-h-full max-w-full" />}
-              {cert.iconType === 'splunk' && <Icon name="simple-icons:splunk" class="max-h-full max-w-full" />}
-              {cert.iconType === 'sonicwall' && <Icon name="simple-icons:sonicwall" class="max-h-full max-w-full" />}
-              {cert.iconType === 'kalilinux' && <Icon name="simple-icons:kalilinux" class="max-h-full max-w-full" />}
-              {cert.iconType === 'linuxprofessionalinstitute' && <Icon name="simple-icons:linuxprofessionalinstitute" class="max-h-full max-w-full" />}
-              {cert.iconType === 'hackthebox' && <Icon name="simple-icons:hackthebox" class="max-h-full max-w-full" />}
-              {cert.iconType === 'tryhackme' && <Icon name="simple-icons:tryhackme" class="max-h-full max-w-full" />}
-              {cert.iconType === 'hackerone' && <Icon name="simple-icons:hackerone" class="max-h-full max-w-full" />}
-              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-8 w-8" />}
-              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-8 w-8" />}
-              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-8 w-8" />}
-              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-8 w-8" />}
-              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-8 w-8" />}
-              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-8 w-8" />}
+              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-12 w-12" />}
+              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-12 w-12" />}
+              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-12 w-12" />}
+              {cert.iconType === 'isc2' && <Icon name="simple-icons:isc2" class="h-12 w-12" />}
+              {cert.iconType === 'fortinet' && <Icon name="simple-icons:fortinet" class="h-12 w-12" />}
+              {cert.iconType === 'paloaltonetworks' && <Icon name="simple-icons:paloaltonetworks" class="h-12 w-12" />}
+              {cert.iconType === 'microsoft' && <Icon name="simple-icons:microsoft" class="h-12 w-12" />}
+              {cert.iconType === 'googlecloud' && <Icon name="simple-icons:googlecloud" class="h-12 w-12" />}
+              {cert.iconType === 'ibm' && <Icon name="simple-icons:ibm" class="h-12 w-12" />}
+              {cert.iconType === 'redhat' && <Icon name="simple-icons:redhat" class="h-12 w-12" />}
+              {cert.iconType === 'vmware' && <Icon name="simple-icons:vmware" class="h-12 w-12" />}
+              {cert.iconType === 'junipernetworks' && <Icon name="simple-icons:junipernetworks" class="h-12 w-12" />}
+              {cert.iconType === 'splunk' && <Icon name="simple-icons:splunk" class="h-12 w-12" />}
+              {cert.iconType === 'sonicwall' && <Icon name="simple-icons:sonicwall" class="h-12 w-12" />}
+              {cert.iconType === 'kalilinux' && <Icon name="simple-icons:kalilinux" class="h-12 w-12" />}
+              {cert.iconType === 'linuxprofessionalinstitute' && <Icon name="simple-icons:linuxprofessionalinstitute" class="h-12 w-12" />}
+              {cert.iconType === 'hackthebox' && <Icon name="simple-icons:hackthebox" class="h-12 w-12" />}
+              {cert.iconType === 'tryhackme' && <Icon name="simple-icons:tryhackme" class="h-12 w-12" />}
+              {cert.iconType === 'hackerone' && <Icon name="simple-icons:hackerone" class="h-12 w-12" />}
+              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-12 w-12" />}
+              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-12 w-12" />}
+              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-12 w-12" />}
+              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-12 w-12" />}
+              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-12 w-12" />}
+              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-12 w-12" />}
               {![
                 'owasp','comptia','cisco','isc2','fortinet','paloaltonetworks','microsoft','googlecloud','ibm',
                 'redhat','vmware','junipernetworks','splunk','sonicwall','kalilinux','linuxprofessionalinstitute',
                 'hackthebox','tryhackme','hackerone','shield','network','bug','terminal','lock','award',
-              ].includes(cert.iconType) && <Icon name="ri:award-line" class="h-8 w-8" />}
+              ].includes(cert.iconType) && <Icon name="ri:award-line" class="h-12 w-12" />}
             </Tag>
           );
         })}
