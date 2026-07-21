@@ -1,23 +1,34 @@
 ---
 import Card from "./Card/index.astro";
 import { SITE } from "../site-config";
+import { getProfileSettings } from "../lib/sanity-queries";
+
+const profile = await getProfileSettings();
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
   <div class="h-full">
     <header class="flex items-center">
       <h2 class="text-white text-xl font-bold">
-        Open to Opportunities
+        Let's start working together!
       </h2>
     </header>
     <div class="flex flex-col mt-4 gap-1">
-      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">Contact</h2>
+      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">Contact Details</h2>
       <a
         href={`mailto:${SITE.links.email}`}
         class="text-sm hover:text-primary-400 transition-colors duration-150"
       >
         {SITE.links.email}
       </a>
+      {profile?.phone && (
+        <a
+          href={`tel:${profile.phone.replace(/\s+/g, '')}`}
+          class="text-sm hover:text-primary-400 transition-colors duration-150"
+        >
+          {profile.phone}
+        </a>
+      )}
       <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
     </div>
   </div>

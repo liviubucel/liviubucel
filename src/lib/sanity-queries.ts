@@ -296,12 +296,14 @@ export interface Certification {
   status: 'earned' | 'in-progress' | 'planned';
   iconType: string;
   order?: number;
+  credentialUrl?: string;
 }
 
 export interface ProfileSettings {
   _id: string;
   isCurrentlyEmployed: boolean;
   cvUrl?: string;
+  phone?: string;
   openToWorkMessage?: string;
 }
 
@@ -313,7 +315,8 @@ export async function getCertifications(): Promise<Certification[]> {
       issuer,
       status,
       iconType,
-      order
+      order,
+      credentialUrl
     }`);
   } catch (error) {
     console.error('Failed to fetch certifications:', error);
@@ -327,6 +330,7 @@ export async function getProfileSettings(): Promise<ProfileSettings | null> {
       _id,
       isCurrentlyEmployed,
       cvUrl,
+      phone,
       openToWorkMessage
     }`);
   } catch (error) {

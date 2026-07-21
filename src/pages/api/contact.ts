@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
+import { env } from 'cloudflare:workers';
 import { contactConfirmationEmail } from '../../lib/contact/templates';
 
 export const prerender = false;
@@ -66,7 +67,7 @@ export const POST: APIRoute = async (context) => {
   }
 };
 
-const handleContactSubmission: APIRoute = async ({ request, locals }) => {
+const handleContactSubmission: APIRoute = async ({ request }) => {
   const formData = await request.formData();
 
   const name = sanitize((formData.get('name') ?? '').toString());
@@ -101,8 +102,7 @@ const handleContactSubmission: APIRoute = async ({ request, locals }) => {
     );
   }
 
-  const runtime = (locals as { runtime?: { env: CloudflareEnv } }).runtime;
-  const cfEnv = runtime?.env;
+  const cfEnv = env as unknown as CloudflareEnv;
 
   if (!cfEnv?.EMAIL) {
     console.error('contact: EMAIL binding is not configured.');

@@ -351,6 +351,12 @@ export default defineConfig({
             type: 'number',
             description: 'Lower number = shown first',
           },
+          {
+            name: 'credentialUrl',
+            title: 'Credential URL',
+            type: 'url',
+            description: 'Direct link to the credential/verification page (e.g. Credly). Leave empty if not earned yet.',
+          },
         ],
       },
 
@@ -372,6 +378,12 @@ export default defineConfig({
             title: 'CV Download URL',
             type: 'url',
             description: 'Direct link to the CV PDF',
+          },
+          {
+            name: 'phone',
+            title: 'Phone Number',
+            type: 'string',
+            description: 'Shown next to the contact email. Leave empty to hide.',
           },
           {
             name: 'openToWorkMessage',
