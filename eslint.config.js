@@ -24,7 +24,9 @@ export default [
       // Accessibility rules (jsx-a11y recommended rules)
       ...jsxA11y.configs.recommended.rules,
 
-      // You can add more rules here as needed
+      // Disabled: crashes with eslint-plugin-jsx-a11y@6.10.2 + ESLint 10
+      // when traversing <select> elements with dynamic .map() children in Astro
+      "jsx-a11y/label-has-associated-control": "off",
     },
   },
 ];

@@ -20,3 +20,8 @@ head_sampling_rate = 1
 [vars]
 SANITY_PROJECT_ID="8atrdwjk"
 SANITY_DATASET="production"
+CONTACT_TO_EMAIL="contact@liviubucel.com"
+CONTACT_FROM_EMAIL="noreply@liviubucel.com"
+
+[[send_email]]
+name = "EMAIL"

@@ -1,36 +1,53 @@
 ---
 import Card from "./Card/index.astro";
+import { Icon } from "astro-icon/components";
+import { getCertifications } from "../lib/sanity-queries";
+
+const STATUS_LABEL: Record<string, string> = {
+  'earned': 'Earned',
+  'in-progress': 'In Progress',
+  'planned': 'Planned',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  'earned': 'text-green-400',
+  'in-progress': 'text-yellow-400',
+  'planned': 'text-darkslate-400',
+};
+
+let certs = await getCertifications();
+
+if (!certs.length) {
+  certs = [
+    { _id: '1', name: 'CompTIA Security+', issuer: 'CompTIA', status: 'in-progress', iconType: 'shield' },
+    { _id: '2', name: 'CompTIA Network+', issuer: 'CompTIA', status: 'planned', iconType: 'network' },
+    { _id: '3', name: 'CCNA', issuer: 'Cisco', status: 'planned', iconType: 'network' },
+  ] as any;
+}
+
+const displayCerts = certs.slice(0, 3);
 ---
 
-<Card
-  colSpan="md:col-span-1"
-  rowSpan="md:row-span-1"
-  title="Cyber Security"
-  href="/projects"
->
-  <div class="flex flex-col gap-3 mt-4">
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🐛</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">50+ Vulnerabilities</span>
-        <span class="text-xs text-darkslate-300">Found and reported</span>
+<Card colSpan="md:col-span-1" rowSpan="md:row-span-1" title="Certifications">
+  <div class="flex flex-col gap-2.5 mt-3">
+    {displayCerts.map((cert) => (
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center justify-center w-7 h-7 rounded-lg bg-darkslate-700 shrink-0">
+          {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400" />}
+          {!['shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-3.5 w-3.5 text-primary-400" />}
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-semibold text-xs text-neutral-100 truncate">{cert.name}</span>
+          <span class={`text-xs ${STATUS_COLOR[cert.status] ?? 'text-darkslate-300'}`}>
+            {cert.status === 'earned' ? cert.issuer : STATUS_LABEL[cert.status] ?? cert.status}
+          </span>
+        </div>
       </div>
-    </div>
-    
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🏆</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">OSCP & CEH</span>
-        <span class="text-xs text-darkslate-300">Certifications</span>
-      </div>
-    </div>
-    
-    <div class="flex items-center gap-3">
-      <div class="text-xl">🛡️</div>
-      <div class="flex flex-col">
-        <span class="font-bold text-sm text-neutral-100">Zebrabyte</span>
-        <span class="text-xs text-darkslate-300">Agency Founder</span>
-      </div>
-    </div>
+    ))}
   </div>
 </Card>

@@ -289,6 +289,52 @@ export async function getGuestbookEntries(lang?: Language): Promise<any[]> {
   }
 }
 
+export interface Certification {
+  _id: string;
+  name: string;
+  issuer: string;
+  status: 'earned' | 'in-progress' | 'planned';
+  iconType: string;
+  order?: number;
+}
+
+export interface ProfileSettings {
+  _id: string;
+  isCurrentlyEmployed: boolean;
+  cvUrl?: string;
+  openToWorkMessage?: string;
+}
+
+export async function getCertifications(): Promise<Certification[]> {
+  try {
+    return await sanityClient.fetch(`*[_type == "certification"] | order(order asc, _createdAt asc) {
+      _id,
+      name,
+      issuer,
+      status,
+      iconType,
+      order
+    }`);
+  } catch (error) {
+    console.error('Failed to fetch certifications:', error);
+    return [];
+  }
+}
+
+export async function getProfileSettings(): Promise<ProfileSettings | null> {
+  try {
+    return await sanityClient.fetch(`*[_type == "profileSettings"][0] {
+      _id,
+      isCurrentlyEmployed,
+      cvUrl,
+      openToWorkMessage
+    }`);
+  } catch (error) {
+    console.error('Failed to fetch profile settings:', error);
+    return null;
+  }
+}
+
 export async function submitGuestbookEntry(entry: {
   name: string;
   email: string;

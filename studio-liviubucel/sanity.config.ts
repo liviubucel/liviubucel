@@ -297,6 +297,92 @@ export default defineConfig({
         ],
       },
 
+      // Certification type
+      {
+        name: 'certification',
+        title: 'Certification',
+        type: 'document',
+        fields: [
+          {
+            name: 'name',
+            title: 'Certification Name',
+            type: 'string',
+            validation: (Rule) => Rule.required(),
+          },
+          {
+            name: 'issuer',
+            title: 'Issuer',
+            type: 'string',
+            validation: (Rule) => Rule.required(),
+          },
+          {
+            name: 'status',
+            title: 'Status',
+            type: 'string',
+            options: {
+              list: [
+                { title: 'Earned', value: 'earned' },
+                { title: 'In Progress', value: 'in-progress' },
+                { title: 'Planned', value: 'planned' },
+              ],
+            },
+            initialValue: 'planned',
+          },
+          {
+            name: 'iconType',
+            title: 'Icon',
+            type: 'string',
+            description: 'Visual icon for this certification',
+            options: {
+              list: [
+                { title: 'Shield (Security)', value: 'shield' },
+                { title: 'Network / Router (Networking)', value: 'network' },
+                { title: 'Bug (Ethical Hacking)', value: 'bug' },
+                { title: 'Terminal (Pen Testing)', value: 'terminal' },
+                { title: 'Lock (Cryptography)', value: 'lock' },
+                { title: 'Award (General)', value: 'award' },
+              ],
+            },
+            initialValue: 'award',
+          },
+          {
+            name: 'order',
+            title: 'Display Order',
+            type: 'number',
+            description: 'Lower number = shown first',
+          },
+        ],
+      },
+
+      // Profile Settings (singleton)
+      {
+        name: 'profileSettings',
+        title: 'Profile Settings',
+        type: 'document',
+        fields: [
+          {
+            name: 'isCurrentlyEmployed',
+            title: 'Currently Employed',
+            type: 'boolean',
+            description: 'Green pulse = open to work. Red blinking = employed.',
+            initialValue: false,
+          },
+          {
+            name: 'cvUrl',
+            title: 'CV Download URL',
+            type: 'url',
+            description: 'Direct link to the CV PDF',
+          },
+          {
+            name: 'openToWorkMessage',
+            title: 'Status Message',
+            type: 'string',
+            description: 'Short message shown in the Now card (e.g. "Open to opportunities")',
+            initialValue: 'Open to opportunities',
+          },
+        ],
+      },
+
       // Global Settings
       {
         name: 'settings',

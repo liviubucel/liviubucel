@@ -1,6 +1,5 @@
 ---
 import Card from "./Card/index.astro";
-import { LINKS } from "../lib/constants";
 import { SITE } from "../site-config";
 ---
 
@@ -8,13 +7,18 @@ import { SITE } from "../site-config";
   <div class="h-full">
     <header class="flex items-center">
       <h2 class="text-white text-xl font-bold">
-        Let's start working together!
+        Open to Opportunities
       </h2>
     </header>
-    <address class="flex flex-col mt-4">
-      <h2 class="text-darkslate-300">Contact Details</h2>
-      <p class="text-sm">{SITE.links.email}</p>
-      <p>{SITE.location.countryName}</p>
-    </address>
+    <div class="flex flex-col mt-4 gap-1">
+      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">Contact</h2>
+      <a
+        href={`mailto:${SITE.links.email}`}
+        class="text-sm hover:text-primary-400 transition-colors duration-150"
+      >
+        {SITE.links.email}
+      </a>
+      <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
+    </div>
   </div>
 </Card>
