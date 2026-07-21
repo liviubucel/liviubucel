@@ -1,13 +1,25 @@
 ---
 import Card from "./Card/index.astro";
+import { Icon } from "astro-icon/components";
 import { SITE } from "../site-config";
-import { getProfileSettings } from "../lib/sanity-queries";
+import { getProfileSettings, getCertifications } from "../lib/sanity-queries";
 
 const profile = await getProfileSettings();
+
+let certs = await getCertifications();
+
+if (!certs.length) {
+  certs = [
+    { _id: '1', name: 'CompTIA Security+', issuer: 'CompTIA', status: 'in-progress', iconType: 'shield' },
+    { _id: '2', name: 'CompTIA Network+', issuer: 'CompTIA', status: 'planned', iconType: 'network' },
+    { _id: '3', name: 'CCNA', issuer: 'Cisco', status: 'planned', iconType: 'network' },
+  ] as any;
+}
+
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
-  <div class="h-full">
+  <div class="h-full flex flex-col">
     <header class="flex items-center">
       <h2 class="text-white text-xl font-bold">
         Let's start working together!
@@ -30,6 +42,30 @@ const profile = await getProfileSettings();
         </a>
       )}
       <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
+    </div>
+
+    <div class="flex flex-col gap-2 mt-5">
+      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">Certifications</h2>
+      <div class="grid grid-cols-3 gap-2">
+        {certs.map((cert) => {
+          const Tag = cert.credentialUrl ? 'a' : 'div';
+          return (
+            <Tag
+              class="flex items-center justify-center aspect-square rounded-lg border border-neutral-700 bg-neutral-800/50 hover:border-primary-400 hover:bg-neutral-800 transition-colors duration-150"
+              title={cert.name}
+              {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-5 w-5 text-primary-400" />}
+              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
+              {!['shield','network','bug','terminal','lock','award'].includes(cert.iconType) && <Icon name="ri:award-line" class="h-5 w-5 text-primary-400" />}
+            </Tag>
+          );
+        })}
+      </div>
     </div>
   </div>
 </Card>
