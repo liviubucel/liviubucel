@@ -73,7 +73,7 @@ importers:
         version: 1.0.0
       autoprefixer:
         specifier: ^10.4.27
-        version: 10.4.27(postcss@8.5.19)
+        version: 10.4.27(postcss@8.5.20)
       d3:
         specifier: ^7.9.0
         version: 7.9.0
@@ -102,6 +102,9 @@ importers:
         specifier: ^5.55.1
         version: 5.55.1
     devDependencies:
+      '@iconify-json/simple-icons':
+        specifier: ^1.2.91
+        version: 1.2.91
       '@types/d3':
         specifier: ^7.4.3
         version: 7.4.3
@@ -113,7 +116,7 @@ importers:
         version: 66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0))
       '@unocss/postcss':
         specifier: ^66.6.7
-        version: 66.6.7(postcss@8.5.19)
+        version: 66.6.7(postcss@8.5.20)
       '@unocss/preset-uno':
         specifier: ^66.6.7
         version: 66.6.7
@@ -146,7 +149,7 @@ importers:
         version: 6.0.2
       unocss:
         specifier: ^66.6.7
-        version: 66.6.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@unocss/astro@66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)))(@unocss/postcss@66.6.7(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0))
+        version: 66.6.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@unocss/astro@66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)))(@unocss/postcss@66.6.7(postcss@8.5.20))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0))
       wrangler:
         specifier: ^4.112.0
         version: 4.112.0
@@ -1978,6 +1981,9 @@ packages:
 
   '@iconify-json/ri@1.2.10':
     resolution: {integrity: sha512-WWMhoncVVM+Xmu9T5fgu2lhYRrKTEWhKk3Com0KiM111EeEsRLiASjpsFKnC/SrB6covhUp95r2mH8tGxhgd5Q==}
+
+  '@iconify-json/simple-icons@1.2.91':
+    resolution: {integrity: sha512-plQJHZxzpkIXaeYjJF0Sc9nkzYF32EDX9olx7j1hcKYFaiTrQXbcngZmvzuV0pG6uZPU3ZuA/GIsgxSHOm6jrQ==}
 
   '@iconify/tools@4.0.7':
     resolution: {integrity: sha512-zOJxKIfZn96ZRGGvIWzDRLD9vb2CsxjcLuM+QIdvwWbv6SWhm49gECzUnd4d2P0sq9sfodT7yCNobWK8nvavxQ==}
@@ -12145,6 +12151,10 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
+  '@iconify-json/simple-icons@1.2.91':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@iconify/tools@4.0.7':
     dependencies:
       '@iconify/types': 2.0.0
@@ -14848,13 +14858,13 @@ snapshots:
       gzip-size: 6.0.0
       sirv: 3.0.2
 
-  '@unocss/postcss@66.6.7(postcss@8.5.19)':
+  '@unocss/postcss@66.6.7(postcss@8.5.20)':
     dependencies:
       '@unocss/config': 66.6.7
       '@unocss/core': 66.6.7
       '@unocss/rule-utils': 66.6.7
       css-tree: 3.1.0
-      postcss: 8.5.19
+      postcss: 8.5.20
       tinyglobby: 0.2.15
 
   '@unocss/preset-attributify@66.6.7':
@@ -15429,13 +15439,13 @@ snapshots:
       when-exit: 2.1.5
     optional: true
 
-  autoprefixer@10.4.27(postcss@8.5.19):
+  autoprefixer@10.4.27(postcss@8.5.20):
     dependencies:
       browserslist: 4.28.1
       caniuse-lite: 1.0.30001784
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.19
+      postcss: 8.5.20
       postcss-value-parser: 4.2.0
 
   autoprefixer@10.4.27(postcss@8.5.8):
@@ -19128,7 +19138,6 @@ snapshots:
       nanoid: 3.3.16
       picocolors: 1.1.1
       source-map-js: 1.2.1
-    optional: true
 
   postcss@8.5.8:
     dependencies:
@@ -20659,7 +20668,7 @@ snapshots:
 
   universalify@2.0.1: {}
 
-  unocss@66.6.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@unocss/astro@66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)))(@unocss/postcss@66.6.7(postcss@8.5.19))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)):
+  unocss@66.6.7(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@unocss/astro@66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)))(@unocss/postcss@66.6.7(postcss@8.5.20))(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0)):
     dependencies:
       '@unocss/cli': 66.6.7
       '@unocss/core': 66.6.7
@@ -20680,7 +20689,7 @@ snapshots:
       '@unocss/vite': 66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0))
     optionalDependencies:
       '@unocss/astro': 66.6.7(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.46.1)(tsx@4.23.1)(yaml@2.9.0))
-      '@unocss/postcss': 66.6.7(postcss@8.5.19)
+      '@unocss/postcss': 66.6.7(postcss@8.5.20)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
