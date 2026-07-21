@@ -73,11 +73,20 @@ export default defineConfig({
           ro: "ro-RO",
         },
       },
+      filter: (page) =>
+        !/\/(playground|travel)\/?$/.test(new URL(page).pathname),
     }),
     robotsTxt({
       sitemap: [
         `${siteNoTrailingSlash}/sitemap-index.xml`,
         `${siteNoTrailingSlash}/sitemap-0.xml`,
+      ],
+      policy: [
+        {
+          userAgent: "*",
+          allow: "/",
+          disallow: ["/api/", "/playground", "/travel"],
+        },
       ],
     }),
     solidJs(),
