@@ -14,7 +14,7 @@ The site is designed for cybersecurity recruiters, hiring managers, and potentia
 - IT support experience at Intact Media Group
 - Practical cybersecurity labs and job simulations
 - BSc (Hons) Cyber Security at De Montfort University, expected July 2027
-- Open to junior/graduate cybersecurity roles and selected technical collaborations
+- Focused on practical cybersecurity work and selected technical collaborations
 
 ## Stack
 
