@@ -39,8 +39,8 @@ async function seed() {
         _id: "homepage-singleton",
         _type: "homepage",
         fullName: "Liviu Bucel",
-        role: "Cyber Security Specialist",
-        tagline: "Helping organizations and individuals stay secure in an ever-changing digital world.",
+        role: "Cybersecurity | Ethical Hacking | Digital Investigation",
+        tagline: "Open to junior/graduate cybersecurity roles and selected technical collaborations.",
         location: "United Kingdom",
         email: "contact@liviubucel.com",
         cvUrl: null,
@@ -53,7 +53,7 @@ async function seed() {
               {
                 _type: "span",
                 _key: "span-1",
-                text: "Hi, I'm Liviu, a Cyber Security Specialist from the United Kingdom.",
+                text: "Hi, I'm Liviu, based in the United Kingdom and focused on cybersecurity, ethical hacking, and digital investigation.",
                 marks: [],
               },
             ],
@@ -67,7 +67,7 @@ async function seed() {
               {
                 _type: "span",
                 _key: "span-2",
-                text: "My primary areas of expertise: Ethical Hacking, Digital Forensics, Cryptography, Penetration Testing, Security Assessments, and Vulnerability Research.",
+                text: "My core focus areas are ethical hacking, digital investigation, incident response, and security testing.",
                 marks: [],
               },
             ],
@@ -81,7 +81,7 @@ async function seed() {
               {
                 _type: "span",
                 _key: "span-3",
-                text: "I hold a degree from DMU (De Montfort University). My mission is to help organizations and individuals stay secure in an ever-changing digital world by combining academic expertise with practical skills.",
+                text: "I build hands-on experience through controlled labs, technical research, and practical security projects.",
                 marks: [],
               },
             ],
@@ -151,11 +151,11 @@ async function seed() {
         _type: "cyberStats",
         title: "Cyber Security",
         stats: [
-          { _key: "stat-1", label: "Found and reported", value: "50+ Vulnerabilities" },
-          { _key: "stat-2", label: "Certifications", value: "OSCP & CEH" },
-          { _key: "stat-3", label: "Agency Founder", value: "Zebrabyte" },
+          { _key: "stat-1", label: "Focus", value: "DFIR & Security Testing" },
+          { _key: "stat-2", label: "Work", value: "Labs, Research & Tooling" },
+          { _key: "stat-3", label: "Project", value: "ZebraByte" },
         ],
-        certifications: ["OSCP", "CEH"],
+        certifications: [],
       },
     },
   ]);
