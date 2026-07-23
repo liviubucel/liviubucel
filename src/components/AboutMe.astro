@@ -10,26 +10,21 @@ const isRO = lang === "ro";
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-6" title={isRO ? "Despre mine" : "About me"}>
-  <div class="flex flex-col gap-2 text-sm font-light">
+  <div class="flex flex-col gap-3 text-sm font-light leading-relaxed">
     <p>
       {isRO
-        ? "Mă concentrez pe ethical hacking, investigarea criminalității cibernetice și criminalistică digitală."
-        : "I focus on ethical hacking, cybercrime investigation, and digital forensics."}
+        ? "Securitatea cibernetică este domeniul care mă interesează cel mai mult, în special ethical hacking și investigațiile digitale. Îmi place să înțeleg cum funcționează un sistem, cum a apărut o problemă și ce indică urmele lăsate în urmă."
+        : "Cybersecurity is the field that interests me most, especially ethical hacking and digital investigation. I enjoy understanding how a system works, how a problem happened, and what the evidence left behind can tell us."}
     </p>
     <p>
       {isRO
-        ? "Folosesc Kali Linux, Wireshark și Burp Suite pentru a analiza vulnerabilități și a înțelege atacurile în medii controlate."
-        : "I use Kali Linux, Wireshark, and Burp Suite to analyse vulnerabilities and understand attacks in controlled environments."}
+        ? "Lucrez în principal cu Kali Linux, Wireshark și Burp Suite, alături de tehnologii de rețea, hosting și cloud. Pe acest site adun proiectele și activitatea tehnică pe care le dezvolt."
+        : "I mainly work with Kali Linux, Wireshark, and Burp Suite, alongside networking, hosting, and cloud technologies. This site brings together the projects and technical work I am building."}
     </p>
-    <p>
-      {isRO
-        ? "Activitatea mea combină gândirea ofensivă, atenția criminalistică la detalii și raportarea tehnică clară."
-        : "My work combines offensive thinking, forensic attention to detail, and clear technical reporting."}
-    </p>
-    <div class="mt-2 pt-3 border-t border-darkslate-700">
+    <div class="mt-1 pt-3 border-t border-darkslate-700">
       <p class="font-bold">{isRO ? "Competențe principale" : "Top skills"}</p>
       <p class="text-darkslate-300 mt-1">
-        Networking · Information Security · Ethical Hacking · Digital Forensics
+        Networking · Cybersecurity · Security Testing · Digital Investigation
       </p>
     </div>
   </div>
