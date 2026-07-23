@@ -315,6 +315,13 @@ packages:
       astro: '>=7.1.0'
       wrangler: ^4.83.0
 
+  '@astrojs/compiler-binding-linux-x64-gnu@0.3.1':
+    resolution: {integrity: sha512-1y0StU1qiCuDFH3rmbRJXcxdfHxFPrES1Rd+RLffosvUR7I2cH5SF5SFnBN9vXpzpkmyElZm3Yr47iJBPN7vVA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
   '@astrojs/compiler-binding@0.3.1':
     resolution: {integrity: sha512-DaAUj29AIBU2XdJ8uwcab8lW5O2pk9pY8AXkcMw0sw77nVa3oeTYRcO+Dvbbpoexf6ThMc0FMWYCQ/wN1/T7oQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -7609,7 +7616,12 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@astrojs/compiler-binding@0.3.1': {}
+  '@astrojs/compiler-binding-linux-x64-gnu@0.3.1':
+    optional: true
+
+  '@astrojs/compiler-binding@0.3.1':
+    optionalDependencies:
+      '@astrojs/compiler-binding-linux-x64-gnu': 0.3.1
 
   '@astrojs/compiler-rs@0.3.1':
     dependencies:
