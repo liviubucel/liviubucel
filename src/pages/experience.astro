@@ -1,0 +1,108 @@
+---
+import type { Language } from "../lib/i18n";
+import Layout from "../layouts/Layout.astro";
+import Seo from "../components/Seo.astro";
+import { SITE } from "../site-config";
+
+const lang: Language = "en";
+---
+
+<Layout
+  title={"Relevant Experience — " + SITE.author.fullName}
+  description="Relevant technical support, infrastructure, and cybersecurity experience across ZebraByte, Intact Media Group, and practical security labs."
+  lang={lang}
+>
+  <Seo
+    title={"Relevant Experience — " + SITE.author.fullName}
+    description="Relevant technical support, infrastructure, and cybersecurity experience across ZebraByte, Intact Media Group, and practical security labs."
+    lang={lang}
+    canonical={SITE.site.url + "experience"}
+  />
+
+  <main class="min-h-screen text-white px-4 py-16 md:py-24 max-w-5xl mx-auto">
+    <a
+      class="absolute top-4 left-4 md:top-8 md:left-8 text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1 md:px-4 md:py-2 text-sm border border-neutral-600 rounded-lg transition-colors duration-150"
+      href="/"
+    >
+      ← Back
+    </a>
+
+    <header class="mt-12 md:mt-0 mb-12">
+      <p class="text-xs font-medium text-neutral-500 uppercase tracking-widest mb-3">Career profile</p>
+      <h1 class="text-3xl md:text-4xl font-bold leading-tight tracking-tight text-neutral-100 mb-4">
+        Relevant experience
+      </h1>
+      <p class="text-neutral-400 text-base leading-relaxed max-w-3xl">
+        My background connects IT support, hosting infrastructure, and practical cybersecurity work. I am targeting junior and graduate roles in cybersecurity, DFIR, security operations, and security testing.
+      </p>
+    </header>
+
+    <div class="space-y-6">
+      <article class="rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
+        <div class="flex flex-col gap-1 md:flex-row md:items-start md:justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-neutral-100">Technical Support Specialist</h2>
+            <p class="text-primary-400 font-medium">ZebraByte</p>
+          </div>
+          <p class="text-sm text-neutral-500">April 2022 – January 2024 · United Kingdom</p>
+        </div>
+        <ul class="list-disc pl-5 space-y-2 text-sm text-neutral-300 leading-relaxed">
+          <li>Provided Level 1 support for web-hosting environments and client infrastructure.</li>
+          <li>Configured and troubleshot cPanel accounts, DNS records, domain routing, and email delivery.</li>
+          <li>Installed and renewed SSL certificates using ACME and Let's Encrypt.</li>
+          <li>Supported WordPress deployments and diagnosed website-connectivity issues.</li>
+          <li>Applied basic infrastructure protection using Cloudflare and documented recurring support issues.</li>
+        </ul>
+      </article>
+
+      <article class="rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
+        <div class="flex flex-col gap-1 md:flex-row md:items-start md:justify-between mb-4">
+          <div>
+            <h2 class="text-xl font-bold text-neutral-100">IT Technician</h2>
+            <p class="text-primary-400 font-medium">Intact Media Group</p>
+          </div>
+          <p class="text-sm text-neutral-500">November 2019 – September 2020 · Bucharest, Romania</p>
+        </div>
+        <ul class="list-disc pl-5 space-y-2 text-sm text-neutral-300 leading-relaxed">
+          <li>Provided Level 1 IT support in a fast-paced media production environment.</li>
+          <li>Troubleshot Windows, workstation, application, email, and network-connectivity issues.</li>
+          <li>Configured user workstations and supported office and internal applications.</li>
+          <li>Escalated complex incidents to infrastructure and system-administration teams.</li>
+        </ul>
+      </article>
+
+      <section class="rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
+        <h2 class="text-xl font-bold text-neutral-100 mb-4">Practical cybersecurity work</h2>
+        <ul class="list-disc pl-5 space-y-2 text-sm text-neutral-300 leading-relaxed">
+          <li>Cybersecurity threat-analysis simulation using current CISA publications and remediation guidance.</li>
+          <li>Mastercard security-awareness job simulation focused on phishing risk and training needs.</li>
+          <li>Controlled Python exercise for testing decryption keys and understanding brute-force logic.</li>
+          <li>Hands-on labs covering Linux, Windows, networking, reconnaissance, enumeration, and incident-response fundamentals.</li>
+          <li>Tools used include Kali Linux, Wireshark, Burp Suite, Nmap, PowerShell, and Python.</li>
+        </ul>
+      </section>
+
+      <section class="rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
+        <p class="text-xs font-medium text-neutral-500 uppercase tracking-widest mb-2">Education</p>
+        <h2 class="text-xl font-bold text-neutral-100">BSc (Hons) Cyber Security</h2>
+        <p class="text-primary-400 font-medium">De Montfort University</p>
+        <p class="text-sm text-neutral-400 mt-2">October 2024 – July 2027 (expected)</p>
+        <p class="text-sm text-neutral-300 leading-relaxed mt-3">
+          Relevant areas include networking, Linux, secure coding, penetration testing, incident response, system hardening, and threat detection.
+        </p>
+      </section>
+    </div>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a class="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-500 transition-colors duration-150" href="/projects">
+        View projects
+      </a>
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/contact">
+        Contact me
+      </a>
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href={SITE.links.linkedin} target="_blank" rel="noopener noreferrer">
+        LinkedIn
+      </a>
+    </div>
+  </main>
+</Layout>
