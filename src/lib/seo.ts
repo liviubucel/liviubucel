@@ -15,7 +15,7 @@ export interface SEOMeta {
 
 export function getSEOMeta(config: SEOMeta, baseUrl: string = SITE.site.url) {
   const canonical = config.canonical || baseUrl;
-  const ogImage = config.ogImage || `${baseUrl.replace(/\/$/, '')}/og-image.jpg`;
+  const ogImage = config.ogImage || `${baseUrl.replace(/\/$/, '')}/og-image.png`;
 
   return {
     title: config.title,
@@ -53,10 +53,19 @@ export function getPersonSchema(lang: Language = 'en') {
       SITE.links.linkedin,
       ...(SITE.author.twitterHandle ? [`https://twitter.com/${SITE.author.twitterHandle}`] : []),
     ].filter(Boolean),
-    location: {
-      '@type': 'Place',
+    homeLocation: {
+      '@type': 'Country',
       name: SITE.location.countryName,
     },
+    knowsAbout: [
+      'Cyber Security',
+      'Digital Forensics',
+      'Incident Response',
+      'Security Operations',
+      'Threat Analysis',
+      'Network Security',
+      'Penetration Testing',
+    ],
     email: SITE.links.email,
   };
 }
@@ -77,7 +86,7 @@ export function getArticleSchema(config: {
     '@type': 'BlogPosting',
     headline: config.title,
     description: config.description,
-    image: config.image || `${baseUrl}og-image.jpg`,
+    image: config.image || `${baseUrl}og-image.png`,
     datePublished: config.publishedAt.toISOString(),
     dateModified: config.updatedAt?.toISOString() || config.publishedAt.toISOString(),
     author: {
@@ -90,11 +99,13 @@ export function getArticleSchema(config: {
 }
 
 export function generateAlternateLinks(pathname: string, baseUrl: string = SITE.site.url) {
-  const cleanPath = pathname.replace(/^\/(en|ro)/, '');
+  const origin = baseUrl.replace(/\/$/, '');
+  const cleanPath = pathname.replace(/^\/(en|ro)(?=\/|$)/, '') || '/';
+  const localizedPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
 
   return [
-    { hreflang: 'en', href: `${baseUrl}${cleanPath}` },
-    { hreflang: 'ro', href: `${baseUrl}ro${cleanPath}` },
-    { hreflang: 'x-default', href: `${baseUrl}${cleanPath}` },
+    { hreflang: 'en-GB', href: `${origin}${localizedPath}` },
+    { hreflang: 'ro-RO', href: `${origin}/ro${localizedPath}` },
+    { hreflang: 'x-default', href: `${origin}${localizedPath}` },
   ];
 }
