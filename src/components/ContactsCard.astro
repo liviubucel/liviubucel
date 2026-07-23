@@ -12,9 +12,18 @@ const { lang = "en" } = Astro.props;
 const isRO = lang === "ro";
 const profile = await getProfileSettings();
 
-const certs = (await getCertifications()).filter(
-  (cert) => cert.status === "earned" && Boolean(cert.credentialUrl),
+const excludedCredentials = new Set(["OSCP", "CEH", "CCNA", "OWASP Member"]);
+let certs = (await getCertifications()).filter(
+  (cert) => !excludedCredentials.has(cert.name) && ["earned", "in-progress"].includes(cert.status),
 );
+
+if (!certs.length) {
+  certs = [
+    { _id: "comptia-security-plus", name: "CompTIA Security+", issuer: "CompTIA", status: "earned", iconType: "comptia" },
+    { _id: "tryhackme-soc-l1", name: "TryHackMe SOC Level 1 (in progress)", issuer: "TryHackMe", status: "in-progress", iconType: "tryhackme" },
+    { _id: "kali-practical-labs", name: "Practical Kali Linux labs", issuer: "Self-directed labs", status: "in-progress", iconType: "kalilinux" },
+  ] as any;
+}
 
 ---
 
@@ -44,9 +53,8 @@ const certs = (await getCertifications()).filter(
       <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
     </div>
 
-    {certs.length > 0 && (
     <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-darkslate-700">
-      <h2 class="text-white text-base font-bold">{isRO ? "Certificări verificate" : "Verified certifications"}</h2>
+      <h2 class="text-white text-base font-bold">{isRO ? "Training și credențiale" : "Training & Credentials"}</h2>
       <div class="flex flex-wrap items-start gap-x-6 gap-y-5">
         {certs.map((cert) => {
           const Tag = cert.credentialUrl ? 'a' : 'div';
@@ -91,7 +99,7 @@ const certs = (await getCertifications()).filter(
           );
         })}
       </div>
-    </div>    )}
+    </div>
   </div>
 </Card>
 
