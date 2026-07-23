@@ -1,5 +1,4 @@
 // Security and performance headers middleware
-import type { AstroCookies } from 'astro';
 
 export interface HeadersConfig {
   cspEnabled?: boolean;
@@ -19,6 +18,10 @@ export function getCSPHeader(): string {
     "font-src 'self' data:",
     "connect-src 'self' https://app.cal.com https://cal.com https://*.sanity.io https://*.ingest.sentry.io",
     "frame-src https://app.cal.com https://cal.com",
+    "object-src 'none'",
+    "media-src 'self'",
+    "manifest-src 'self'",
+    "worker-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -62,6 +65,8 @@ export function getSecurityHeaders() {
     'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    'Cross-Origin-Resource-Policy': 'same-site',
+    'X-Permitted-Cross-Domain-Policies': 'none',
     'Permissions-Policy': [
       'geolocation=()',
       'microphone=()',
