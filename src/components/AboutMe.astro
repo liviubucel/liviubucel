@@ -1,31 +1,40 @@
 ---
 import Card from "./Card/index.astro";
 import { SITE } from "../site-config";
+
+interface Props {
+  lang?: "en" | "ro";
+}
+
+const { lang = "en" } = Astro.props;
+const isRO = lang === "ro";
 ---
 
-<Card colSpan="md:col-span-1" rowSpan="md:row-span-6" title="About me">
+<Card colSpan="md:col-span-1" rowSpan="md:row-span-6" title={isRO ? "Despre mine" : "About me"}>
   <div class="flex flex-col gap-2">
     <p class="sr-only">
-      Hi, I'm {SITE.author.firstName}, a Cyber Security Specialist based in the {SITE.location.countryName}.
-      My professional focus includes Ethical Hacking, Digital Forensics, Cryptography, and SOC analysis.
-      My work is grounded in hands-on projects, technical research, and security-focused tooling.
+      {isRO ? "Sunt " : "I'm "}{SITE.author.firstName}{isRO
+        ? ", locuiesc în Regatul Unit și mă concentrez pe securitate cibernetică. Lucrez la proiecte practice de ethical hacking, investigații digitale, răspuns la incidente și testare de securitate."
+        : ", based in the United Kingdom and focused on cybersecurity. I work on practical projects in ethical hacking, digital investigation, incident response, and security testing."}
     </p>
     <div aria-hidden="true" class="text-sm font-light">
       <p class="text-sm font-light">
-        Hi, I'm {SITE.author.firstName}, a Cyber Security Specialist based in the {SITE.location.countryName}.
+        {isRO ? "Sunt " : "I'm "}{SITE.author.firstName}{isRO
+          ? ", locuiesc în Regatul Unit și mă concentrez pe securitate cibernetică."
+          : ", based in the United Kingdom and focused on cybersecurity."}
       </p>
       <br />
-      Core focus areas:
+      {isRO ? "Domenii principale:" : "Core focus areas:"}
       <ul class="list-disc list-inside">
-        <li>Ethical Hacking</li>
-        <li>Digital Forensics</li>
-        <li>Cryptography</li>
-        <li>SOC Analysis</li>
-        <li>Penetration Testing</li>
-        <li>Incident Response</li>
+        <li>{isRO ? "Ethical hacking" : "Ethical Hacking"}</li>
+        <li>{isRO ? "Investigații digitale" : "Digital Investigation"}</li>
+        <li>{isRO ? "Răspuns la incidente" : "Incident Response"}</li>
+        <li>{isRO ? "Testare de securitate" : "Security Testing"}</li>
       </ul>
       <p class="text-sm font-light mt-2">
-        Applying practical skills through security projects, technical research, and continuous improvement.
+        {isRO
+          ? "Construiesc experiență practică prin proiecte, laboratoare controlate și cercetare tehnică."
+          : "Building hands-on experience through projects, controlled labs, and technical research."}
       </p>
     </div>
   </div>
