@@ -342,4 +342,5 @@ Before making any changes:
 - Removed public-facing `student`, `BSc`, and university positioning from visible copy and SEO metadata; positioned Liviu as a Cyber Security Specialist open to professional opportunities.
 - Corrected canonical URLs, `en-GB`/`ro-RO` locale metadata, hreflang URL construction, PNG social image paths, and cybersecurity structured data.
 - Hardened CSP while preserving Cal.com embedding, disabled caching for API routes, added HSTS and COOP, and removed invalid font preload headers.
+- Marked the 12 project-card illustrations as decorative and lazy-loaded them; visual classes and dimensions remain unchanged.
 - `useCdn: true`, dependencies, and the locked slate design remain unchanged.
