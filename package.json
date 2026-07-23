@@ -72,5 +72,8 @@
       "eslint --fix"
     ]
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.0",
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "1.32.0"
+  }
 }
