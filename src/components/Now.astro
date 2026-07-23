@@ -16,7 +16,6 @@ try {
   profile = await getProfileSettings();
 } catch (e) {}
 
-const cvUrl = profile?.cvUrl ?? null;
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4">
@@ -26,26 +25,14 @@ const cvUrl = profile?.cvUrl ?? null;
   </div>
   <p class="text-xs text-darkslate-300 mb-2">
     {isRO
-      ? "Construiesc proiecte practice de DFIR, cloud security și automatizare de securitate"
-      : "Building practical DFIR, cloud security, and security automation projects"}
+      ? "Acces verificat la CV pentru recrutori și parteneri tehnici."
+      : "Verified CV access for recruiters and technical partners."}
   </p>
-  {cvUrl ? (
-    <a
-      href={cvUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
-    >
-      <Icon name="ri:download-line" class="h-3 w-3" />
-      {isRO ? "Descarcă CV-ul" : "Download CV"}
-    </a>
-  ) : (
-    <a
-      href={isRO ? "/ro/contact" : "/contact"}
-      class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
-    >
-      <Icon name="ri:mail-line" class="h-3 w-3" />
-      {isRO ? "Solicită CV-ul" : "Request CV"}
-    </a>
-  )}
+  <a
+    href={isRO ? "/ro/cv" : "/cv"}
+    class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
+  >
+    <Icon name="ri:shield-keyhole-line" class="h-3 w-3" />
+    {isRO ? "Solicită acces la CV" : "Request CV access"}
+  </a>
 </Card>
