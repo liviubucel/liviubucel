@@ -105,7 +105,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkReadingTime],
   },
-  output: "server",
+  output: isLighthouse ? "static" : "server",
   adapter: isLighthouse ? undefined : cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
