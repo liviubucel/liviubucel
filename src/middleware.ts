@@ -1,9 +1,19 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getCacheControl, getSecurityHeaders } from './middleware/headers';
 
-export const onRequest = defineMiddleware((context, next) => {
-  // New simplified routing:
-  // / and /en/* -> English (default)
-  // /ro/* -> Romanian
-  // No middleware redirection needed - routes are handled directly by pages
-  return next();
+export const onRequest = defineMiddleware(async (context, next) => {
+  const response = await next();
+  const headers = new Headers(response.headers);
+
+  for (const [name, value] of Object.entries(getSecurityHeaders())) {
+    headers.set(name, value);
+  }
+
+  headers.set('Cache-Control', getCacheControl(context.url.pathname));
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 });
