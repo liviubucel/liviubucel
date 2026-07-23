@@ -38,11 +38,8 @@ overrides:
   follow-redirects@<=1.15.11: '>=1.16.0'
   form-data@>=4.0.0 <4.0.4: '>=4.0.4'
   form-data@>=4.0.0 <4.0.6: '>=4.0.6'
-  js-yaml@<3.14.2: '>=3.14.2'
-  js-yaml@<3.15.0: '>=3.15.0'
-  js-yaml@>=3.0.0 <3.15.0: '>=3.15.0'
-  js-yaml@>=4.0.0 <4.3.0: '>=4.3.0'
-  js-yaml@>=4.0.0 <=4.1.1: '>=4.2.0'
+  js-yaml@<3.15.0: 3.15.0
+  js-yaml@>=4.0.0 <4.3.0: 4.3.0
   linkify-it@<=5.0.0: '>=5.0.1'
   linkify-it@<=5.0.1: '>=5.0.2'
   markdown-it@<=14.1.1: '>=14.2.0'
@@ -5007,10 +5004,6 @@ packages:
     resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
     hasBin: true
 
-  js-yaml@5.2.1:
-    resolution: {integrity: sha512-zfLtNfQqxVqq3uaTqSkh4x4hZw3KHobGUA0fJUj4wawW8bsQLTVqpHdXSIzidh7o+4lEW36tANuAGdaFx6Zgnw==}
-    hasBin: true
-
   jsdom@28.1.0:
     resolution: {integrity: sha512-0+MoQNYyr2rBHqO1xilltfDjV9G7ymYGlAUazgcDLQaUf8JDHbuGwsxN6U9qWaElZ4w1B2r7yEGIL3GdeW3Rug==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
@@ -7630,7 +7623,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       picomatch: 4.0.5
       retext-smartypants: 6.2.0
       shiki: 4.0.2
@@ -10938,7 +10931,7 @@ snapshots:
   '@vercel/frameworks@3.29.0':
     dependencies:
       '@vercel/error-utils': 2.2.0
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       smol-toml: 1.7.0
 
   '@vercel/stega@1.1.0': {}
@@ -11216,7 +11209,7 @@ snapshots:
       github-slugger: 2.0.0
       html-escaper: 3.0.3
       http-cache-semantics: 4.2.0
-      js-yaml: 5.2.1
+      js-yaml: 4.3.0
       jsonc-parser: 3.3.1
       magic-string: 0.30.21
       magicast: 0.5.2
@@ -13137,10 +13130,6 @@ snapshots:
   js-tokens@4.0.0: {}
 
   js-yaml@4.3.0:
-    dependencies:
-      argparse: 2.0.1
-
-  js-yaml@5.2.1:
     dependencies:
       argparse: 2.0.1
 
