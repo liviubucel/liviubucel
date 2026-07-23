@@ -4,22 +4,30 @@ import Pulse from "./Pulse.astro";
 import { Icon } from "astro-icon/components";
 import { getProfileSettings } from "../lib/sanity-queries";
 
+interface Props {
+  lang?: "en" | "ro";
+}
+
+const { lang = "en" } = Astro.props;
+const isRO = lang === "ro";
+
 let profile = null;
 try {
   profile = await getProfileSettings();
 } catch (e) {}
 
-const isEmployed = profile?.isCurrentlyEmployed ?? false;
 const cvUrl = profile?.cvUrl ?? null;
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4">
   <div class="flex justify-between w-full items-start mb-2">
-    <h2 class="text-white text-xl font-bold">Now</h2>
-    <Pulse isEmployed={isEmployed} />
+    <h2 class="text-white text-xl font-bold">{isRO ? "Acum" : "Now"}</h2>
+    <Pulse isEmployed={false} />
   </div>
   <p class="text-xs text-darkslate-300 mb-2">
-    {isEmployed ? 'Currently employed' : 'Open to opportunities'}
+    {isRO
+      ? "Deschis rolurilor junior/graduate în cybersecurity și colaborărilor tehnice selectate"
+      : "Open to junior/graduate cybersecurity roles and selected technical collaborations"}
   </p>
   {cvUrl ? (
     <a
@@ -29,12 +37,15 @@ const cvUrl = profile?.cvUrl ?? null;
       class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
     >
       <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
+      {isRO ? "Descarcă CV-ul" : "Download CV"}
     </a>
   ) : (
-    <span class="text-xs flex items-center gap-1 text-darkslate-500 cursor-default">
-      <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
-    </span>
+    <a
+      href={isRO ? "/ro/contact" : "/contact"}
+      class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
+    >
+      <Icon name="ri:mail-line" class="h-3 w-3" />
+      {isRO ? "Solicită CV-ul" : "Request CV"}
+    </a>
   )}
 </Card>
