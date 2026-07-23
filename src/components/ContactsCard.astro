@@ -42,14 +42,6 @@ if (!certs.length) {
       >
         {SITE.links.email}
       </a>
-      {profile?.phone && (
-        <a
-          href={`tel:${profile.phone.replace(/\s+/g, '')}`}
-          class="text-sm hover:text-primary-400 transition-colors duration-150"
-        >
-          {profile.phone}
-        </a>
-      )}
       <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
     </div>
 
