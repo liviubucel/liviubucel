@@ -44,6 +44,9 @@ importers:
       '@rolldown/binding-linux-x64-gnu':
         specifier: 1.1.5
         version: 1.1.5
+      lightningcss-linux-x64-gnu:
+        specifier: 1.33.0
+        version: 1.33.0
 
 packages:
 
@@ -2970,6 +2973,12 @@ packages:
   leven@4.1.0:
     resolution: {integrity: sha512-KZ9W9nWDT7rF7Dazg8xyLHGLrmpgq2nVNFUckhqdW3szVP6YhCpp/RAnpmVExA9JvrMynjwSLVrEj3AepHR6ew==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  lightningcss-linux-x64-gnu@1.33.0:
+    resolution: {integrity: sha512-ar+Ju7LmcN0Jo4FpL4hpFybwNG9/3A/Br5KW2n2jyODg3MEZXaDYADdemoNS+BDNfMgKvylJLj4S5tyRActuAg==}
+    engines: {node: '>= 12.0.0'}
+    cpu: [x64]
+    os: [linux]
 
   lightningcss@1.33.0:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
@@ -7440,9 +7449,14 @@ snapshots:
 
   leven@4.1.0: {}
 
+  lightningcss-linux-x64-gnu@1.33.0:
+    optional: true
+
   lightningcss@1.33.0:
     dependencies:
       detect-libc: 2.1.2
+    optionalDependencies:
+      lightningcss-linux-x64-gnu: 1.33.0
 
   lilconfig@3.1.3: {}
 
