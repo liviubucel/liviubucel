@@ -1,6 +1,5 @@
 ---
 import Card from "./Card/index.astro";
-import { SITE } from "../site-config";
 
 interface Props {
   lang?: "en" | "ro";
@@ -11,30 +10,33 @@ const isRO = lang === "ro";
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-6" title={isRO ? "Despre mine" : "About me"}>
-  <div class="flex flex-col gap-2">
-    <p class="sr-only">
-      {isRO ? "Sunt " : "I'm "}{SITE.author.firstName}{isRO
-        ? ", locuiesc în Regatul Unit și mă concentrez pe securitate cibernetică. Lucrez la proiecte practice de ethical hacking, investigații digitale, răspuns la incidente și testare de securitate."
-        : ", based in the United Kingdom and focused on cybersecurity. I work on practical projects in ethical hacking, digital investigation, incident response, and security testing."}
+  <div class="flex flex-col gap-2 text-sm font-light">
+    <p>
+      {isRO
+        ? "Cu un interes puternic pentru ethical hacking și investigarea criminalității cibernetice, îmi construiesc o carieră bazată pe precizie tehnică și aplicare practică."
+        : "With a strong focus on ethical hacking and cybercrime investigation, I'm building a career grounded in technical precision and real-world application."}
     </p>
-    <div aria-hidden="true" class="text-sm font-light">
-      <p class="text-sm font-light">
-        {isRO ? "Sunt " : "I'm "}{SITE.author.firstName}{isRO
-          ? ", locuiesc în Regatul Unit și mă concentrez pe securitate cibernetică."
-          : ", based in the United Kingdom and focused on cybersecurity."}
-      </p>
-      <br />
-      {isRO ? "Domenii principale:" : "Core focus areas:"}
-      <ul class="list-disc list-inside">
-        <li>{isRO ? "Ethical hacking" : "Ethical Hacking"}</li>
-        <li>{isRO ? "Investigații digitale" : "Digital Investigation"}</li>
-        <li>{isRO ? "Răspuns la incidente" : "Incident Response"}</li>
-        <li>{isRO ? "Testare de securitate" : "Security Testing"}</li>
-      </ul>
-      <p class="text-sm font-light mt-2">
+    <p>
+      {isRO
+        ? "Lucrez practic cu Kali Linux, Wireshark și Burp Suite, analizând vulnerabilități, urmărind amenințări și simulând atacuri în medii controlate pentru a înțelege sistemele din interior."
+        : "I work hands-on with Kali Linux, Wireshark, and Burp Suite, analysing vulnerabilities, tracing threats, and simulating attacks in controlled environments to understand systems from the inside."}
+    </p>
+    <p>
+      {isRO
+        ? "Interesele mele principale sunt securitatea ofensivă și analiza criminalistică digitală, unde atenția la detalii și gândirea ca un atacator contează."
+        : "My main interests are offensive security and forensic analysis, where attention to detail and an attacker's mindset matter."}
+    </p>
+    <p>
+      {isRO
+        ? "Îmi dezvolt constant competențele pentru roluri de Penetration Tester sau Cyber Security Analyst."
+        : "I'm continuously developing my skills for Penetration Tester or Cyber Security Analyst roles."}
+    </p>
+    <div class="mt-2 pt-3 border-t border-darkslate-700">
+      <p class="font-bold">{isRO ? "Competențe principale" : "Top skills"}</p>
+      <p class="text-darkslate-300 mt-1">
         {isRO
-          ? "Construiesc experiență practică prin proiecte, laboratoare controlate și cercetare tehnică."
-          : "Building hands-on experience through projects, controlled labs, and technical research."}
+          ? "Networking · Information Security · Cybersecurity · Security · Ethical Hacking"
+          : "Networking · Information Security · Cybersecurity · Security · Ethical Hacking"}
       </p>
     </div>
   </div>
