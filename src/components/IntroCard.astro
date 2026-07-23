@@ -18,6 +18,7 @@ interface Props {
   tagline?: string;
   github?: string;
   linkedin?: string;
+  lang?: "en" | "ro";
 }
 
 const profile = await getProfileSettings();
@@ -28,7 +29,16 @@ const {
   tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
   github = profile?.github || LINKS.github,
   linkedin = profile?.linkedin || LINKS.linkedin,
+  lang = "en",
 } = Astro.props;
+
+const isRO = lang === "ro";
+const introText = isRO
+  ? "Sunt Liviu Bucel, locuiesc în Regatul Unit și mă concentrez pe cybersecurity, ethical hacking și investigații digitale."
+  : "I'm Liviu Bucel, based in the United Kingdom and focused on cybersecurity, ethical hacking, and digital investigation.";
+const contactText = isRO
+  ? "Sunt deschis rolurilor junior/graduate și colaborărilor tehnice relevante."
+  : "Open to junior/graduate roles and relevant technical collaborations.";
 
 const twitter = profile?.twitter;
 const youtube = profile?.youtube;
@@ -41,23 +51,11 @@ const tryhackme = profile?.tryhackme;
       <div class="flex flex-col h-full">
         <h6 class="text-sm font-light m-0 text-darkslate-300">welcome</h6>
 
-        <p class="sr-only">
-          Hi, I'm {SITE.author.fullName}, a Cyber Security Specialist based in the United Kingdom,
-          focusing on Ethical Hacking, Digital Forensics, and Cryptography.
-          Feel free to reach out if you have any inquiries, want to
-          collaborate, or just want to say hello.
-        </p>
+        <p class="sr-only">{introText} {contactText}</p>
         <p aria-hidden="true" class="m-0 font-light text-md">
-          <span>
-            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a Cyber Security Specialist based in the United Kingdom,
-            focusing on Ethical Hacking, Digital Forensics,
-            and Cryptography.
-          </span>
+          <span>{introText}</span>
           <br />
-          <span class="block mt-2">
-            Feel free to reach out if you have a security inquiry, want
-            to collaborate, or just want to say hello.
-          </span>
+          <span class="block mt-2">{contactText}</span>
         </p>
       </div>
       <div class="flex gap-2 lg:gap-4">
