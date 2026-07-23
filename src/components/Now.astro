@@ -2,7 +2,6 @@
 import Card from "./Card/index.astro";
 import Pulse from "./Pulse.astro";
 import { Icon } from "astro-icon/components";
-import { getProfileSettings } from "../lib/sanity-queries";
 
 interface Props {
   lang?: "en" | "ro";
@@ -10,11 +9,6 @@ interface Props {
 
 const { lang = "en" } = Astro.props;
 const isRO = lang === "ro";
-
-let profile = null;
-try {
-  profile = await getProfileSettings();
-} catch (e) {}
 
 ---
 
