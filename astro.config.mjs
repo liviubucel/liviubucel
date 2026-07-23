@@ -13,6 +13,7 @@ import sentry from "@sentry/astro";
 const envSiteUrl = process.env.SITE_URL || "https://liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
+const isLighthouse = process.env.LIGHTHOUSE_CI === "true";
 
 // https://astro.build/config
 export default defineConfig({
@@ -105,7 +106,7 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   output: "server",
-  adapter: cloudflare(),
+  adapter: isLighthouse ? undefined : cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
   },
