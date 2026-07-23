@@ -15,6 +15,7 @@ interface Props {
 
 const { title, description, page, pubDate, lang = 'en' } = Astro.props;
 const image = `${Astro.url.origin}/og-image.png`;
+const canonical = new URL(Astro.url.pathname, SITE.site.url).href;
 
 const schema =
   page !== "blog"
@@ -26,17 +27,8 @@ const schema =
         sameAs: [LINKS.linkedin, LINKS.github],
         image: `${Astro.url.origin}/og-image.png`,
         jobTitle: SITE.author.jobTitle,
-        knowsAbout: ["JavaScript", "React", "Astro", "Solid.js", "Svelte", "Node.js", "User Experience", "Web Development"],
-        worksFor: {
-          "@type": "Organization",
-          name: "Self-Employed",
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: SITE.location.countryName,
-            addressCountry: SITE.location.countryCode,
-          },
-        },
-        nationality: {
+        knowsAbout: ["Cyber Security", "Digital Forensics", "Incident Response", "Security Operations", "Threat Analysis", "Network Security", "Penetration Testing"],
+        homeLocation: {
           "@type": "Country",
           name: SITE.location.countryName,
         },
@@ -94,9 +86,9 @@ const schema =
     <meta content="website" property="og:type" />
     <meta content={title} property="og:title" />
     <meta content={description} property="og:description" />
-    <meta content={Astro.url.origin} property="og:url" />
+    <meta content={canonical} property="og:url" />
     <meta property="og:site_name" content={SITE.author.fullName} />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={lang === "ro" ? "ro_RO" : "en_GB"} />
     <meta
       content={image || `${Astro.url.origin}/og-image.png`}
       property="og:image"
@@ -114,7 +106,7 @@ const schema =
 
     <link href="https://cdn.fontshare.com" rel="preconnect" />
 
-    <link href={Astro.url.href} rel="canonical" />
+    <link href={canonical} rel="canonical" />
     <script
       is:inline
       set:html={JSON.stringify(schema)}
