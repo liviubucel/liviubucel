@@ -26,10 +26,10 @@ You are welcome to reference and quote content from this site. Please:
 ## Content Areas
 
 ### Blog Articles
-Technical articles and insights about web development, cybersecurity, and design.
+Technical articles, security research, incident analysis, and practical cybersecurity notes.
 
 ### Projects
-Portfolio of web development and design projects with live demos and source code.
+Portfolio of cybersecurity tools, technical research, and hands-on security projects.
 
 ### Social Links
 - GitHub: ${SITE.links.github}
