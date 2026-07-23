@@ -33,7 +33,7 @@ const {
 
 const url = new URL(Astro.request.url);
 const canonicalUrl = canonical || url.href;
-const image = ogImage || `${SITE.site.url}og-image.jpg`;
+const image = ogImage || `${SITE.site.url}og-image.png`;
 const alternateLinks = generateAlternateLinks(url.pathname, SITE.site.url);
 
 // Generate JSON-LD
@@ -74,7 +74,7 @@ if (type === 'article' && articleDate) {
 <meta property="og:site_name" content={SITE.author.fullName} />
 <meta
   property="og:locale"
-  content={lang === 'ro' ? 'ro_RO' : 'en_US'}
+  content={lang === 'ro' ? 'ro_RO' : 'en_GB'}
 />
 
 <!-- Twitter Card -->
