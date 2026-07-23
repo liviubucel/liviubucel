@@ -24,9 +24,6 @@ interface Props {
 const profile = await getProfileSettings();
 
 const {
-  fullName = SITE.author.fullName,
-  role = SITE.author.jobTitle,
-  tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
   github = profile?.github || LINKS.github,
   linkedin = profile?.linkedin || LINKS.linkedin,
   lang = "en",
@@ -38,8 +35,8 @@ const roleText = isRO
   ? "Securitate cibernetică · Ethical Hacking · Investigații digitale"
   : "Cybersecurity · Ethical Hacking · Digital Investigation";
 const summaryText = isRO
-  ? "Investighez atacuri, analizez vulnerabilități și dezvolt instrumente de securitate prin laboratoare practice și lucrul cu infrastructură reală. Experiența mea leagă suportul IT, hostingul, cloud security și investigațiile digitale. Locuiesc în Leicester, Regatul Unit."
-  : "I investigate attacks, analyse vulnerabilities, and build security tooling through hands-on labs and real infrastructure work. My background connects IT support, hosting, cloud security, and digital investigation. Based in Leicester, UK.";
+  ? "Mă interesează cum funcționează atacurile, cum sunt descoperite vulnerabilitățile și cum pot fi investigate incidentele. Aici îmi prezint proiectele și activitatea tehnică. Locuiesc în Leicester, Regatul Unit."
+  : "I'm interested in how attacks work, how vulnerabilities are found, and how incidents can be investigated. This is where I share my projects and technical work. Based in Leicester, UK.";
 const mottoText = isRO
   ? "FĂ-O, DAR FĂ-O BINE!"
   : "JUST DO IT, BUT DO IT WELL!";
@@ -51,7 +48,7 @@ const tryhackme = profile?.tryhackme;
 
 <Card colSpan="md:col-span-3" rowSpan="md:row-span-4">
   <div class="flex w-full h-full">
-    <div class="flex flex-col justify-between md:max-h-[300px] gap-4">
+    <div class="flex flex-col justify-between md:max-h-[300px] gap-4 min-w-0">
       <div class="flex flex-col h-full">
         <p class="text-sm font-light m-0 text-darkslate-300">{roleText}</p>
         <h1 class="text-3xl sm:text-4xl font-bold m-0 mt-1">{heading}</h1>
