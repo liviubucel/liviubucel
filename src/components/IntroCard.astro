@@ -33,12 +33,16 @@ const {
 } = Astro.props;
 
 const isRO = lang === "ro";
-const introText = isRO
-  ? "Sunt Liviu Bucel, locuiesc în Regatul Unit și mă concentrez pe cybersecurity, ethical hacking și investigații digitale."
-  : "I'm Liviu Bucel, based in the United Kingdom and focused on cybersecurity, ethical hacking, and digital investigation.";
-const contactText = isRO
-  ? "Sunt deschis rolurilor junior/graduate și colaborărilor tehnice relevante."
-  : "Open to junior/graduate roles and relevant technical collaborations.";
+const heading = isRO ? "Sunt Liviu Bucel" : "I'm Liviu Bucel";
+const roleText = isRO
+  ? "Securitate cibernetică · Ethical Hacking · Investigații digitale"
+  : "Cybersecurity · Ethical Hacking · Digital Investigation";
+const summaryText = isRO
+  ? "Investighez atacuri, dezvolt instrumente de securitate și documentez proiecte practice. Locuiesc în Leicester, Regatul Unit."
+  : "I investigate attacks, build security tooling, and document practical security projects. Based in Leicester, UK.";
+const mottoText = isRO
+  ? "FĂ-O, DAR FĂ-O BINE!"
+  : "JUST DO IT, BUT DO IT WELL!";
 
 const twitter = profile?.twitter;
 const youtube = profile?.youtube;
@@ -49,14 +53,10 @@ const tryhackme = profile?.tryhackme;
   <div class="flex w-full h-full">
     <div class="flex flex-col justify-between md:max-h-[300px] gap-4">
       <div class="flex flex-col h-full">
-        <h6 class="text-sm font-light m-0 text-darkslate-300">welcome</h6>
-
-        <p class="sr-only">{introText} {contactText}</p>
-        <p aria-hidden="true" class="m-0 font-light text-md">
-          <span>{introText}</span>
-          <br />
-          <span class="block mt-2">{contactText}</span>
-        </p>
+        <p class="text-sm font-light m-0 text-darkslate-300">{roleText}</p>
+        <h1 class="text-3xl sm:text-4xl font-bold m-0 mt-1">{heading}</h1>
+        <p class="m-0 font-light text-md mt-3">{summaryText}</p>
+        <p class="text-sm font-bold mt-auto">{mottoText}</p>
       </div>
       <div class="flex gap-2 lg:gap-4">
         <a href={github} aria-label="github profile" target="_blank">
