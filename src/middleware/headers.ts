@@ -12,12 +12,12 @@ export interface HeadersConfig {
 export function getCSPHeader(): string {
   const policies = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://app.cal.com",
-    "style-src 'self' 'unsafe-inline' https://app.cal.com",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: blob:",
     "font-src 'self' data:",
-    "connect-src 'self' https://app.cal.com https://cal.com https://*.sanity.io https://*.ingest.sentry.io",
-    "frame-src https://app.cal.com https://cal.com",
+    "connect-src 'self' https://*.sanity.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
+    "frame-src 'none'",
     "object-src 'none'",
     "media-src 'self'",
     "manifest-src 'self'",
