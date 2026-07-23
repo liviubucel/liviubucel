@@ -24,7 +24,11 @@ const DANGEROUS_PATTERNS = [
   { pattern: /document\.write\s*\(/g, name: 'document.write()', severity: 'high' },
   { pattern: /from\s+['"]node:child_process['"]/g, name: 'child_process import', severity: 'high' },
   { pattern: /require\(.*\$.*\)/g, name: 'dynamic require with variable', severity: 'high' },
-  { pattern: /http:\/\/(?!localhost|127\.0\.0\.1)/g, name: 'unencrypted HTTP URL', severity: 'medium' },
+  {
+    pattern: /http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org\/2000\/svg)/g,
+    name: 'unencrypted HTTP URL',
+    severity: 'medium',
+  },
 ];
 
 function scanFile(filePath) {
