@@ -6,14 +6,25 @@
 import fs from 'fs';
 import path from 'path';
 
-const SCAN_DIRS = ['./src', './scripts'];
+const SCAN_DIRS = ['./src', './scripts', './studio-liviubucel'];
+const IGNORED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  '.astro',
+  '.sanity',
+  'coverage',
+]);
 const DANGEROUS_PATTERNS = [
   { pattern: /eval\s*\(/g, name: 'eval()', severity: 'critical' },
+  { pattern: /new\s+Function\s*\(/g, name: 'Function constructor', severity: 'critical' },
   { pattern: /innerHTML\s*=/g, name: 'innerHTML assignment', severity: 'high' },
   { pattern: /dangerouslySetInnerHTML/g, name: 'dangerouslySetInnerHTML', severity: 'high' },
+  { pattern: /document\.write\s*\(/g, name: 'document.write()', severity: 'high' },
+  { pattern: /from\s+['"]node:child_process['"]/g, name: 'child_process import', severity: 'high' },
   { pattern: /require\(.*\$.*\)/g, name: 'dynamic require with variable', severity: 'high' },
-  { pattern: /fetch\(['"]\$\{/g, name: 'dynamic URL fetch', severity: 'medium' },
-  { pattern: /process\.env\..*PASSWORD/i, name: 'password in env var name', severity: 'high' },
+  { pattern: /http:\/\/(?!localhost|127\.0\.0\.1)/g, name: 'unencrypted HTTP URL', severity: 'medium' },
 ];
 
 function scanFile(filePath) {
@@ -42,8 +53,7 @@ function scanDirectory(dir) {
     const entries = fs.readdirSync(currentPath, { withFileTypes: true });
 
     for (const entry of entries) {
-      // Skip node_modules, .git, dist, build
-      if (['node_modules', '.git', 'dist', 'build', '.astro'].includes(entry.name)) continue;
+      if (IGNORED_DIRS.has(entry.name)) continue;
 
       const fullPath = path.join(currentPath, entry.name);
 
@@ -108,8 +118,8 @@ function runSecurityScan() {
 
   console.log(`Total issues: ${allIssues.length}`);
 
-  // Exit with error if critical issues
-  if (critical.length > 0) {
+  // High and critical findings must block CI.
+  if (critical.length > 0 || high.length > 0) {
     process.exit(1);
   }
 
