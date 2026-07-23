@@ -339,8 +339,20 @@ Before making any changes:
 
 - Baseline/design reference: commit `e7fc9239f90c28fd859a9b48173564c390023b18`.
 - No CSS, visual classes, images, component order, or layout structure changed.
-- Removed public-facing `student`, `BSc`, and university positioning from visible copy and SEO metadata; positioned Liviu as a Cyber Security Specialist open to professional opportunities.
+- Removed public-facing `student`, `BSc`, and university positioning from visible copy and SEO metadata; aligned Liviu's positioning with his public LinkedIn headline (Cybersecurity, Ethical Hacking, and Digital Investigation), without unverified job-title or certification claims.
 - Corrected canonical URLs, `en-GB`/`ro-RO` locale metadata, hreflang URL construction, PNG social image paths, and cybersecurity structured data.
 - Hardened CSP while preserving Cal.com embedding, disabled caching for API routes, added HSTS and COOP, and removed invalid font preload headers.
 - Marked the 12 project-card illustrations as decorative and lazy-loaded them; visual classes and dimensions remain unchanged.
 - `useCdn: true`, dependencies, and the locked slate design remain unchanged.
+
+### 2026-07-23 — HR credibility and bilingual profile
+
+- Sources checked: public LinkedIn export and the user's CV; LinkedIn was treated as the newer source where dates differed.
+- Added focused Experience pages in English and Romanian with only relevant roles: ZebraByte Technical Support Specialist and Intact Media Group IT Technician.
+- Kept education factual and secondary: BSc (Hons) Cyber Security, expected July 2027; no student positioning in titles or search descriptions.
+- Removed unverified certification fallbacks; only earned credentials with a verification URL can render.
+- Removed unverified degree, vulnerability-count, OSCP, and CEH seed content.
+- Replaced the donation card with a LinkedIn professional-profile card while preserving the locked grid.
+- Added English/Romanian copy to shared Intro, About, Contacts, and Now cards.
+- Replaced the template README with repository-specific documentation while retaining design credit.
+- Parser validation passed for all 11 modified Astro components and pages.
