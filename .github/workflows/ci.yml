@@ -74,7 +74,6 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@10.33.0 --activate
-          cache-dependency-path: studio-liviubucel/pnpm-lock.yaml
 
       - name: Prepare isolated Studio workspace
         run: |
