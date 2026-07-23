@@ -271,24 +271,6 @@ export async function getSettings() {
   }
 }
 
-export async function getGuestbookEntries(lang?: Language): Promise<any[]> {
-  try {
-    const langFilter = lang ? ` && language == "${lang}"` : '';
-    return await sanityClient.fetch(`*[_type == "guestbookEntry" && approved == true${langFilter}] | order(submittedAt desc) {
-      _id,
-      name,
-      email,
-      message,
-      website,
-      language,
-      submittedAt
-    }`);
-  } catch (error) {
-    console.error('Failed to fetch guestbook entries:', error);
-    return [];
-  }
-}
-
 export interface Certification {
   _id: string;
   name: string;
@@ -349,17 +331,3 @@ export async function getProfileSettings(): Promise<ProfileSettings | null> {
   }
 }
 
-export async function submitGuestbookEntry(entry: {
-  name: string;
-  email: string;
-  message: string;
-  website?: string;
-  language: Language;
-}) {
-  return sanityClient.create({
-    _type: 'guestbookEntry',
-    ...entry,
-    approved: false,
-    submittedAt: new Date().toISOString(),
-  });
-}
