@@ -333,3 +333,13 @@ Before making any changes:
 **Last Verified**: 2026-07-20
 **Next Review**: Before next session
 
+---
+
+## 2026-07-23 — Career positioning and technical audit (design locked)
+
+- Baseline/design reference: commit `e7fc9239f90c28fd859a9b48173564c390023b18`.
+- No CSS, visual classes, images, component order, or layout structure changed.
+- Removed public-facing `student`, `BSc`, and university positioning from visible copy and SEO metadata; positioned Liviu as a Cyber Security Specialist open to professional opportunities.
+- Corrected canonical URLs, `en-GB`/`ro-RO` locale metadata, hreflang URL construction, PNG social image paths, and cybersecurity structured data.
+- Hardened CSP while preserving Cal.com embedding, disabled caching for API routes, added HSTS and COOP, and removed invalid font preload headers.
+- `useCdn: true`, dependencies, and the locked slate design remain unchanged.
