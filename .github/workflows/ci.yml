@@ -60,9 +60,6 @@ jobs:
     name: Sanity Studio Check
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: studio-liviubucel
 
     steps:
       - uses: actions/checkout@v4
@@ -77,17 +74,26 @@ jobs:
           cache: pnpm
           cache-dependency-path: studio-liviubucel/pnpm-lock.yaml
 
+      - name: Prepare isolated Studio workspace
+        run: |
+          mkdir -p "${RUNNER_TEMP}/sanity-studio"
+          cp -R studio-liviubucel/. "${RUNNER_TEMP}/sanity-studio/"
+
       - name: Install Studio dependencies
         run: pnpm install --ignore-workspace --frozen-lockfile
+        working-directory: ${{ runner.temp }}/sanity-studio
 
       - name: Type check Studio
         run: pnpm check
+        working-directory: ${{ runner.temp }}/sanity-studio
 
       - name: Audit Studio production dependencies
         run: pnpm audit --ignore-workspace --prod --audit-level high
+        working-directory: ${{ runner.temp }}/sanity-studio
 
       - name: Build Studio
         run: pnpm build
+        working-directory: ${{ runner.temp }}/sanity-studio
 
   build:
     name: Build & Test
