@@ -40,7 +40,7 @@ async function seed() {
         _type: "homepage",
         fullName: "Liviu Bucel",
         role: "Cybersecurity | Ethical Hacking | Digital Investigation",
-        tagline: "Open to junior/graduate cybersecurity roles and selected technical collaborations.",
+        tagline: "Building practical DFIR, cloud security, and security automation projects.",
         location: "United Kingdom",
         email: "contact@liviubucel.com",
         cvUrl: null,
