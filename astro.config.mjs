@@ -90,8 +90,6 @@ export default defineConfig({
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
-    // db() integration commented out due to CommonJS/ESM incompatibility
-    // Use alternative guestbook storage (e.g., external API)
     ...(process.env.SANITY_PROJECT_ID ? [
       sanity({
         projectId: process.env.SANITY_PROJECT_ID,
@@ -110,11 +108,5 @@ export default defineConfig({
   adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
-    ssr: {
-      external: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
-    },
-    optimizeDeps: {
-      exclude: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
-    },
   },
 });
