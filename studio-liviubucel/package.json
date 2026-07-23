@@ -25,6 +25,9 @@
     "@types/react": "^19.0.0",
     "typescript": "^5.0.0"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "1.1.5"
+  },
   "pnpm": {
     "overrides": {
       "adm-zip@<0.6.0": "0.6.0",
