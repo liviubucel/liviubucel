@@ -17,13 +17,13 @@ const isRO = true;
 ---
 
 <Layout
-  description="Specialist în securitate cibernetică axat pe criminalistică digitală, răspuns la incidente, testare de penetrare și evaluarea vulnerabilităților"
+  description="Portofoliu de securitate cibernetică axat pe ethical hacking, investigații digitale, răspuns la incidente și testare de securitate"
   title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
   <Seo
     title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="Specialist în securitate cibernetică axat pe criminalistică digitală, răspuns la incidente, testare de penetrare și evaluarea vulnerabilităților"
+    description="Portofoliu de securitate cibernetică axat pe ethical hacking, investigații digitale, răspuns la incidente și testare de securitate"
     lang={lang}
     type="profile"
     keywords={["securitate cibernetică", "criminalistică digitală", "răspuns la incidente", "testare de penetrare", "evaluarea vulnerabilităților"]}
@@ -33,12 +33,12 @@ const isRO = true;
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
   >
-    <IntroCard />
-    <AboutMe />
+    <IntroCard lang={lang} />
+    <AboutMe lang={lang} />
     <ContactsCard />
     <TimeZone />
     <DesignWorksCard />
-    <Now />
+    <Now lang={lang} />
     <Card
       href="/ro/contact"
       colSpan="md:col-span-1"
@@ -46,10 +46,10 @@ const isRO = true;
       title="Contact"
     />
     <Card
-      href="/ro/guestbook"
+      href="/ro/experience"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Cartea de Oaspeti"
+      title="Experiență"
     />
     <Card
       href="/ro/blog"
@@ -57,7 +57,7 @@ const isRO = true;
       rowSpan="md:row-span-1"
       title="Blog"
     />
-    <DonateCard />
+    <DonateCard lang={lang} />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
