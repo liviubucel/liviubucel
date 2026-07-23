@@ -105,6 +105,9 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkReadingTime],
   },
+  devToolbar: {
+    enabled: !isLighthouse,
+  },
   output: isLighthouse ? "static" : "server",
   adapter: isLighthouse ? undefined : cloudflare(),
   vite: {
