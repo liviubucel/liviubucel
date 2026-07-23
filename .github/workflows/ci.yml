@@ -56,6 +56,39 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  studio-check:
+    name: Sanity Studio Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: studio-liviubucel
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: studio-liviubucel/pnpm-lock.yaml
+
+      - name: Install Studio dependencies
+        run: pnpm install --ignore-workspace --frozen-lockfile
+
+      - name: Type check Studio
+        run: pnpm check
+
+      - name: Audit Studio production dependencies
+        run: pnpm audit --ignore-workspace --prod --audit-level high
+
+      - name: Build Studio
+        run: pnpm build
+
   build:
     name: Build & Test
     runs-on: ubuntu-latest
