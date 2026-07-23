@@ -13,11 +13,12 @@ export interface HeadersConfig {
 export function getCSPHeader(): string {
   const policies = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://va.vercel-analytics.com",
-    "style-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' https://app.cal.com",
+    "style-src 'self' 'unsafe-inline' https://app.cal.com",
     "img-src 'self' data: https: blob:",
-    "font-src 'self' data: https:",
-    "connect-src 'self' https: wss:",
+    "font-src 'self' data:",
+    "connect-src 'self' https://app.cal.com https://cal.com https://*.sanity.io https://*.ingest.sentry.io",
+    "frame-src https://app.cal.com https://cal.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -43,7 +44,7 @@ export function getCacheControl(pathname: string): string {
 
   // API routes - no cache
   if (pathname.startsWith('/api/') || pathname.startsWith('/.well-known/')) {
-    return 'public, max-age=3600';
+    return 'private, no-store';
   }
 
   // Default
@@ -58,8 +59,9 @@ export function getSecurityHeaders() {
     'Content-Security-Policy': getCSPHeader(),
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
-    'X-XSS-Protection': '1; mode=block',
+    'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     'Permissions-Policy': [
       'geolocation=()',
       'microphone=()',
@@ -78,7 +80,6 @@ export function getSecurityHeaders() {
  */
 export function getPerformanceHeaders() {
   return {
-    'Link': '</fonts/CabinetGrotesk-Variable.ttf>; rel=preload; as=font; type=font/ttf; crossorigin, </fonts/Satoshi-Variable.ttf>; rel=preload; as=font; type=font/ttf; crossorigin',
     'X-DNS-Prefetch-Control': 'on',
   };
 }
