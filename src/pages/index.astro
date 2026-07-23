@@ -17,13 +17,13 @@ const isRO = false;
 ---
 
 <Layout
-  description="UK-based cyber security specialist focused on digital forensics, incident response, penetration testing, vulnerability assessment, and threat research"
+  description="Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects"
   title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
   lang={lang}
 >
   <Seo
     title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="UK-based cyber security specialist focused on digital forensics, incident response, penetration testing, vulnerability assessment, and threat research"
+    description="Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects"
     lang={lang}
     type="profile"
     keywords={["cyber security", "digital forensics", "incident response", "penetration testing", "vulnerability assessment", "threat research"]}
@@ -33,12 +33,12 @@ const isRO = false;
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
   >
-    <IntroCard />
-    <AboutMe />
+    <IntroCard lang={lang} />
+    <AboutMe lang={lang} />
     <ContactsCard />
     <TimeZone />
     <DesignWorksCard />
-    <Now />
+    <Now lang={lang} />
     <Card
       href="/contact"
       colSpan="md:col-span-1"
@@ -46,10 +46,10 @@ const isRO = false;
       title="Contact"
     />
     <Card
-      href="/guestbook"
+      href="/experience"
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
-      title="Guestbook"
+      title="Experience"
     />
     <Card
       href="/blog"
@@ -57,7 +57,7 @@ const isRO = false;
       rowSpan="md:row-span-1"
       title="Blog"
     />
-    <DonateCard />
+    <DonateCard lang={lang} />
 
     <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
       <p class="text-xs">
