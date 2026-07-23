@@ -1,95 +1,58 @@
-# ⚡️astro-bento-portfolio
+# Liviu Bucel — Personal Cybersecurity Portfolio
 
-## A personal portfolio website made using `Astro`.
+Personal portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security work.
 
-![astro-bento-portfolio | Bento-like Personal Porfolio Template](public/preview.png)
+Production site: [liviubucel.com](https://liviubucel.com/)
 
-To view a demo example, **[click here](https://sparkly-speculoos-0c9197.netlify.app/)**
+## Purpose
 
-or my portfolio **[click here](https://gianmarcocavallo.com/)**
+The site is designed for cybersecurity recruiters, hiring managers, and potential technical collaborators. English is the default language, with Romanian content under `/ro/`.
 
-## Features
+## Relevant profile
 
-- Modern and Minimal bento-like, sleek UI Design
-- All in one page (almost)
-- Fully Responsive
-- Performances and SEO optimizations
-- Ready to be deployed on [Netlify](https://www.netlify.com/)
-- Blog
-- RSS support (your-domain/rss.xml)
-- Cool 3d globe
+- Technical support and hosting infrastructure experience at ZebraByte
+- IT support experience at Intact Media Group
+- Practical cybersecurity labs and job simulations
+- BSc (Hons) Cyber Security at De Montfort University, expected July 2027
+- Open to junior/graduate cybersecurity roles and selected technical collaborations
 
-## Tech Stack
+## Stack
 
-- [Astro](https://astro.build)
-- [unocss](https://unocss.dev/)
-- [motion](https://motion.dev/)
-- [d3](https://d3js.org/)
+- Astro and TypeScript
+- UnoCSS
+- Motion
+- Sanity CMS
+- Cloudflare Workers
 
-# Steps ▶️
+## Main areas
 
-```bash
-# Clone this repository
-$ git clone https://github.com/Ladvace/astro-bento-portfolio
-```
+- Professional profile and relevant experience
+- Cybersecurity projects
+- Technical writing
+- Contact and collaboration enquiries
+- English and Romanian routes
+- SEO and structured data
+- Security headers and privacy-conscious API caching
 
-```bash
-# Go into the repository
-$ cd astro-bento-portfolio
-```
+## Local development
 
 ```bash
-# Install dependencies
-$ pnpm install
-or
-$ npm install
+npm install
+npm run dev
 ```
 
-```bash
-# Start the project in development
-$ pnpm run dev
-or
-$ npm run dev
-```
+Create a local environment file from the project example and provide only the variables required for the feature you are testing. Never commit Sanity tokens or other credentials.
 
-# Customize your portfolio
-After installing dependencies, run:
+## Content integrity
 
-```bash
-$ pnpm run site-setup
-```
+Public profile data is configured in `src/site-config.ts`. Dynamic projects, articles, profile settings, and verified certifications can be managed through Sanity.
 
-This updates `src/site-config.ts` (name, links, email, timezone, etc.) and sets `SITE_URL` in `.env`.
+Only earned certifications with a credential URL should be published. Claims about qualifications, results, or professional experience must remain verifiable.
 
-Then start the dev server again (`pnpm run dev`).
+## Deployment
 
-Even after `site-setup`, you still need to swap the avatar/memoji images (replace `src/assets/me*.webp` with your own).
+The project targets Cloudflare Workers. Production configuration and secrets are managed outside the repository.
 
-## REMOVE THE umami analytics script tag (or replace it with your id) in `src/layouts/BasicLayout.astro`
+## Design credit
 
-# Configuration
-
-`site` and sitemap/robots URLs are derived from `SITE_URL` (set by `pnpm run site-setup`).
-
-# Deploy on Netlify 🚀
-
-Deploying your website on Netlify it's optional but I reccomand it in order to deploy it faster and easly.
-
-You just need to fork this repo and linking it to your Netlify account.
-
-or
-
-[![Netlify Deploy button](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Ladvace/astro-bento-portfolio)
-
-## Database Configuration
-
-This project uses Astro DB with Turso for the guestbook feature. Set the following environment variables:
-
-- `ASTRO_DB_REMOTE_URL=libsql://portfolio-ladvace.aws-eu-west-1.turso.io`
-- `ASTRO_DB_APP_TOKEN=your-auth-token-here`
-
-Run `pnpm astro db push` to initialize the database schema.
-
-## Authors ❤️
-
-- Gianmarco - https://github.com/Ladvace
+The bento-grid visual foundation is based on [Ladvace/astro-bento-portfolio](https://github.com/Ladvace/astro-bento-portfolio). The implementation has been adapted for Liviu Bucel's bilingual cybersecurity portfolio.
