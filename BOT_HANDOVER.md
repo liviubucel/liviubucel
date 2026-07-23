@@ -350,9 +350,11 @@ Before making any changes:
 - Sources checked: public LinkedIn export and the user's CV; LinkedIn was treated as the newer source where dates differed.
 - Added focused Experience pages in English and Romanian with only relevant roles: ZebraByte Technical Support Specialist and Intact Media Group IT Technician.
 - Kept education factual and secondary: BSc (Hons) Cyber Security, expected July 2027; no student positioning in titles or search descriptions.
-- Removed unverified certification fallbacks; only earned credentials with a verification URL can render.
+- Removed OSCP, CEH, CCNA, and OWASP fallback claims; the card shows only profile-backed training and credentials (CompTIA Security+, TryHackMe SOC Level 1 in progress, and practical Kali Linux labs).
 - Removed unverified degree, vulnerability-count, OSCP, and CEH seed content.
-- Replaced the donation card with a LinkedIn professional-profile card while preserving the locked grid.
+- Replaced the donation card with a GitHub projects card while preserving the locked grid and original card dimensions.
 - Added English/Romanian copy to shared Intro, About, Contacts, and Now cards.
 - Replaced the template README with repository-specific documentation while retaining design credit.
 - Parser validation passed for all 11 modified Astro components and pages.
+
+- User review correction: removed the Professional profile card and restored three honest training/credential logos without altering the bento grid.
