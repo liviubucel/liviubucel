@@ -1,6 +1,5 @@
 ---
 import Card from "./Card/index.astro";
-import { Icon } from "astro-icon/components";
 
 interface Props {
   lang?: "en" | "ro";
@@ -15,16 +14,4 @@ const isRO = lang === "ro";
   rowSpan="md:row-span-1"
   title={isRO ? "Susține activitatea mea" : "Support my work"}
   href="https://buymeacoffee.com/liviubucel"
->
-  <div class="flex flex-col gap-2 mt-4 h-full">
-    <p class="text-sm text-darkslate-300 m-0">
-      {isRO
-        ? "Dacă apreciezi conținutul sau proiectele mele, mă poți susține aici."
-        : "If you appreciate my content or projects, you can support me here."}
-    </p>
-    <div class="flex items-center gap-2 text-primary-500 mt-auto font-bold">
-      <Icon name="ri:cup-line" class="h-5 w-5" />
-      {isRO ? "Oferă-mi o cafea" : "Buy me a coffee"}
-    </div>
-  </div>
-</Card>
+/>
