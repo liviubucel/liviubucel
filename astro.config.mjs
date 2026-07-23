@@ -69,7 +69,7 @@ export default defineConfig({
       i18n: {
         defaultLocale: "en",
         locales: {
-          en: "en-US",
+          en: "en-GB",
           ro: "ro-RO",
         },
       },
@@ -77,10 +77,7 @@ export default defineConfig({
         !/\/(playground|travel)\/?$/.test(new URL(page).pathname),
     }),
     robotsTxt({
-      sitemap: [
-        `${siteNoTrailingSlash}/sitemap-index.xml`,
-        `${siteNoTrailingSlash}/sitemap-0.xml`,
-      ],
+      sitemap: [`${siteNoTrailingSlash}/sitemap-index.xml`],
       policy: [
         {
           userAgent: "*",
