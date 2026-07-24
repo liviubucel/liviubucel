@@ -15,14 +15,32 @@ import MyStack from "../../components/MyStack.astro";
 import { SITE } from "../../site-config";
 import { sanityClient } from "../../lib/sanity";
 
+type HomepageData = {
+  fullName?: string;
+  role?: string;
+  tagline?: string;
+  aboutText?: string | null;
+  email?: string;
+  location?: string;
+};
+
+type SocialLinkData = {
+  platform?: string;
+  url?: string;
+};
+
+type CyberStatsData = {
+  stats?: any;
+};
+
 const lang: Language = 'ro';
 const isRO = true;
 
 // Fetch all data from Sanity once
-let homepage = null;
-let techStack = [];
-let socialLinks = [];
-let cyberStats = null;
+let homepage: HomepageData | null = null;
+let techStack: unknown[] = [];
+let socialLinks: SocialLinkData[] = [];
+let cyberStats: CyberStatsData | null = null;
 
 try {
   [homepage, techStack, socialLinks, cyberStats] = await Promise.all([
@@ -63,7 +81,7 @@ const linkedin = socialLinks.find(s => s.platform === "LinkedIn")?.url || SITE.l
   <main
     class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-screen lg:grid-rows-8 lg:grid-cols-4 lg:gap-4 lg:max-h-[800px]"
   >
-    <IntroCard fullName={fullName} role={role} tagline={tagline} github={github} linkedin={linkedin} lang={lang} />
+    <IntroCard fullName={fullName} role={role} tagline={tagline} github={github} linkedin={linkedin} />
     <AboutMe aboutText={aboutText} fullName={fullName} location={location} lang={lang} />
     <ContactsCard email={email} location={location} github={github} linkedin={linkedin} lang={lang} />
     <TimeZone lang={lang} />
