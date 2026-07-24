@@ -8,6 +8,7 @@ type Props = {
   pubDate: Date;
   minutesRead: string;
   url: string;
+  lang?: "en" | "ro";
 };
 
 const { title, description, pubDate, minutesRead, url } = Astro.props;
