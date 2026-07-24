@@ -6,10 +6,16 @@ import Layout from '../../layouts/Layout.astro';
 import PostRow from '../../components/Blog/PostRow.astro';
 import { SITE } from '../../site-config';
 
+type PostSummary = {
+  id: string;
+  title: string;
+  pubDate?: string;
+};
+
 const lang: Language = 'en';
 const isRO = false;
 
-let posts = [];
+let posts: PostSummary[] = [];
 let debugError = "";
 try {
     const allPosts = await getPosts(lang);
