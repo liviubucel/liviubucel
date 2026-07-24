@@ -99,13 +99,23 @@ jobs:
         continue-on-error: true
 
       - name: Build
-        run: pnpm build
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee build.log
         env:
           SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
           SANITY_DATASET: production
           SITE_URL: ${{ secrets.SITE_URL }}
           ASTRO_DB_REMOTE_URL: ${{ secrets.ASTRO_DB_REMOTE_URL }}
           ASTRO_DB_APP_TOKEN: ${{ secrets.ASTRO_DB_APP_TOKEN }}
+
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-build-log
+          path: build.log
+          retention-days: 3
 
   lighthouse:
     name: Lighthouse Audit
