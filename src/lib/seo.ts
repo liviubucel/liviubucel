@@ -51,7 +51,7 @@ export function getPersonSchema(lang: Language = 'en') {
     sameAs: [
       SITE.links.github,
       SITE.links.linkedin,
-      ...(SITE.links.twitter ? [`https://twitter.com/${SITE.author.twitterHandle}`] : []),
+      ...(SITE.author.twitterHandle ? [`https://twitter.com/${SITE.author.twitterHandle}`] : []),
     ].filter(Boolean),
     location: {
       '@type': 'Place',
