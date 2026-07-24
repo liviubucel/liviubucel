@@ -5,9 +5,22 @@ import Layout from '../../layouts/Layout.astro';
 import { SITE } from '../../site-config';
 import { getProjects } from '../../lib/sanity-queries';
 
+type ProjectCard = {
+  id: string;
+  title: string;
+  description: string;
+  image?: string;
+  tags: string[];
+  links: {
+    demo?: string;
+    github?: string;
+  };
+  pubDate?: string;
+};
+
 const lang: Language = 'ro';
 
-let projects = [];
+let projects: ProjectCard[] = [];
 try {
   if (import.meta.env.SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID) {
     const allProjects = await getProjects(lang);
