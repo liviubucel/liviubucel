@@ -10,15 +10,6 @@ if (!projectId) {
 export const sanityClient = createClient({
   projectId,
   dataset,
-  useCdn: false, // Set to false to bypass Sanity edge cache issues
+  useCdn: false, // Bypass Sanity CDN cache for fresh portfolio content
   apiVersion: "2025-02-20",
-  fetch: (url, init) => {
-    return fetch(url, {
-      ...init,
-      headers: {
-        ...(init?.headers || {}),
-        "User-Agent": "cloudflare-workers",
-      },
-    });
-  }
 });
