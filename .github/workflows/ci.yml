@@ -48,17 +48,7 @@ jobs:
         continue-on-error: true
 
       - name: Type check
-        run: |
-          set -o pipefail
-          pnpm check 2>&1 | tee astro-check.log
-
-      - name: Upload type-check diagnostics
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: astro-check-log
-          path: astro-check.log
-          retention-days: 3
+        run: pnpm check
 
   build:
     name: Build & Test
@@ -102,6 +92,7 @@ jobs:
         continue-on-error: true
 
       - name: Deploy Sanity schema
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: cd studio-liviubucel && npx sanity@latest schema deploy
         env:
           SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
