@@ -6,10 +6,16 @@ import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
 
+type PostSummary = {
+  id: string;
+  title: string;
+  pubDate?: string;
+};
+
 const lang: Language = 'ro';
 const isRO = true;
 
-let posts = [];
+let posts: PostSummary[] = [];
 try {
     const allPosts = await getPosts(lang);
     posts = allPosts.filter(p => p.published).map(p => ({
