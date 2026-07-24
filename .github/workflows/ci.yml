@@ -48,7 +48,17 @@ jobs:
         continue-on-error: true
 
       - name: Type check
-        run: pnpm check
+        run: |
+          set -o pipefail
+          pnpm check 2>&1 | tee astro-check.log
+
+      - name: Upload type-check diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: astro-check-log
+          path: astro-check.log
+          retention-days: 3
 
   build:
     name: Build & Test
