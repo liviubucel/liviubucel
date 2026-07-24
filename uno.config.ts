@@ -19,10 +19,10 @@ export default defineConfig({
     fontFamily: {
       sans: "CabinetGrotesk, Satoshi, sans-serif",
     },
-    gridTemplateRows: {
+    gridTemplateRow: {
       "auto-250": "repeat(auto-fill, 250px)",
     },
-    gridTemplateColumns: {
+    gridTemplateColumn: {
       "4-minmax": "repeat(4, minmax(150px, 1fr))",
     },
     colors: {
