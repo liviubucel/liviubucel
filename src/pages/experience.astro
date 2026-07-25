@@ -173,7 +173,7 @@ const lang: Language = "en";
           </button>
         </div>
 
-        <div id="form-message" class="hidden mt-4 p-4 rounded-lg text-sm"></div>
+        <div id="form-message" class="hidden mt-4 p-4 rounded-lg text-sm bg-neutral-900/50 border border-neutral-700"></div>
       </form>
 
       <div class="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700">
@@ -196,7 +196,7 @@ const lang: Language = "en";
     </section>
 
     <div class="mt-10 flex flex-wrap gap-3">
-      <a class="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-500 transition-colors duration-150" href="/projects">
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/projects">
         View projects
       </a>
       <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/contact">
@@ -220,9 +220,9 @@ const lang: Language = "en";
       const formData = new FormData(form);
       const data = Object.fromEntries(formData);
 
-      messageDiv.classList.remove('hidden', 'text-red-400', 'bg-red-900/20', 'text-green-400', 'bg-green-900/20');
+      messageDiv.classList.remove('hidden', 'text-red-300', 'text-green-300');
       messageDiv.textContent = 'Sending your request...';
-      messageDiv.classList.add('text-neutral-400', 'bg-neutral-900/50');
+      messageDiv.classList.add('text-neutral-300');
 
       try {
         const response = await fetch('/api/cv-request', {
@@ -237,18 +237,18 @@ const lang: Language = "en";
 
         if (response.ok) {
           messageDiv.textContent = 'Success! Check your email for your CV download link. Link expires in 24 hours.';
-          messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
-          messageDiv.classList.add('text-green-400', 'bg-green-900/20');
+          messageDiv.classList.remove('text-neutral-300');
+          messageDiv.classList.add('text-green-300');
           form.reset();
         } else {
           messageDiv.textContent = result.error || 'Failed to send request. Please try again.';
-          messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
-          messageDiv.classList.add('text-red-400', 'bg-red-900/20');
+          messageDiv.classList.remove('text-neutral-300');
+          messageDiv.classList.add('text-red-300');
         }
       } catch (error) {
         messageDiv.textContent = 'Error sending request. Please try again later.';
-        messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
-        messageDiv.classList.add('text-red-400', 'bg-red-900/20');
+        messageDiv.classList.remove('text-neutral-300');
+        messageDiv.classList.add('text-red-300');
       }
     });
   }
