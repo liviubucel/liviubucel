@@ -9,6 +9,7 @@ import solidJs from "@astrojs/solid-js";
 import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 import svelte from "@astrojs/svelte";
 import sentry from "@sentry/astro";
+import react from "@astrojs/react";
 
 const envSiteUrl = process.env.SITE_URL || "https://liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
@@ -85,7 +86,7 @@ export default defineConfig({
         {
           userAgent: "*",
           allow: "/",
-          disallow: ["/api/", "/playground", "/travel"],
+          disallow: ["/api/", "/playground", "/travel", "/studio"],
         },
       ],
     }),
@@ -93,6 +94,7 @@ export default defineConfig({
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
+    react(),
     // db() integration commented out due to CommonJS/ESM incompatibility
     // Use alternative guestbook storage (e.g., external API)
     ...(process.env.SANITY_PROJECT_ID ? [
@@ -103,6 +105,7 @@ export default defineConfig({
         apiVersion: "2025-02-20",
         // Crisis 404 fallback: client redirects to /en if projectId is missing
         studioUrl: "/studio",
+        studioBasePath: "/studio",
       }),
     ] : []),
   ],
