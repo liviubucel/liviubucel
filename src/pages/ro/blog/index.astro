@@ -41,7 +41,7 @@ try {
   const cyberMonitorPosts: Post[] = incidents.map((incident) => ({
     id: incident.slug,
     title: incident.articleTitle ?? incident.organisationDisplayName ?? 'Actualizare Romania Cyber Monitor',
-    pubDate: incident.publishedAt,
+    pubDate: incident.discoveredDate ?? incident.incidentDate ?? incident.publishedAt,
     href: `/romania-cyber-monitor/incidents/${incident.slug}`,
   }));
   posts = [...posts, ...cyberMonitorPosts].sort(
