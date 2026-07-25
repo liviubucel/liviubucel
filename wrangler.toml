@@ -23,5 +23,31 @@ SANITY_DATASET="production"
 CONTACT_TO_EMAIL="contact@liviubucel.com"
 CONTACT_FROM_EMAIL="noreply@liviubucel.com"
 
+# Romania Cyber Monitor - source feature flags (all default to disabled except
+# the two sources that require no API key: Ransomware.live and HIBP breach catalogue)
+SOURCE_RANSOMWARE_LIVE_ENABLED="true"
+SOURCE_HIBP_ENABLED="true"
+SOURCE_LEAKIX_ENABLED="false"
+SOURCE_THREATFOX_ENABLED="false"
+SOURCE_URLHAUS_ENABLED="false"
+SOURCE_MALWAREBAZAAR_ENABLED="false"
+SOURCE_MISP_ENABLED="false"
+SOURCE_ENISA_CIRAS_ENABLED="false"
+
 [[send_email]]
 name = "EMAIL"
+
+[[d1_databases]]
+binding = "ROMANIA_MONITOR_DB"
+database_name = "romania-cyber-monitor"
+database_id = "5816fc15-7d65-41cf-adbf-54f42ae4aa5a"
+migrations_dir = "migrations"
+
+[triggers]
+# UTC schedules - see docs/romania-cyber-monitor.md for the per-source rationale
+crons = [
+  "0 */6 * * *",  # every 6 hours: ransomware.live, threatfox, urlhaus (when enabled)
+  "0 */12 * * *", # every 12 hours: hibp latest-breach check, malwarebazaar metadata
+  "0 3 * * *",    # once daily 03:00 UTC: hibp full catalogue, leakix, misp
+  "0 4 * * 1",    # weekly Monday 04:00 UTC: enisa ciras + weekly report generation
+]

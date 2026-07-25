@@ -240,7 +240,7 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
           body: JSON.stringify(data),
         });
 
-        const result = await response.json();
+        const result = (await response.json()) as { error?: string };
 
         if (response.ok) {
           messageDiv.textContent = 'Success! Check your email for your CV download link. Link expires in 24 hours.';

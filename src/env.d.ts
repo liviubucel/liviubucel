@@ -4,5 +4,5 @@ declare module "*.riv" {
 }
 
 declare module "cloudflare:workers" {
-  export const env: Record<string, unknown>;
+  export const env: Env;
 }

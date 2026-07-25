@@ -13,6 +13,8 @@
     "site-setup": "node scripts/setup.mjs",
     "eslint": "eslint 'src/**/*.{js,ts,tsx,astro}'",
     "check": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepare": "husky",
     "i18n:audit": "node scripts/i18n-audit.mjs",
     "security:scan": "node scripts/security-scan.mjs",
@@ -50,7 +52,8 @@
     "sanity": "^6.6.0",
     "solid-js": "^1.9.14",
     "styled-components": "^6.4.4",
-    "svelte": "^5.56.7"
+    "svelte": "^5.56.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@iconify-json/simple-icons": "^1.2.91",
@@ -71,6 +74,7 @@
     "sanitize-html": "^2.17.6",
     "typescript": "^6.0.2",
     "unocss": "^66.6.7",
+    "vitest": "^4.1.10",
     "wrangler": "^4.112.0"
   },
   "lint-staged": {
