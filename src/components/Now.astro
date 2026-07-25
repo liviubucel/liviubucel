@@ -7,7 +7,7 @@ import { getProfileSettings } from "../lib/sanity-queries";
 let profile = null;
 try {
   profile = await getProfileSettings();
-} catch (e) {}
+} catch {}
 
 const isEmployed = profile?.isCurrentlyEmployed ?? false;
 const cvUrl = profile?.cvUrl ?? null;

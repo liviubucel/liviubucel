@@ -13,9 +13,6 @@ import MemojiAvatarPurple from "../assets/me-purple.webp";
 import MemojiAvatarYellow from "../assets/me-yellow.webp";
 
 interface Props {
-  fullName?: string;
-  role?: string;
-  tagline?: string;
   github?: string;
   linkedin?: string;
   lang?: string;
@@ -24,9 +21,6 @@ interface Props {
 const profile = await getProfileSettings();
 
 const {
-  fullName = SITE.author.fullName,
-  role = SITE.author.jobTitle,
-  tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
   github = profile?.github || LINKS.github,
   linkedin = profile?.linkedin || LINKS.linkedin,
 } = Astro.props;
