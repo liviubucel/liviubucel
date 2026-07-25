@@ -1,0 +1,34 @@
+name: Trigger Romania Cyber Monitor sync
+
+on:
+  workflow_dispatch:
+
+jobs:
+  trigger-sync:
+    name: Run sync now
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Call the manual trigger endpoint
+        run: |
+          if [ -z "${TRIGGER_TOKEN}" ]; then
+            echo "::error::CYBER_MONITOR_TRIGGER_TOKEN repository secret is not set. Add it in Settings > Secrets and variables > Actions with the same value used for 'wrangler secret put CYBER_MONITOR_TRIGGER_TOKEN'."
+            exit 1
+          fi
+
+          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST \
+            "https://liviubucel.com/api/cyber-monitor/trigger-sync" \
+            -H "Authorization: Bearer ${TRIGGER_TOKEN}")
+
+          echo "HTTP status: ${http_code}"
+          echo "Response:"
+          cat response.json
+          echo
+
+          if [ "${http_code}" -ge 300 ]; then
+            echo "::error::Sync trigger failed with HTTP ${http_code}"
+            exit 1
+          fi
+        env:
+          TRIGGER_TOKEN: ${{ secrets.CYBER_MONITOR_TRIGGER_TOKEN }}

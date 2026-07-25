@@ -132,7 +132,11 @@ export const ransomwareLiveAdapter: ThreatSourceAdapter<RansomwareLiveVictim, No
       firstObserved: discoveredDate,
       lastObserved: discoveredDate,
       verificationStatus: 'unverified_claim',
-      editorialStatus: 'candidate',
+      // Per operator decision: any record that reaches this point has
+      // already passed the high-confidence Romania eligibility gate, and
+      // uses only templated, careful "claim, not confirmed" wording - so
+      // it publishes immediately without a manual editorial step.
+      editorialStatus: 'published',
       summary: buildRansomwareClaimSummary(organisationName, threatGroup, discoveredDate),
       sector: firstNonEmpty(record.sector, record.activity),
       independentlyConfirmed: false,

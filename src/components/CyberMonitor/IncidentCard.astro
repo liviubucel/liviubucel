@@ -1,0 +1,38 @@
+---
+import { RECORD_TYPE_LABEL, formatIsoDate } from '../../lib/cyber-monitor/labels';
+import type { PublicIncidentRow } from '../../lib/cyber-monitor/public-data';
+
+interface Props {
+  incident: PublicIncidentRow;
+}
+
+const { incident } = Astro.props;
+const title = incident.articleTitle ?? incident.organisationDisplayName ?? 'Untitled incident';
+const excerpt = incident.articleExcerpt ?? incident.summary ?? '';
+---
+
+<li class="list-none w-full mb-3">
+  <a
+    class="block w-full bg-darkslate-500 hover:bg-darkslate-600 border border-darkslate-400 hover:border-darkslate-300 rounded-lg p-4 md:p-5 transition-all duration-200 ease-in-out"
+    href={`/romania-cyber-monitor/incidents/${incident.slug}`}
+  >
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="text-xs uppercase tracking-wide font-semibold text-primary-400 bg-primary-900/40 px-2 py-0.5 rounded">
+        {RECORD_TYPE_LABEL[incident.recordType]}
+      </span>
+      {incident.countryConfidence === 'high' && (
+        <span class="text-xs text-darkslate-300">Romania link: high confidence</span>
+      )}
+    </div>
+    <h2 class="text-lg md:text-xl font-semibold text-neutral-100 hover:text-neutral-50 transition-colors">
+      {title}
+    </h2>
+    {excerpt && <p class="text-sm text-darkslate-200 mt-2 line-clamp-2">{excerpt}</p>}
+    <time
+      class="block text-sm text-darkslate-300 mt-3"
+      datetime={incident.publishedAt}
+    >
+      {formatIsoDate(incident.publishedAt)}
+    </time>
+  </a>
+</li>

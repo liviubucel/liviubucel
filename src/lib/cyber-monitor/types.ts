@@ -112,3 +112,58 @@ export interface NormalisedIncident {
     sanitisedMetadata: Record<string, unknown>;
   };
 }
+
+/** Aggregated, redacted public-exposure record (LeakIX). No individual
+ * target details - see docs/romania-cyber-monitor.md for the redaction policy. */
+export interface NormalisedExposure {
+  exposureType: string;
+  severity: 'low' | 'medium' | 'high' | 'critical' | null;
+  affectedServiceType: string | null;
+  hostingAsn: number | null;
+  hostingOrganisation: string | null;
+  countryIsoCode: string | null;
+  sector: string | null;
+  observedMonth: string;
+  maskedIp: string | null;
+  dedupKey: string;
+}
+
+/** Indicator of compromise (ThreatFox / URLhaus). Values are always
+ * defanged before they leave the adapter. */
+export interface NormalisedIndicator {
+  iocType: string;
+  defangedValue: string;
+  malwareFamily: string | null;
+  threatType: string | null;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  active: boolean;
+  romaniaRelationshipBasis: RomaniaRelationshipBasis | null;
+  countryConfidence: CountryConfidence | null;
+  dedupKey: string;
+}
+
+/** Malware metadata only (MalwareBazaar) - never a sample, never a binary. */
+export interface NormalisedMalwareMetadata {
+  sha256Hash: string;
+  signature: string | null;
+  family: string | null;
+  fileType: string | null;
+  tags: string[];
+  firstSeen: string | null;
+  referenceUrl: string | null;
+  dedupKey: string;
+}
+
+/** Pre-aggregated statistic (ENISA CIRAS) - never an individual incident. */
+export interface NormalisedAggregateStatistic {
+  dataset: string;
+  scope: 'romania' | 'eu';
+  periodLabel: string;
+  periodStart: string;
+  periodEnd: string;
+  sector: string | null;
+  metricName: string;
+  metricValue: number;
+  dedupKey: string;
+}

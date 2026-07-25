@@ -1,0 +1,76 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import Seo from '../../components/Seo.astro';
+import SectionNav from '../../components/CyberMonitor/SectionNav.astro';
+import IncidentCard from '../../components/CyberMonitor/IncidentCard.astro';
+import { listPublicIncidents, countPublicIncidents } from '../../lib/cyber-monitor/public-data';
+import { SITE } from '../../site-config';
+
+export const prerender = false;
+
+const PAGE_SIZE = 20;
+const page = Math.max(1, Number(Astro.url.searchParams.get('page') ?? '1') || 1);
+
+let incidents: Awaited<ReturnType<typeof listPublicIncidents>> = [];
+let total = 0;
+try {
+  const db = env.ROMANIA_MONITOR_DB;
+  [incidents, total] = await Promise.all([
+    listPublicIncidents(db, { limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),
+    countPublicIncidents(db),
+  ]);
+} catch (error) {
+  console.error('[romania-cyber-monitor] failed to load incidents:', error);
+}
+
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+const title = 'Romania Cyber Monitor';
+const description =
+  'A Romania-focused feed of publicly reported ransomware claims and data breaches, tracked from public threat-intelligence sources with a strict, evidence-based Romania link before anything is published.';
+---
+
+<Layout title={title} description={description} lang="en">
+  <Seo
+    title={title}
+    description={description}
+    lang="en"
+    canonical={`${SITE.site.url}romania-cyber-monitor`}
+  />
+  <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8">
+    <a
+      class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg"
+      href="/">Back</a
+    >
+    <h1 class="text-4xl font-bold mb-2 text-neutral-100">Romania Cyber Monitor</h1>
+    <p class="text-darkslate-200 mb-6 max-w-2xl">
+      Publicly reported ransomware claims and data breaches with a documented Romania link.
+      Every entry states clearly whether it is an unconfirmed claim or an independently verified
+      incident. See <a class="underline hover:text-neutral-100" href="/methodology">methodology</a>
+      for the full eligibility and verification policy.
+    </p>
+    <SectionNav active="all" />
+    {incidents.length === 0 ? (
+      <p class="text-darkslate-300">No published incidents yet. Check back soon.</p>
+    ) : (
+      <ul class="w-full">
+        {incidents.map((incident) => <IncidentCard incident={incident} />)}
+      </ul>
+    )}
+    {totalPages > 1 && (
+      <div class="flex gap-3 mt-4 self-center">
+        {page > 1 && (
+          <a class="px-3 py-1.5 rounded bg-darkslate-600 border border-darkslate-400 text-darkslate-100" href={`/romania-cyber-monitor?page=${page - 1}`}>
+            Previous
+          </a>
+        )}
+        <span class="px-3 py-1.5 text-darkslate-300">Page {page} of {totalPages}</span>
+        {page < totalPages && (
+          <a class="px-3 py-1.5 rounded bg-darkslate-600 border border-darkslate-400 text-darkslate-100" href={`/romania-cyber-monitor?page=${page + 1}`}>
+            Next
+          </a>
+        )}
+      </div>
+    )}
+  </main>
+</Layout>

@@ -45,7 +45,7 @@ describe('ransomwareLiveAdapter.normalise', () => {
     expect(result).not.toBeNull();
     expect(result?.recordType).toBe('ransomware_claim');
     expect(result?.verificationStatus).toBe('unverified_claim');
-    expect(result?.editorialStatus).toBe('candidate');
+    expect(result?.editorialStatus).toBe('published');
     expect(result?.independentlyConfirmed).toBe(false);
     expect(result?.countryConfidence).toBe('high');
     expect(result?.romaniaRelationshipBasis).toBe('source_country_ro');

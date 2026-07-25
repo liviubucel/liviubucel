@@ -1,4 +1,5 @@
 name = "liviubucel-website"
+main = "workers/entry.ts"
 compatibility_date = "2026-07-21"
 compatibility_flags = [ "nodejs_compat" ]
 
@@ -33,6 +34,10 @@ SOURCE_URLHAUS_ENABLED="false"
 SOURCE_MALWAREBAZAAR_ENABLED="false"
 SOURCE_MISP_ENABLED="false"
 SOURCE_ENISA_CIRAS_ENABLED="false"
+
+# CYBER_MONITOR_TRIGGER_TOKEN for /api/cyber-monitor/trigger-sync is set as
+# an encrypted secret (wrangler secret put CYBER_MONITOR_TRIGGER_TOKEN),
+# never declared here - see that file's header comment.
 
 [[send_email]]
 name = "EMAIL"
