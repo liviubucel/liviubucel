@@ -15,7 +15,7 @@ export async function onRequest(context: any, next: MiddlewareNext) {
   const newResponse = new Response(response.body, response);
 
   // Add security headers
-  const securityHeaders = getSecurityHeaders();
+  const securityHeaders = getSecurityHeaders(url.pathname);
   Object.entries(securityHeaders).forEach(([key, value]) => {
     newResponse.headers.set(key, value);
   });

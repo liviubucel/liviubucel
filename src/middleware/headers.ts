@@ -8,21 +8,29 @@ export interface HeadersConfig {
 /**
  * Content Security Policy header
  * Restricts resources that can be loaded
+ * The embedded Sanity Studio (/studio) needs a relaxed policy to function
+ * (unsafe-eval for its editor tooling, sanity.io for auth/API/CDN, popups for login).
  */
-export function getCSPHeader(): string {
+export function getCSPHeader(pathname = ''): string {
+  const isStudio = pathname.startsWith('/studio');
+
   const policies = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",
+    isStudio
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+      : "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https: blob:",
+    isStudio ? "img-src 'self' data: https: blob:" : "img-src 'self' data: https: blob:",
     "font-src 'self' data:",
-    "connect-src 'self' https://*.sanity.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
-    "frame-src 'none'",
+    isStudio
+      ? "connect-src 'self' https://*.sanity.io https://*.apicdn.sanity.io wss://*.sanity.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io"
+      : "connect-src 'self' https://*.sanity.io https://*.ingest.sentry.io https://*.ingest.de.sentry.io",
+    isStudio ? "frame-src https://*.sanity.io" : "frame-src 'none'",
     "object-src 'none'",
     "media-src 'self'",
     "manifest-src 'self'",
     "worker-src 'self' blob:",
-    "frame-ancestors 'none'",
+    isStudio ? "frame-ancestors 'self'" : "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "upgrade-insecure-requests",
@@ -57,9 +65,9 @@ export function getCacheControl(pathname: string): string {
 /**
  * Generate Security headers
  */
-export function getSecurityHeaders() {
+export function getSecurityHeaders(pathname = '') {
   return {
-    'Content-Security-Policy': getCSPHeader(),
+    'Content-Security-Policy': getCSPHeader(pathname),
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
     'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
