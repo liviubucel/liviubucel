@@ -1,40 +1,20 @@
 ---
 import Card from "./Card/index.astro";
-import Pulse from "./Pulse.astro";
+import Button from "./Button.astro";
 import { Icon } from "astro-icon/components";
-import { getProfileSettings } from "../lib/sanity-queries";
-
-let profile = null;
-try {
-  profile = await getProfileSettings();
-} catch {}
-
-const isEmployed = profile?.isCurrentlyEmployed ?? false;
-const cvUrl = profile?.cvUrl ?? null;
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4">
-  <div class="flex justify-between w-full items-start mb-2">
-    <h2 class="text-white text-xl font-bold">Now</h2>
-    <Pulse isEmployed={isEmployed} />
-  </div>
-  <p class="text-xs text-darkslate-300 mb-2">
-    {isEmployed ? 'Currently employed' : 'Open to opportunities'}
-  </p>
-  {cvUrl ? (
-    <a
-      href={cvUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
-    >
-      <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
+  <div class="flex flex-col h-full justify-center gap-3">
+    <h2 class="text-white text-xl font-bold m-0">Experience</h2>
+    <p class="text-xs text-darkslate-300 m-0">
+      View my professional background and download CV.
+    </p>
+    <a href="/experience" class="mt-auto w-full">
+      <Button class="w-full justify-center">
+        <Icon name="ri:briefcase-line" class="mr-2" />
+        View Experience
+      </Button>
     </a>
-  ) : (
-    <span class="text-xs flex items-center gap-1 text-darkslate-500 cursor-default">
-      <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
-    </span>
-  )}
+  </div>
 </Card>

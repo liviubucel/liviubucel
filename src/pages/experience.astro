@@ -93,6 +93,108 @@ const lang: Language = "en";
       </section>
     </div>
 
+    <section class="mt-16 rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
+      <h2 class="text-2xl font-bold text-neutral-100 mb-2">Download CV</h2>
+      <p class="text-sm text-neutral-400 mb-6">
+        Request access to my CV. For security, download links are time-limited and verified using secure tokens.
+      </p>
+
+      <form id="cv-request-form" class="space-y-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="fullname" class="block text-sm font-medium text-neutral-300 mb-2">Full Name</label>
+            <input
+              type="text"
+              id="fullname"
+              name="fullname"
+              required
+              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+              placeholder="Your full name"
+            />
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-neutral-300 mb-2">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+              placeholder="your.email@company.com"
+            />
+          </div>
+          <div>
+            <label for="phone" class="block text-sm font-medium text-neutral-300 mb-2">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+              placeholder="+1 (555) 123-4567"
+            />
+          </div>
+          <div>
+            <label for="company" class="block text-sm font-medium text-neutral-300 mb-2">Company / Organization</label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+              placeholder="Your company name"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="terms"
+            name="terms"
+            required
+            class="mt-1 w-4 h-4 rounded bg-neutral-700 border border-neutral-600 text-primary-600 focus:ring-primary-500 cursor-pointer"
+          />
+          <label for="terms" class="text-sm text-neutral-400">
+            I agree that my information may be used to send me my CV securely. The link will expire in 24 hours.
+          </label>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="submit"
+            class="px-6 py-2.5 rounded-lg bg-white text-darkslate-900 font-semibold hover:bg-neutral-50 transition-colors border border-neutral-300 shadow-sm active:shadow-none active:translate-y-[1px]"
+          >
+            Request CV
+          </button>
+          <button
+            type="reset"
+            class="px-6 py-2.5 rounded-lg bg-neutral-900 text-white font-semibold hover:bg-neutral-800 transition-colors border border-neutral-600"
+          >
+            Clear
+          </button>
+        </div>
+
+        <div id="form-message" class="hidden mt-4 p-4 rounded-lg text-sm"></div>
+      </form>
+
+      <div class="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700">
+        <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Security notice</p>
+        <ul class="space-y-2 text-sm text-neutral-400">
+          <li class="flex gap-2">
+            <span class="text-primary-400 flex-shrink-0">✓</span>
+            <span>Download links are secured with cryptographic tokens to prevent unauthorized access.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-primary-400 flex-shrink-0">✓</span>
+            <span>Each link expires 24 hours after generation to limit exposure window.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-primary-400 flex-shrink-0">✓</span>
+            <span>Your information is used only to deliver your CV and will not be shared.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
     <div class="mt-10 flex flex-wrap gap-3">
       <a class="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-500 transition-colors duration-150" href="/projects">
         View projects
@@ -106,3 +208,48 @@ const lang: Language = "en";
     </div>
   </main>
 </Layout>
+
+<script>
+  const form = document.getElementById('cv-request-form') as HTMLFormElement;
+  const messageDiv = document.getElementById('form-message') as HTMLDivElement;
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+
+      messageDiv.classList.remove('hidden', 'text-red-400', 'bg-red-900/20', 'text-green-400', 'bg-green-900/20');
+      messageDiv.textContent = 'Sending your request...';
+      messageDiv.classList.add('text-neutral-400', 'bg-neutral-900/50');
+
+      try {
+        const response = await fetch('/api/cv-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          messageDiv.textContent = 'Success! Check your email for your CV download link. Link expires in 24 hours.';
+          messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
+          messageDiv.classList.add('text-green-400', 'bg-green-900/20');
+          form.reset();
+        } else {
+          messageDiv.textContent = result.error || 'Failed to send request. Please try again.';
+          messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
+          messageDiv.classList.add('text-red-400', 'bg-red-900/20');
+        }
+      } catch (error) {
+        messageDiv.textContent = 'Error sending request. Please try again later.';
+        messageDiv.classList.remove('text-neutral-400', 'bg-neutral-900/50');
+        messageDiv.classList.add('text-red-400', 'bg-red-900/20');
+      }
+    });
+  }
+</script>

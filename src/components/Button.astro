@@ -9,7 +9,7 @@ const { rounded, ...props } = Astro.props;
 
 <button
   {...props}
-  class={`h-full w-fit text-xl max-h-[50px] shadow-custom shadow-primary-500 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] text-darkslate-50 px-5 py-2 border border-primary-500 hover:text-primary-500 transition-colors duration-100 ease-in-out bg-darkslate-900 cursor-pointer ${
+  class={`h-full w-fit text-xl max-h-[50px] shadow-sm active:shadow-none active:translate-x-[2px] active:translate-y-[2px] text-darkslate-900 px-5 py-2 border border-darkslate-300 hover:bg-darkslate-50 transition-all duration-100 ease-in-out bg-white cursor-pointer ${
     rounded ? "rounded-full" : "rounded-lg"
   } ${props.class ?? ""}`}
 >
