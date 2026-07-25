@@ -19,6 +19,7 @@ pnpm-debug.log*
 .env
 .env.production
 .env.local
+.dev.vars
 
 # local database
 .data/
@@ -32,5 +33,6 @@ pnpm-debug.log*
 # dump files
 *.zip
 *.sql
+!migrations/*.sql
 dump-extracted/
 master-temp/

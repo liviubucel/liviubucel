@@ -7,7 +7,7 @@ export const SITE = {
     lastName: "Bucel",
     fullName: "Liviu Bucel",
     shortName: "Liviu",
-    jobTitle: "Cybersecurity | Ethical Hacking | Digital Investigation",
+    jobTitle: "BSc Cyber Security Student",
     twitterHandle: "liviubucel", // without "@"
   },
   location: {

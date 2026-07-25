@@ -3,7 +3,7 @@ import type { Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import Layout from '../../layouts/Layout.astro';
 import { SITE } from '../../site-config';
-import { getProjects } from '../../lib/sanity-queries';
+import { getProjects, getPageSeo } from '../../lib/sanity-queries';
 
 const lang: Language = 'ro';
 
@@ -35,17 +35,23 @@ try {
 } catch (error) {
   console.warn('Failed to fetch projects from Sanity:', error);
 }
+
+const seo = await getPageSeo("projects-ro");
+const seoTitle = seo?.title || `${SITE.author.fullName} - Proiecte`;
+const seoDescription = seo?.description || "Instrumente de securitate cibernetică, cercetare tehnică și proiecte practice";
 ---
 
 <Layout
-  description="Instrumente de securitate cibernetică, cercetare tehnică și proiecte practice"
-  title={`${SITE.author.fullName} - Proiecte`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - Proiecte`}
-    description="Instrumente de securitate cibernetică, cercetare tehnică și proiecte practice"
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}ro/projects`}
   />
   <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-4xl mx-auto px-4 py-8 md:p-8">

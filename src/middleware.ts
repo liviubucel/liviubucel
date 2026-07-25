@@ -5,7 +5,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
   const headers = new Headers(response.headers);
 
-  for (const [name, value] of Object.entries(getSecurityHeaders())) {
+  for (const [name, value] of Object.entries(getSecurityHeaders(context.url.pathname))) {
     headers.set(name, value);
   }
 

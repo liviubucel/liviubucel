@@ -3,19 +3,26 @@ import type { Language } from "../../lib/i18n";
 import Layout from "../../layouts/Layout.astro";
 import Seo from "../../components/Seo.astro";
 import { SITE } from "../../site-config";
+import { getPageSeo } from "../../lib/sanity-queries";
 
 const lang: Language = "ro";
+
+const seo = await getPageSeo("experience-ro");
+const seoTitle = seo?.title || "Experiență relevantă — " + SITE.author.fullName;
+const seoDescription = seo?.description || "Experiență relevantă în suport tehnic, infrastructură și securitate cibernetică la ZebraByte, Intact Media Group și în laboratoare practice.";
 ---
 
 <Layout
-  title={"Experiență relevantă — " + SITE.author.fullName}
-  description="Experiență relevantă în suport tehnic, infrastructură și securitate cibernetică la ZebraByte, Intact Media Group și în laboratoare practice."
+  title={seoTitle}
+  description={seoDescription}
   lang={lang}
 >
   <Seo
-    title={"Experiență relevantă — " + SITE.author.fullName}
-    description="Experiență relevantă în suport tehnic, infrastructură și securitate cibernetică la ZebraByte, Intact Media Group și în laboratoare practice."
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={SITE.site.url + "ro/experience"}
   />
 

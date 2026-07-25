@@ -9,11 +9,11 @@ import solidJs from "@astrojs/solid-js";
 import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 import svelte from "@astrojs/svelte";
 import sentry from "@sentry/astro";
+import react from "@astrojs/react";
 
 const envSiteUrl = process.env.SITE_URL || "https://liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
-const isLighthouse = process.env.LIGHTHOUSE_CI === "true";
 
 // https://astro.build/config
 export default defineConfig({
@@ -70,7 +70,7 @@ export default defineConfig({
       i18n: {
         defaultLocale: "en",
         locales: {
-          en: "en-GB",
+          en: "en-US",
           ro: "ro-RO",
         },
       },
@@ -78,39 +78,46 @@ export default defineConfig({
         !/\/(playground|travel)\/?$/.test(new URL(page).pathname),
     }),
     robotsTxt({
-      sitemap: [`${siteNoTrailingSlash}/sitemap-index.xml`],
+      sitemap: [
+        `${siteNoTrailingSlash}/sitemap-index.xml`,
+        `${siteNoTrailingSlash}/sitemap-0.xml`,
+      ],
       policy: [
         {
           userAgent: "*",
           allow: "/",
-          disallow: ["/api/", "/playground", "/travel"],
+          disallow: ["/api/", "/playground", "/travel", "/studio"],
         },
       ],
     }),
-    solidJs(),
+    solidJs({ exclude: ["**/node_modules/@sanity/**"] }),
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
-    ...(process.env.SANITY_PROJECT_ID ? [
-      sanity({
-        projectId: process.env.SANITY_PROJECT_ID,
-        dataset: process.env.SANITY_DATASET || "production",
-        useCdn: true,
-        apiVersion: "2025-02-20",
-        // Crisis 404 fallback: client redirects to /en if projectId is missing
-        studioUrl: "/studio",
-      }),
-    ] : []),
+    react({ include: ["**/node_modules/@sanity/**"] }),
+    // db() integration commented out due to CommonJS/ESM incompatibility
+    // Use alternative guestbook storage (e.g., external API)
+    sanity({
+      projectId: process.env.SANITY_PROJECT_ID || "8atrdwjk",
+      dataset: process.env.SANITY_DATASET || "production",
+      useCdn: true,
+      apiVersion: "2025-02-20",
+      studioUrl: "/studio",
+      studioBasePath: "/studio",
+    }),
   ],
   markdown: {
     remarkPlugins: [remarkReadingTime],
   },
-  devToolbar: {
-    enabled: !isLighthouse,
-  },
-  output: isLighthouse ? "static" : "server",
-  adapter: isLighthouse ? undefined : cloudflare(),
+  output: "server",
+  adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
+    ssr: {
+      external: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
+    optimizeDeps: {
+      exclude: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
   },
 });

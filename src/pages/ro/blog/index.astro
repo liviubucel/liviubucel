@@ -1,7 +1,7 @@
 ---
 import { DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
 import Seo from '../../../components/Seo.astro';
-import { getPosts } from '../../../lib/sanity-queries';
+import { getPosts, getPageSeo } from '../../../lib/sanity-queries';
 import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
@@ -30,6 +30,10 @@ try {
 } catch (error) {
   console.warn('Failed to fetch posts from Sanity:', error);
 }
+
+const seo = await getPageSeo("blog-ro");
+const seoTitle = seo?.title || `${SITE.author.fullName} - Blog`;
+const seoDescription = seo?.description || "Articole de securitate cibernetică, cercetare tehnică și analiză practică";
 ---
 
 <script>
@@ -42,14 +46,16 @@ try {
 </script>
 
 <Layout
-  description="Articole de securitate cibernetică, cercetare tehnică și analiză practică"
-  title={`${SITE.author.fullName} - Blog`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - Blog`}
-    description="Articole de securitate cibernetică, cercetare tehnică și analiză practică"
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}ro/blog`}
   />
   <main

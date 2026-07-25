@@ -3,6 +3,7 @@ import type { Language } from '../../lib/i18n';
 import Layout from '../../layouts/Layout.astro';
 import Seo from '../../components/Seo.astro';
 import { SITE } from '../../site-config';
+import { getPageSeo } from '../../lib/sanity-queries';
 
 export const prerender = false;
 
@@ -15,17 +16,23 @@ const topics = [
   'CTF / Provocare',
   'Întrebare Generală',
 ];
+
+const seo = await getPageSeo("contact-ro");
+const seoTitle = seo?.title || `Contact — ${SITE.author.fullName}`;
+const seoDescription = seo?.description || "Contactează-l pe Liviu Bucel pentru securitate cibernetică, cercetare de securitate și colaborări tehnice relevante.";
 ---
 
 <Layout
-  description="Contactează-l pe Liviu Bucel pentru securitate cibernetică, cercetare de securitate și colaborări tehnice relevante."
-  title={`Contact — ${SITE.author.fullName}`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`Contact — ${SITE.author.fullName}`}
-    description="Contactează-l pe Liviu Bucel pentru securitate cibernetică, cercetare de securitate și colaborări tehnice relevante."
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}ro/contact`}
   />
 

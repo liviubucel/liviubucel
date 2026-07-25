@@ -393,10 +393,13 @@ export default defineConfig({
             initialValue: false,
           },
           {
-            name: 'cvUrl',
-            title: 'CV Download URL',
-            type: 'url',
-            description: 'Direct link to the CV PDF',
+            name: 'cvFile',
+            title: 'CV File',
+            type: 'file',
+            description: 'Upload the CV PDF directly.',
+            options: {
+              accept: '.pdf',
+            },
           },
           {
             name: 'phone',

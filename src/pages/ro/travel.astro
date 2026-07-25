@@ -3,13 +3,18 @@ import type { Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import Layout from '../../layouts/Layout.astro';
 import { SITE } from '../../site-config';
+import { getPageSeo } from '../../lib/sanity-queries';
 
 const lang: Language = 'ro';
+
+const seo = await getPageSeo("travel-ro");
+const seoTitle = seo?.title || `${SITE.author.fullName} - Călătorii`;
+const seoDescription = seo?.description || "Destinații și aventuri de călătorie";
 ---
 
 <Layout
-  description="Destinații și aventuri de călătorie"
-  title={`${SITE.author.fullName} - Călătorii`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
   page="travel"
 >

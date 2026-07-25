@@ -11,22 +11,29 @@ import AboutMe from "../components/AboutMe.astro";
 import Now from "../components/Now.astro";
 import DesignWorksCard from "../components/DesignWorksCard.astro";
 import { SITE } from "../site-config";
+import { getPageSeo } from "../lib/sanity-queries";
 
 const lang: Language = 'en';
 const isRO = false;
+
+const seo = await getPageSeo("home");
+const seoTitle = seo?.title || `${SITE.author.fullName} - ${SITE.author.jobTitle}`;
+const seoDescription = seo?.description || "Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects";
+const seoKeywords = seo?.keywords || ["cyber security", "digital forensics", "incident response", "penetration testing", "vulnerability assessment", "threat research"];
 ---
 
 <Layout
-  description="Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects"
-  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects"
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
     type="profile"
-    keywords={["cyber security", "digital forensics", "incident response", "penetration testing", "vulnerability assessment", "threat research"]}
+    keywords={seoKeywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}`}
   />
 
@@ -44,12 +51,6 @@ const isRO = false;
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
       title="Contact"
-    />
-    <Card
-      href="/experience"
-      colSpan="md:col-span-1"
-      rowSpan="md:row-span-1"
-      title="Experience"
     />
     <Card
       href="/blog"

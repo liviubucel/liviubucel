@@ -11,22 +11,29 @@ import AboutMe from "../../components/AboutMe.astro";
 import Now from "../../components/Now.astro";
 import DesignWorksCard from "../../components/DesignWorksCard.astro";
 import { SITE } from "../../site-config";
+import { getPageSeo } from "../../lib/sanity-queries";
 
 const lang: Language = 'ro';
 const isRO = true;
+
+const seo = await getPageSeo("home-ro");
+const seoTitle = seo?.title || `${SITE.author.fullName} - ${SITE.author.jobTitle}`;
+const seoDescription = seo?.description || "Portofoliu de securitate cibernetică axat pe ethical hacking, investigații digitale, răspuns la incidente și testare de securitate";
+const seoKeywords = seo?.keywords || ["securitate cibernetică", "criminalistică digitală", "răspuns la incidente", "testare de penetrare", "evaluarea vulnerabilităților"];
 ---
 
 <Layout
-  description="Portofoliu de securitate cibernetică axat pe ethical hacking, investigații digitale, răspuns la incidente și testare de securitate"
-  title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - ${SITE.author.jobTitle}`}
-    description="Portofoliu de securitate cibernetică axat pe ethical hacking, investigații digitale, răspuns la incidente și testare de securitate"
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
     type="profile"
-    keywords={["securitate cibernetică", "criminalistică digitală", "răspuns la incidente", "testare de penetrare", "evaluarea vulnerabilităților"]}
+    keywords={seoKeywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}ro/`}
   />
 
@@ -44,12 +51,6 @@ const isRO = true;
       colSpan="md:col-span-1"
       rowSpan="md:row-span-1"
       title="Contact"
-    />
-    <Card
-      href="/ro/experience"
-      colSpan="md:col-span-1"
-      rowSpan="md:row-span-1"
-      title="Experiență"
     />
     <Card
       href="/ro/blog"

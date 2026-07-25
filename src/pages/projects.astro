@@ -3,7 +3,7 @@ import type { Language } from '../lib/i18n';
 import Seo from '../components/Seo.astro';
 import Layout from '../layouts/Layout.astro';
 import { SITE } from '../site-config';
-import { getProjects } from '../lib/sanity-queries';
+import { getProjects, getPageSeo } from '../lib/sanity-queries';
 
 const lang: Language = 'en';
 
@@ -32,17 +32,23 @@ try {
 } catch (error) {
   console.warn('Failed to fetch projects from Sanity:', error);
 }
+
+const seo = await getPageSeo("projects");
+const seoTitle = seo?.title || `${SITE.author.fullName} - Projects`;
+const seoDescription = seo?.description || "Cybersecurity tools, technical research, and hands-on security projects";
 ---
 
 <Layout
-  description="Cybersecurity tools, technical research, and hands-on security projects"
-  title={`${SITE.author.fullName} - Projects`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`${SITE.author.fullName} - Projects`}
-    description="Cybersecurity tools, technical research, and hands-on security projects"
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}projects`}
   />
   <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-4xl mx-auto px-4 py-8 md:p-8">

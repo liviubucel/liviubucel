@@ -3,13 +3,18 @@ import type { Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import Layout from '../../layouts/Layout.astro';
 import { SITE } from '../../site-config';
+import { getPageSeo } from '../../lib/sanity-queries';
 
 const lang: Language = 'ro';
+
+const seo = await getPageSeo("design-works-ro");
+const seoTitle = seo?.title || `${SITE.author.fullName} - Lucrări de Design`;
+const seoDescription = seo?.description || "Portofoliu de lucrări de design";
 ---
 
 <Layout
-  description="Portofoliu de lucrări de design"
-  title={`${SITE.author.fullName} - Lucrări de Design`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <main class="w-screen min-h-screen flex flex-col justify-center items-center max-w-4xl mx-auto p-8">
