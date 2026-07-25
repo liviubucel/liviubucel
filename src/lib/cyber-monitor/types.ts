@@ -78,7 +78,7 @@ export interface ThreatSourceAdapter<TUpstream, TNormalised> {
   sourceId: SourceId;
   fetchUpdates(context: SyncContext): Promise<TUpstream[]>;
   validateRecord(record: unknown): record is TUpstream;
-  normalise(record: TUpstream, context: SyncContext): Promise<TNormalised | null>;
+  normalise(record: TUpstream, context?: SyncContext): Promise<TNormalised | null>;
 }
 
 export interface NormalisedIncident {
