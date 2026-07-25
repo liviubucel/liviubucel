@@ -17,15 +17,20 @@ jobs:
             exit 1
           fi
 
-          # -L follows Cloudflare's edge redirect (e.g. bot-protection
-          # challenges on the default curl UA); --post301/302/303 makes
-          # curl keep POST + headers across every redirect status instead
-          # of silently downgrading to GET.
-          http_code=$(curl -sS -L --post301 --post302 --post303 \
+          # Target www.liviubucel.com directly - the apex redirects there at
+          # Cloudflare's edge, and following a cross-host redirect risks
+          # curl stripping the Authorization header. Origin/Referer are set
+          # to satisfy Astro's built-in same-origin check on POST requests
+          # (astro.config.mjs security.checkOrigin), which otherwise returns
+          # "Cross-site POST form submissions are forbidden" for any request
+          # with no matching Origin header.
+          http_code=$(curl -sS \
             -o response.json -w "%{http_code}" -X POST \
-            "https://liviubucel.com/api/cyber-monitor/trigger-sync" \
+            "https://www.liviubucel.com/api/cyber-monitor/trigger-sync" \
             -H "Authorization: Bearer ${TRIGGER_TOKEN}" \
-            -H "User-Agent: liviubucel-website-ops/1.0")
+            -H "User-Agent: liviubucel-website-ops/1.0" \
+            -H "Origin: https://www.liviubucel.com" \
+            -H "Referer: https://www.liviubucel.com/")
 
           echo "HTTP status: ${http_code}"
           echo "Response:"
