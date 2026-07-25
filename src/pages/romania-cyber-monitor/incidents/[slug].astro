@@ -1,0 +1,107 @@
+---
+import { env } from 'cloudflare:workers';
+import MarkdownIt from 'markdown-it';
+import sanitizeHtml from 'sanitize-html';
+import BasicLayout from '../../../layouts/BasicLayout.astro';
+import { getPublicIncidentBySlug } from '../../../lib/cyber-monitor/public-data';
+import { RECORD_TYPE_LABEL, VERIFICATION_STATUS_LABEL, formatIsoDate } from '../../../lib/cyber-monitor/labels';
+import { SITE } from '../../../site-config';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/romania-cyber-monitor');
+}
+
+const db = env.ROMANIA_MONITOR_DB;
+const incident = await getPublicIncidentBySlug(db, slug).catch((error) => {
+  console.error('[romania-cyber-monitor] failed to load incident:', error);
+  return null;
+});
+
+if (!incident) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const md = new MarkdownIt();
+const articleHtml = incident.articleBody
+  ? sanitizeHtml(md.render(incident.articleBody), {
+      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2']),
+    })
+  : null;
+
+const title = incident.articleTitle ?? incident.organisationDisplayName ?? 'Incident';
+const description = incident.articleExcerpt ?? incident.summary ?? title;
+const canonical = `${SITE.site.url}romania-cyber-monitor/incidents/${incident.slug}`;
+---
+
+<BasicLayout title={`${title} | Romania Cyber Monitor`} description={description} page="blog" slug={canonical}>
+  <main class="mx-auto max-w-3xl w-full min-h-screen p-8 text-neutral-100">
+    <a
+      class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 border-1 border-solid border-neutral-600 rounded-lg mb-8"
+      href="/romania-cyber-monitor">Back to Romania Cyber Monitor</a
+    >
+    <div class="my-8">
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span class="text-xs uppercase tracking-wide font-semibold text-primary-400 bg-primary-900/40 px-2 py-0.5 rounded">
+          {RECORD_TYPE_LABEL[incident.recordType]}
+        </span>
+        <span class="text-xs uppercase tracking-wide text-darkslate-300 bg-darkslate-600 px-2 py-0.5 rounded">
+          {VERIFICATION_STATUS_LABEL[incident.verificationStatus] ?? incident.verificationStatus}
+        </span>
+      </div>
+      <h1 class="text-4xl font-semibold">{title}</h1>
+      <p class="pt-3 text-darkslate-300 text-sm">
+        Published {formatIsoDate(incident.publishedAt)}
+        {incident.incidentDate && ` · Alleged incident date: ${formatIsoDate(incident.incidentDate)}`}
+      </p>
+    </div>
+
+    {articleHtml ? (
+      <article class="cm-article-body" set:html={articleHtml} />
+    ) : (
+      <p class="text-darkslate-200 whitespace-pre-line">{incident.summary ?? 'No further details are available yet.'}</p>
+    )}
+
+    {incident.sources.length > 0 && (
+      <section class="mt-10 border-t border-darkslate-500 pt-6">
+        <h2 class="text-xl font-semibold mb-3">Sources</h2>
+        <ul class="list-disc list-inside text-sm text-darkslate-200 space-y-1">
+          {incident.sources.map((source) => (
+            <li>
+              {source.title ?? source.sourceId}
+              {source.sourcePublicationDate && ` — ${formatIsoDate(source.sourcePublicationDate)}`}
+              {source.authoritative && <span class="text-primary-400"> (authoritative)</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </main>
+</BasicLayout>
+
+<style>
+  .cm-article-body :global(h2) {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-neutral-50, #fafafa);
+  }
+  .cm-article-body :global(p) {
+    color: var(--darkslate-100);
+    line-height: 1.7;
+    margin-bottom: 0.9rem;
+  }
+  .cm-article-body :global(ul),
+  .cm-article-body :global(ol) {
+    margin: 0.5rem 0 1rem 1.25rem;
+    color: var(--darkslate-100);
+  }
+  .cm-article-body :global(a) {
+    color: var(--primary-400);
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import Seo from '../../components/Seo.astro';
+import SectionNav from '../../components/CyberMonitor/SectionNav.astro';
+import IncidentCard from '../../components/CyberMonitor/IncidentCard.astro';
+import { listPublicIncidents } from '../../lib/cyber-monitor/public-data';
+import { SITE } from '../../site-config';
+
+export const prerender = false;
+
+let incidents: Awaited<ReturnType<typeof listPublicIncidents>> = [];
+try {
+  incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { recordType: 'ransomware_claim', limit: 50 });
+} catch (error) {
+  console.error('[romania-cyber-monitor/ransomware] failed to load incidents:', error);
+}
+
+const title = 'Ransomware claims | Romania Cyber Monitor';
+const description =
+  'Ransomware group listings that name a Romania-linked organisation, tracked from public data-leak-site monitoring. These are unconfirmed claims unless stated otherwise.';
+---
+
+<Layout title={title} description={description} lang="en">
+  <Seo title={title} description={description} lang="en" canonical={`${SITE.site.url}romania-cyber-monitor/ransomware`} />
+  <main class="w-screen min-h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8">
+    <a class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg" href="/">Back</a>
+    <h1 class="text-4xl font-bold mb-2 text-neutral-100">Ransomware claims</h1>
+    <p class="text-darkslate-200 mb-6 max-w-2xl">
+      Public listings by ransomware groups naming a Romania-linked organisation. A listing here is a
+      <strong>claim</strong>, not proof of compromise, unless independently confirmed.
+    </p>
+    <SectionNav active="ransomware" />
+    {incidents.length === 0 ? (
+      <p class="text-darkslate-300">No published ransomware claims yet.</p>
+    ) : (
+      <ul class="w-full">{incidents.map((incident) => <IncidentCard incident={incident} />)}</ul>
+    )}
+  </main>
+</Layout>

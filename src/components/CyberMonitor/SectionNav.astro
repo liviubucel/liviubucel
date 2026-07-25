@@ -1,0 +1,31 @@
+---
+interface Props {
+  active?: 'all' | 'ransomware' | 'breaches' | 'exposures' | 'threat-infrastructure' | 'malware';
+}
+
+const { active = 'all' } = Astro.props;
+
+const items = [
+  { key: 'all', label: 'All activity', href: '/romania-cyber-monitor' },
+  { key: 'ransomware', label: 'Ransomware', href: '/romania-cyber-monitor/ransomware' },
+  { key: 'breaches', label: 'Breaches', href: '/romania-cyber-monitor/breaches' },
+  { key: 'exposures', label: 'Exposures', href: '/romania-cyber-monitor/exposures' },
+  { key: 'threat-infrastructure', label: 'Threat infrastructure', href: '/romania-cyber-monitor/threat-infrastructure' },
+  { key: 'malware', label: 'Malware', href: '/romania-cyber-monitor/malware' },
+] as const;
+---
+
+<nav class="w-full flex flex-wrap gap-2 mb-8" aria-label="Romania Cyber Monitor sections">
+  {items.map((item) => (
+    <a
+      href={item.href}
+      class={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+        item.key === active
+          ? 'bg-primary-700 border-primary-500 text-neutral-50'
+          : 'bg-darkslate-600 border-darkslate-400 text-darkslate-200 hover:border-darkslate-300'
+      }`}
+    >
+      {item.label}
+    </a>
+  ))}
+</nav>
