@@ -147,8 +147,11 @@ export const hibpAdapter: ThreatSourceAdapter<HibpBreach, NormalisedIncident> = 
       // Per operator decision: any record that reaches this point has
       // already passed the high-confidence Romania eligibility gate (a
       // verified organisation-domain match), so it publishes immediately
-      // without a manual editorial step.
-      editorialStatus: 'published',
+      // without a manual editorial step - EXCEPT breaches HIBP itself
+      // flags as sensitive (IsSensitive: adult content, health data, and
+      // similar categories), which stay needs_review pending a manual
+      // check before anything is published or an article is generated.
+      editorialStatus: record.IsSensitive ? 'needs_review' : 'published',
       summary: buildBreachSummary(record, sanitisedDescription),
       sector: null,
       independentlyConfirmed: false,

@@ -65,6 +65,16 @@ describe('hibpAdapter.normalise', () => {
     expect(result).toBeNull();
   });
 
+  it('holds a sensitive breach for manual review instead of publishing it', async () => {
+    const result = await hibpAdapter.normalise({ ...baseBreach, IsSensitive: true }, fakeContext('org-123'));
+    expect(result?.editorialStatus).toBe('needs_review');
+  });
+
+  it('publishes a non-sensitive breach immediately', async () => {
+    const result = await hibpAdapter.normalise({ ...baseBreach, IsSensitive: false }, fakeContext('org-123'));
+    expect(result?.editorialStatus).toBe('published');
+  });
+
   it('publishes when the domain matches a verified Romanian organisation', async () => {
     const result = await hibpAdapter.normalise(baseBreach, fakeContext('org-123'));
     expect(result).not.toBeNull();
