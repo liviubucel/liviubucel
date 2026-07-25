@@ -6,8 +6,6 @@
 
 import type { RecordType } from './types';
 
-const PUBLISHED_INCIDENT_STATES = ['published', 'updated'] as const;
-
 export interface PublicIncidentRow {
   id: string;
   slug: string;
@@ -78,13 +76,22 @@ export interface ListIncidentsOptions {
   offset?: number;
 }
 
+// Ordered by when the incident actually happened/was reported upstream
+// (discovered_date, falling back to incident_date then our own
+// published_at) - not by our own ingestion time. A source like
+// Ransomware.live's country-victims feed returns its *entire* history in
+// one response, so sorting by published_at would put everything ingested
+// in the same sync run in an arbitrary order regardless of how old the
+// real-world listing is.
+const RECENCY_ORDER = 'COALESCE(i.discovered_date, i.incident_date, i.published_at) DESC';
+
 export async function listPublicIncidents(
   db: D1Database,
   { recordType, limit = 20, offset = 0 }: ListIncidentsOptions = {}
 ): Promise<PublicIncidentRow[]> {
   const query = recordType
-    ? `${INCIDENT_LIST_SELECT} AND i.record_type = ?1 ORDER BY i.published_at DESC LIMIT ?2 OFFSET ?3`
-    : `${INCIDENT_LIST_SELECT} ORDER BY i.published_at DESC LIMIT ?1 OFFSET ?2`;
+    ? `${INCIDENT_LIST_SELECT} AND i.record_type = ?1 ORDER BY ${RECENCY_ORDER} LIMIT ?2 OFFSET ?3`
+    : `${INCIDENT_LIST_SELECT} ORDER BY ${RECENCY_ORDER} LIMIT ?1 OFFSET ?2`;
 
   const stmt = recordType ? db.prepare(query).bind(recordType, limit, offset) : db.prepare(query).bind(limit, offset);
 

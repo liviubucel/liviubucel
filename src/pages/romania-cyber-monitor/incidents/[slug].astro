@@ -54,7 +54,7 @@ const canonical = `${SITE.site.url}romania-cyber-monitor/incidents/${incident.sl
       </div>
       <h1 class="text-4xl font-semibold">{title}</h1>
       <p class="pt-3 text-darkslate-300 text-sm">
-        Published {formatIsoDate(incident.publishedAt)}
+        Reported {formatIsoDate(incident.discoveredDate ?? incident.publishedAt)}
         {incident.incidentDate && ` · Alleged incident date: ${formatIsoDate(incident.incidentDate)}`}
       </p>
     </div>

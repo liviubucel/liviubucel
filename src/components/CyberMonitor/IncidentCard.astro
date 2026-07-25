@@ -9,6 +9,10 @@ interface Props {
 const { incident } = Astro.props;
 const title = incident.articleTitle ?? incident.organisationDisplayName ?? 'Untitled incident';
 const excerpt = incident.articleExcerpt ?? incident.summary ?? '';
+// Reported/discovered date, not our own ingestion timestamp - a source can
+// backfill years-old listings in one sync, so publishedAt would mislabel
+// old real-world incidents as "just happened".
+const displayDate = incident.discoveredDate ?? incident.incidentDate ?? incident.publishedAt;
 ---
 
 <li class="list-none w-full mb-3">
@@ -30,9 +34,9 @@ const excerpt = incident.articleExcerpt ?? incident.summary ?? '';
     {excerpt && <p class="text-sm text-darkslate-200 mt-2 line-clamp-2">{excerpt}</p>}
     <time
       class="block text-sm text-darkslate-300 mt-3"
-      datetime={incident.publishedAt}
+      datetime={displayDate}
     >
-      {formatIsoDate(incident.publishedAt)}
+      {formatIsoDate(displayDate)}
     </time>
   </a>
 </li>
