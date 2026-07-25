@@ -1,10 +1,14 @@
 ---
+import { env } from 'cloudflare:workers';
 import { DEFAULT_LANGUAGE, type Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import { getPosts, getPageSeo } from '../../lib/sanity-queries';
 import Layout from '../../layouts/Layout.astro';
 import PostRow from '../../components/Blog/PostRow.astro';
 import { SITE } from '../../site-config';
+import { listPublicIncidents } from '../../lib/cyber-monitor/public-data';
+
+export const prerender = false;
 
 const lang: Language = 'en';
 const isRO = false;
@@ -13,6 +17,7 @@ interface Post {
   id: string;
   title: string;
   pubDate: string | Date;
+  href?: string;
 }
 
 let posts: Post[] = [];
@@ -25,6 +30,21 @@ try {
   }));
 } catch (error) {
   console.warn('Failed to fetch posts from Sanity:', error);
+}
+
+try {
+  const incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { limit: 50 });
+  const cyberMonitorPosts: Post[] = incidents.map((incident) => ({
+    id: incident.slug,
+    title: incident.articleTitle ?? incident.organisationDisplayName ?? 'Romania Cyber Monitor update',
+    pubDate: incident.publishedAt,
+    href: `/romania-cyber-monitor/incidents/${incident.slug}`,
+  }));
+  posts = [...posts, ...cyberMonitorPosts].sort(
+    (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
+  );
+} catch (error) {
+  console.warn('Failed to fetch Romania Cyber Monitor posts:', error);
 }
 
 const seo = await getPageSeo("blog");
@@ -72,6 +92,7 @@ const seoDescription = seo?.description || "Cybersecurity articles, technical re
             id={post.id}
             title={post.title || 'No title'}
             lang={lang}
+            href={post.href}
           />
         ))
       }

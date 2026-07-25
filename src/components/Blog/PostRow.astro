@@ -7,10 +7,11 @@ interface Props {
   date: Date;
   id: string;
   lang?: Language;
+  href?: string;
 }
 
-const { title, date, id, lang = 'en' } = Astro.props;
-const href = lang === 'en' ? `/blog/${id}` : `/ro/blog/${id}`;
+const { title, date, id, lang = 'en', href: hrefOverride } = Astro.props;
+const href = hrefOverride ?? (lang === 'en' ? `/blog/${id}` : `/ro/blog/${id}`);
 ---
 
 <li class="list-none w-full mb-3">
