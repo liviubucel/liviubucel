@@ -18,28 +18,17 @@ interface Props {
   tagline?: string;
   github?: string;
   linkedin?: string;
-  lang?: "en" | "ro";
 }
 
 const profile = await getProfileSettings();
 
 const {
+  fullName = SITE.author.fullName,
+  role = SITE.author.jobTitle,
+  tagline = "Feel free to reach out if you have a security inquiry, want to collaborate, or just want to say hello.",
   github = profile?.github || LINKS.github,
   linkedin = profile?.linkedin || LINKS.linkedin,
-  lang = "en",
 } = Astro.props;
-
-const isRO = lang === "ro";
-const heading = isRO ? "Sunt Liviu Bucel" : "I'm Liviu Bucel";
-const roleText = isRO
-  ? "Securitate cibernetică · Ethical Hacking · Investigații digitale"
-  : "Cybersecurity · Ethical Hacking · Digital Investigation";
-const summaryText = isRO
-  ? "Mă interesează cum funcționează atacurile, cum sunt descoperite vulnerabilitățile și cum pot fi investigate incidentele. Aici îmi prezint proiectele și activitatea tehnică."
-  : "I'm interested in how attacks work, how vulnerabilities are found, and how incidents can be investigated. This is where I share my projects and technical work.";
-const mottoText = isRO
-  ? "FĂ-O, DAR FĂ-O BINE!"
-  : "JUST DO IT, BUT DO IT WELL!";
 
 const twitter = profile?.twitter;
 const youtube = profile?.youtube;
@@ -48,12 +37,28 @@ const tryhackme = profile?.tryhackme;
 
 <Card colSpan="md:col-span-3" rowSpan="md:row-span-4">
   <div class="flex w-full h-full">
-    <div class="flex flex-col justify-between md:max-h-[300px] gap-4 min-w-0">
+    <div class="flex flex-col justify-between md:max-h-[300px] gap-4">
       <div class="flex flex-col h-full">
-        <p class="text-sm font-light m-0 text-darkslate-300">{roleText}</p>
-        <h1 class="text-3xl sm:text-4xl font-bold m-0 mt-1">{heading}</h1>
-        <p class="m-0 font-light text-md mt-3">{summaryText}</p>
-        <p class="text-sm font-bold mt-auto">{mottoText}</p>
+        <h6 class="text-sm font-light m-0 text-darkslate-300">welcome</h6>
+
+        <p class="sr-only">
+          Hi, I'm {SITE.author.fullName}, a BSc Cyber Security student at De Montfort
+          University, focusing on Ethical Hacking, Digital Forensics, and Cryptography.
+          Feel free to reach out if you have any inquiries, want to
+          collaborate, or just want to say hello.
+        </p>
+        <p aria-hidden="true" class="m-0 font-light text-md">
+          <span>
+            Hi, I'm <b class="font-bold">{SITE.author.fullName}</b>, a BSc Cyber Security
+            student at De Montfort University, focusing on Ethical Hacking, Digital Forensics,
+            and Cryptography.
+          </span>
+          <br />
+          <span class="block mt-2">
+            Feel free to reach out if you have a security inquiry, want
+            to collaborate, or just want to say hello.
+          </span>
+        </p>
       </div>
       <div class="flex gap-2 lg:gap-4">
         <a href={github} aria-label="github profile" target="_blank">

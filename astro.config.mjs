@@ -13,7 +13,6 @@ import sentry from "@sentry/astro";
 const envSiteUrl = process.env.SITE_URL || "https://liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
-const isLighthouse = process.env.LIGHTHOUSE_CI === "true";
 
 // https://astro.build/config
 export default defineConfig({
@@ -70,7 +69,7 @@ export default defineConfig({
       i18n: {
         defaultLocale: "en",
         locales: {
-          en: "en-GB",
+          en: "en-US",
           ro: "ro-RO",
         },
       },
@@ -78,7 +77,10 @@ export default defineConfig({
         !/\/(playground|travel)\/?$/.test(new URL(page).pathname),
     }),
     robotsTxt({
-      sitemap: [`${siteNoTrailingSlash}/sitemap-index.xml`],
+      sitemap: [
+        `${siteNoTrailingSlash}/sitemap-index.xml`,
+        `${siteNoTrailingSlash}/sitemap-0.xml`,
+      ],
       policy: [
         {
           userAgent: "*",
@@ -91,6 +93,8 @@ export default defineConfig({
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
+    // db() integration commented out due to CommonJS/ESM incompatibility
+    // Use alternative guestbook storage (e.g., external API)
     ...(process.env.SANITY_PROJECT_ID ? [
       sanity({
         projectId: process.env.SANITY_PROJECT_ID,
@@ -105,12 +109,15 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [remarkReadingTime],
   },
-  devToolbar: {
-    enabled: !isLighthouse,
-  },
-  output: isLighthouse ? "static" : "server",
-  adapter: isLighthouse ? undefined : cloudflare(),
+  output: "server",
+  adapter: cloudflare(),
   vite: {
     assetsInclude: "**/*.riv",
+    ssr: {
+      external: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
+    optimizeDeps: {
+      exclude: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
+    },
   },
 });
