@@ -456,4 +456,71 @@ export const schemaTypes = [
       },
     ],
   },
+
+  // Page SEO (one document per page, per language)
+  {
+    name: 'pageSeo',
+    title: 'Page SEO',
+    type: 'document',
+    fields: [
+      {
+        name: 'pageId',
+        title: 'Page',
+        type: 'string',
+        description: 'Which page this SEO content applies to.',
+        options: {
+          list: [
+            { title: 'Home (EN)', value: 'home' },
+            { title: 'Home (RO)', value: 'home-ro' },
+            { title: 'Experience (EN)', value: 'experience' },
+            { title: 'Experience (RO)', value: 'experience-ro' },
+            { title: 'Contact (EN)', value: 'contact' },
+            { title: 'Contact (RO)', value: 'contact-ro' },
+            { title: 'Blog (EN)', value: 'blog' },
+            { title: 'Blog (RO)', value: 'blog-ro' },
+            { title: 'Projects (EN)', value: 'projects' },
+            { title: 'Projects (RO)', value: 'projects-ro' },
+            { title: 'Design Works (EN)', value: 'design-works' },
+            { title: 'Design Works (RO)', value: 'design-works-ro' },
+            { title: 'Travel (EN)', value: 'travel' },
+            { title: 'Travel (RO)', value: 'travel-ro' },
+            { title: 'Playground (EN)', value: 'playground' },
+            { title: 'Playground (RO)', value: 'playground-ro' },
+          ],
+        },
+        validation: (Rule: any) => Rule.required(),
+      },
+      {
+        name: 'title',
+        title: 'SEO Title',
+        type: 'string',
+        description: 'Shown in browser tab and search results. Recommended: under 60 characters.',
+        validation: (Rule: any) => Rule.max(70),
+      },
+      {
+        name: 'description',
+        title: 'SEO Description',
+        type: 'text',
+        description: 'Shown in search results under the title. Recommended: under 160 characters.',
+        validation: (Rule: any) => Rule.max(200),
+      },
+      {
+        name: 'keywords',
+        title: 'Keywords',
+        type: 'array',
+        of: [{ type: 'string' }],
+        options: { layout: 'tags' },
+        description: 'Focus keywords for this page.',
+      },
+      {
+        name: 'ogImage',
+        title: 'Social Share Image (Open Graph)',
+        type: 'image',
+        description: 'Overrides the default image shown when this page is shared on social media.',
+      },
+    ],
+    preview: {
+      select: { title: 'title', subtitle: 'pageId' },
+    },
+  },
 ];

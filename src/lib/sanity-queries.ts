@@ -349,6 +349,30 @@ export async function getProfileSettings(): Promise<ProfileSettings | null> {
   }
 }
 
+export interface PageSeo {
+  title?: string;
+  description?: string;
+  keywords?: string[];
+  ogImage?: string;
+}
+
+export async function getPageSeo(pageId: string): Promise<PageSeo | null> {
+  try {
+    return await sanityClient.fetch(
+      `*[_type == "pageSeo" && pageId == $pageId][0] {
+        title,
+        description,
+        keywords,
+        "ogImage": ogImage.asset->url
+      }`,
+      { pageId }
+    );
+  } catch (error) {
+    console.error('Failed to fetch page SEO:', error);
+    return null;
+  }
+}
+
 export async function submitGuestbookEntry(entry: {
   name: string;
   email: string;

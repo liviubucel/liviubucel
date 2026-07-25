@@ -3,6 +3,7 @@ import type { Language } from '../lib/i18n';
 import Layout from '../layouts/Layout.astro';
 import Seo from '../components/Seo.astro';
 import { SITE } from '../site-config';
+import { getPageSeo } from '../lib/sanity-queries';
 
 export const prerender = false;
 
@@ -15,17 +16,23 @@ const topics = [
   'CTF / Challenge',
   'General Question',
 ];
+
+const seo = await getPageSeo("contact");
+const seoTitle = seo?.title || `Contact — ${SITE.author.fullName}`;
+const seoDescription = seo?.description || "Get in touch with Liviu Bucel about cybersecurity, security research, and relevant technical collaboration.";
 ---
 
 <Layout
-  description="Get in touch with Liviu Bucel about cybersecurity, security research, and relevant technical collaboration."
-  title={`Contact — ${SITE.author.fullName}`}
+  description={seoDescription}
+  title={seoTitle}
   lang={lang}
 >
   <Seo
-    title={`Contact — ${SITE.author.fullName}`}
-    description="Get in touch with Liviu Bucel about cybersecurity, security research, and relevant technical collaboration."
+    title={seoTitle}
+    description={seoDescription}
     lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}contact`}
   />
 
