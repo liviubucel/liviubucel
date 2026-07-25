@@ -334,7 +334,7 @@ export async function getProfileSettings(): Promise<ProfileSettings | null> {
     return await sanityClient.fetch(`*[_type == "profileSettings"][0] {
       _id,
       isCurrentlyEmployed,
-      cvUrl,
+      "cvUrl": cvFile.asset->url,
       phone,
       github,
       linkedin,

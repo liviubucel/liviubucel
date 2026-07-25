@@ -1,17 +1,11 @@
 import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
-import { env } from 'cloudflare:workers';
 import { isTokenValid, consumeToken } from '../../../lib/cv-tokens';
+import { getProfileSettings } from '../../../lib/sanity-queries';
 
 export const prerender = false;
 
-interface CloudflareEnv {
-  ASSETS?: {
-    fetch: (request: Request) => Promise<Response>;
-  };
-}
-
-export const GET: APIRoute = async ({ url, request }) => {
+export const GET: APIRoute = async ({ url }) => {
   try {
     const token = url.searchParams.get('token');
 
@@ -30,21 +24,21 @@ export const GET: APIRoute = async ({ url, request }) => {
     }
 
     try {
-      const cfEnv = env as unknown as CloudflareEnv;
+      const profile = await getProfileSettings();
+      const cvUrl = profile?.cvUrl;
 
-      if (!cfEnv?.ASSETS) {
-        console.error('[cv-download] ASSETS binding is not configured.');
+      if (!cvUrl) {
+        console.error('[cv-download] CV file is not configured in Sanity.');
         return Response.json(
           { error: 'CV file is currently unavailable. Please contact directly.' },
           { status: 503 },
         );
       }
 
-      const assetUrl = new URL('/cv.pdf', request.url);
-      const assetResponse = await cfEnv.ASSETS.fetch(new Request(assetUrl));
+      const assetResponse = await fetch(cvUrl);
 
       if (!assetResponse.ok) {
-        console.error('[cv-download] CV file not found', assetResponse.status);
+        console.error('[cv-download] CV file fetch failed', assetResponse.status);
         return Response.json(
           { error: 'CV file is currently unavailable. Please contact directly.' },
           { status: 503 },
