@@ -8,7 +8,7 @@ interface Props {
 const { rounded, variant = 'default', ...props } = Astro.props;
 
 const baseClass = 'h-full w-fit text-xl max-h-[50px] transition-all duration-100 ease-in-out cursor-pointer';
-const socialClass = 'shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px] text-white bg-darkslate-900 border border-darkslate-700 hover:bg-darkslate-800';
+const socialClass = 'shadow-md active:shadow-none active:translate-x-[2px] active:translate-y-[2px] text-darkslate-50 bg-darkslate-900 border border-primary-500 hover:text-primary-500';
 const defaultClass = 'shadow-sm active:shadow-none active:translate-x-[2px] active:translate-y-[2px] text-darkslate-900 px-5 py-2 border border-darkslate-300 hover:bg-darkslate-50 bg-white';
 
 const variantClass = variant === 'social' ? socialClass : defaultClass;
