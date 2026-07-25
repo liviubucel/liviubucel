@@ -90,11 +90,11 @@ export default defineConfig({
         },
       ],
     }),
-    solidJs(),
+    solidJs({ exclude: ["**/node_modules/@sanity/**"] }),
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
-    react(),
+    react({ include: ["**/node_modules/@sanity/**"] }),
     // db() integration commented out due to CommonJS/ESM incompatibility
     // Use alternative guestbook storage (e.g., external API)
     sanity({
