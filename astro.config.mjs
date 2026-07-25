@@ -97,17 +97,14 @@ export default defineConfig({
     react(),
     // db() integration commented out due to CommonJS/ESM incompatibility
     // Use alternative guestbook storage (e.g., external API)
-    ...(process.env.SANITY_PROJECT_ID ? [
-      sanity({
-        projectId: process.env.SANITY_PROJECT_ID,
-        dataset: process.env.SANITY_DATASET || "production",
-        useCdn: true,
-        apiVersion: "2025-02-20",
-        // Crisis 404 fallback: client redirects to /en if projectId is missing
-        studioUrl: "/studio",
-        studioBasePath: "/studio",
-      }),
-    ] : []),
+    sanity({
+      projectId: process.env.SANITY_PROJECT_ID || "8atrdwjk",
+      dataset: process.env.SANITY_DATASET || "production",
+      useCdn: true,
+      apiVersion: "2025-02-20",
+      studioUrl: "/studio",
+      studioBasePath: "/studio",
+    }),
   ],
   markdown: {
     remarkPlugins: [remarkReadingTime],
