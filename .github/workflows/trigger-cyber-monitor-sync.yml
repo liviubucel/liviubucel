@@ -17,9 +17,15 @@ jobs:
             exit 1
           fi
 
-          http_code=$(curl -sS -o response.json -w "%{http_code}" -X POST \
+          # -L follows Cloudflare's edge redirect (e.g. bot-protection
+          # challenges on the default curl UA); --post301/302/303 makes
+          # curl keep POST + headers across every redirect status instead
+          # of silently downgrading to GET.
+          http_code=$(curl -sS -L --post301 --post302 --post303 \
+            -o response.json -w "%{http_code}" -X POST \
             "https://liviubucel.com/api/cyber-monitor/trigger-sync" \
-            -H "Authorization: Bearer ${TRIGGER_TOKEN}")
+            -H "Authorization: Bearer ${TRIGGER_TOKEN}" \
+            -H "User-Agent: liviubucel-website-ops/1.0")
 
           echo "HTTP status: ${http_code}"
           echo "Response:"
