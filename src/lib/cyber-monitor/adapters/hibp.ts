@@ -144,7 +144,11 @@ export const hibpAdapter: ThreatSourceAdapter<HibpBreach, NormalisedIncident> = 
       firstObserved: record.AddedDate,
       lastObserved: record.ModifiedDate,
       verificationStatus: record.IsVerified ? 'source_verified' : 'unverified_claim',
-      editorialStatus: 'candidate',
+      // Per operator decision: any record that reaches this point has
+      // already passed the high-confidence Romania eligibility gate (a
+      // verified organisation-domain match), so it publishes immediately
+      // without a manual editorial step.
+      editorialStatus: 'published',
       summary: buildBreachSummary(record, sanitisedDescription),
       sector: null,
       independentlyConfirmed: false,

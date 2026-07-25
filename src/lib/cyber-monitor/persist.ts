@@ -12,7 +12,20 @@ import type {
 
 export type PersistOutcome = 'inserted' | 'updated';
 
-export async function persistIncident(db: D1Database, record: NormalisedIncident, nowIso: string): Promise<PersistOutcome> {
+export interface IncidentPersistResult {
+  outcome: PersistOutcome;
+  id: string;
+  /** True only when this call is what newly published the incident (a
+   * fresh insert with editorial_status='published'), so the caller can
+   * decide whether to auto-generate a blog article for it. */
+  newlyPublished: boolean;
+}
+
+export async function persistIncident(
+  db: D1Database,
+  record: NormalisedIncident,
+  nowIso: string
+): Promise<IncidentPersistResult> {
   const existing = await db
     .prepare('SELECT id FROM incidents WHERE dedup_key = ?1')
     .bind(record.dedupKey)
@@ -23,18 +36,20 @@ export async function persistIncident(db: D1Database, record: NormalisedIncident
       .prepare('UPDATE incidents SET last_observed = ?1, updated_at = ?2 WHERE id = ?3')
       .bind(record.lastObserved, nowIso, existing.id)
       .run();
-    return 'updated';
+    return { outcome: 'updated', id: existing.id, newlyPublished: false };
   }
 
   const id = crypto.randomUUID();
+  const publishedAt = record.editorialStatus === 'published' ? nowIso : null;
+
   await db
     .prepare(
       `INSERT INTO incidents (
         id, slug, record_type, organisation_id, organisation_display_name, threat_group_id,
         country_code, romania_relationship_basis, country_confidence, incident_date, discovered_date,
         first_observed, last_observed, verification_status, editorial_status, summary, sector,
-        independently_confirmed, dedup_key
-      ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)`
+        independently_confirmed, dedup_key, published_at
+      ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20)`
     )
     .bind(
       id,
@@ -55,7 +70,8 @@ export async function persistIncident(db: D1Database, record: NormalisedIncident
       record.summary,
       record.sector,
       record.independentlyConfirmed ? 1 : 0,
-      record.dedupKey
+      record.dedupKey,
+      publishedAt
     )
     .run();
 
@@ -81,7 +97,7 @@ export async function persistIncident(db: D1Database, record: NormalisedIncident
     )
     .run();
 
-  return 'inserted';
+  return { outcome: 'inserted', id, newlyPublished: record.editorialStatus === 'published' };
 }
 
 export async function persistExposure(db: D1Database, record: NormalisedExposure, nowIso: string): Promise<PersistOutcome> {

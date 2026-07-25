@@ -2,7 +2,7 @@
 // Dispatches every source due for the firing cron expression, in parallel
 // isolation (one source's failure/lock contention never affects another).
 
-import type { SourceId, SyncContext } from './types';
+import type { NormalisedIncident, SourceId, SyncContext } from './types';
 import { ADAPTER_REGISTRY } from './adapters/registry';
 import { runSourceSync, type SyncRunSummary } from './sync-runner';
 import {
@@ -12,6 +12,28 @@ import {
   persistIndicator,
   persistMalwareMetadata,
 } from './persist';
+import { generateIncidentArticle, persistGeneratedArticle } from './article-generation';
+
+/** Persists an incident and, per operator decision, immediately generates
+ * and publishes a blog article for any newly published incident - no
+ * separate editorial approval step. Returns just the outcome string so it
+ * satisfies runSourceSync's generic persist() callback shape. */
+async function persistIncidentAndPublishArticle(
+  context: SyncContext,
+  record: NormalisedIncident
+): Promise<'inserted' | 'updated'> {
+  const nowIso = context.now().toISOString();
+  const result = await persistIncident(context.db, record, nowIso);
+
+  if (result.newlyPublished) {
+    const article = generateIncidentArticle(record);
+    if (article) {
+      await persistGeneratedArticle(context.db, article, result.id, nowIso);
+    }
+  }
+
+  return result.outcome;
+}
 
 // LeakIX must remain sequential and rate-limited even relative to other
 // sources - it is never run concurrently with anything else that also
@@ -27,7 +49,7 @@ async function runOneSource(sourceId: SourceId, context: SyncContext): Promise<S
   switch (sourceId) {
     case 'ransomware_live':
     case 'hibp':
-      return runSourceSync(adapter, context, (record) => persistIncident(context.db, record, context.now().toISOString()));
+      return runSourceSync(adapter, context, (record) => persistIncidentAndPublishArticle(context, record));
     case 'leakix':
       return runSourceSync(adapter, context, (record) => persistExposure(context.db, record, context.now().toISOString()));
     case 'threatfox':
