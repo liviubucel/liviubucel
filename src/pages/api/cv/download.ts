@@ -1,33 +1,17 @@
 import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { env } from 'cloudflare:workers';
+import { isTokenValid, consumeToken } from '../../../lib/cv-tokens';
 
 export const prerender = false;
 
-interface TokenRecord {
-  token: string;
-  expiresAt: number;
-  email: string;
+interface CloudflareEnv {
+  ASSETS?: {
+    fetch: (request: Request) => Promise<Response>;
+  };
 }
 
-const validTokens: Map<string, TokenRecord> = new Map();
-
-function isTokenValid(token: string): boolean {
-  const record = validTokens.get(token);
-  if (!record) {
-    return false;
-  }
-
-  if (Date.now() > record.expiresAt) {
-    validTokens.delete(token);
-    return false;
-  }
-
-  return true;
-}
-
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request }) => {
   try {
     const token = url.searchParams.get('token');
 
@@ -46,12 +30,30 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     try {
-      const cvPath = join(process.cwd(), 'public', 'cv.pdf');
-      const fileBuffer = await readFile(cvPath);
+      const cfEnv = env as unknown as CloudflareEnv;
 
-      validTokens.delete(token);
+      if (!cfEnv?.ASSETS) {
+        console.error('[cv-download] ASSETS binding is not configured.');
+        return Response.json(
+          { error: 'CV file is currently unavailable. Please contact directly.' },
+          { status: 503 },
+        );
+      }
 
-      return new Response(fileBuffer, {
+      const assetUrl = new URL('/cv.pdf', request.url);
+      const assetResponse = await cfEnv.ASSETS.fetch(new Request(assetUrl));
+
+      if (!assetResponse.ok) {
+        console.error('[cv-download] CV file not found', assetResponse.status);
+        return Response.json(
+          { error: 'CV file is currently unavailable. Please contact directly.' },
+          { status: 503 },
+        );
+      }
+
+      consumeToken(token);
+
+      return new Response(assetResponse.body, {
         status: 200,
         headers: {
           'Content-Type': 'application/pdf',
@@ -81,7 +83,3 @@ export const GET: APIRoute = async ({ url }) => {
     );
   }
 };
-
-export function registerToken(token: string, expiresAt: number, email: string): void {
-  validTokens.set(token, { token, expiresAt, email });
-}

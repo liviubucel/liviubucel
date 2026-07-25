@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
 import { env } from 'cloudflare:workers';
-import { registerToken } from './cv/download';
+import { registerToken } from '../../lib/cv-tokens';
 
 export const prerender = false;
 
