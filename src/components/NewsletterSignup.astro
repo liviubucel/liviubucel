@@ -1,18 +1,56 @@
 ---
+import type { Language } from '../lib/i18n';
+
 interface Props {
   /** From ?newsletter=confirmed|unsubscribed|invalid on the current URL. */
   initialStatus?: string | null;
+  lang?: Language;
 }
 
-const { initialStatus = null } = Astro.props;
+const { initialStatus = null, lang = 'en' } = Astro.props;
+
+const COPY = {
+  en: {
+    heading: 'Romania Cyber Monitor updates',
+    description:
+      'Get an email whenever a new, Romania-linked ransomware claim or breach is published. No spam, one email per batch of updates, unsubscribe anytime.',
+    emailLabel: 'Email address',
+    placeholder: 'you@example.com',
+    subscribe: 'Subscribe',
+    subscribing: 'Subscribing…',
+    confirmed: "You're subscribed! You'll get an email whenever a new Romania-linked incident is published.",
+    unsubscribed: "You've been unsubscribed. You won't receive any more emails.",
+    invalid: 'That link is invalid or has expired.',
+    alreadySubscribed: "You're already subscribed.",
+    pending: 'Almost there — check your inbox for a confirmation email.',
+    genericError: 'Something went wrong. Please try again.',
+  },
+  ro: {
+    heading: 'Actualizări Romania Cyber Monitor',
+    description:
+      'Primești un e-mail de fiecare dată când apare o revendicare de ransomware sau o breșă legată de România. Fără spam, un singur e-mail per lot de actualizări, te poți dezabona oricând.',
+    emailLabel: 'Adresă de e-mail',
+    placeholder: 'nume@exemplu.ro',
+    subscribe: 'Abonează-te',
+    subscribing: 'Se procesează…',
+    confirmed: 'Te-ai abonat! Vei primi un e-mail de fiecare dată când apare un nou incident legat de România.',
+    unsubscribed: 'Te-ai dezabonat. Nu vei mai primi e-mailuri.',
+    invalid: 'Acest link este invalid sau a expirat.',
+    alreadySubscribed: 'Ești deja abonat.',
+    pending: 'Aproape gata — verifică-ți inboxul pentru e-mailul de confirmare.',
+    genericError: 'Ceva nu a funcționat. Te rugăm să încerci din nou.',
+  },
+} as const;
+
+const t = COPY[lang];
 
 const initialMessage =
   initialStatus === 'confirmed'
-    ? "You're subscribed! You'll get an email whenever a new Romania-linked incident is published."
+    ? t.confirmed
     : initialStatus === 'unsubscribed'
-      ? "You've been unsubscribed. You won't receive any more emails."
+      ? t.unsubscribed
       : initialStatus === 'invalid'
-        ? 'That link is invalid or has expired.'
+        ? t.invalid
         : null;
 
 const initialIsError = initialStatus === 'invalid';
@@ -20,14 +58,24 @@ const initialIsError = initialStatus === 'invalid';
 
 <section class="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6 mt-3 md:mt-4">
   <div class="rounded-xl border border-darkslate-400 bg-darkslate-600 p-6 md:p-8">
-    <h2 class="text-lg md:text-xl font-bold text-neutral-100">Romania Cyber Monitor updates</h2>
+    <h2 class="text-lg md:text-xl font-bold text-neutral-100">{t.heading}</h2>
     <p class="text-sm text-darkslate-200 mt-1 max-w-xl">
-      Get an email whenever a new, Romania-linked ransomware claim or breach is published. No spam,
-      one email per batch of updates, unsubscribe anytime.
+      {t.description}
     </p>
 
-    <form id="newsletter-form" novalidate class="mt-4 flex flex-col sm:flex-row gap-3 max-w-md">
-      <label for="newsletter-email" class="sr-only">Email address</label>
+    <form
+      id="newsletter-form"
+      novalidate
+      class="mt-4 flex flex-col sm:flex-row gap-3 max-w-md"
+      data-i18n={JSON.stringify({
+        subscribe: t.subscribe,
+        subscribing: t.subscribing,
+        alreadySubscribed: t.alreadySubscribed,
+        pending: t.pending,
+        genericError: t.genericError,
+      })}
+    >
+      <label for="newsletter-email" class="sr-only">{t.emailLabel}</label>
       <input
         id="newsletter-email"
         type="email"
@@ -35,14 +83,14 @@ const initialIsError = initialStatus === 'invalid';
         required
         autocomplete="email"
         maxlength="254"
-        placeholder="you@example.com"
-        class="flex-1 h-10 rounded-lg border border-darkslate-400 bg-darkslate-700 px-3 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        placeholder={t.placeholder}
+        class="flex-1 h-11 rounded-lg border-2 border-darkslate-300 bg-darkslate-800 px-3.5 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
       />
       <button
         type="submit"
-        class="h-10 px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-semibold text-white transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+        class="h-11 px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
       >
-        <span data-submit-label>Subscribe</span>
+        <span data-submit-label>{t.subscribe}</span>
       </button>
     </form>
 
@@ -67,17 +115,26 @@ const initialIsError = initialStatus === 'invalid';
   const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
   const status = document.getElementById('newsletter-form-status');
 
+  interface I18n {
+    subscribe: string;
+    subscribing: string;
+    alreadySubscribed: string;
+    pending: string;
+    genericError: string;
+  }
+  const i18n: I18n = form ? JSON.parse(form.dataset.i18n ?? '{}') : ({} as I18n);
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!status) return;
 
     const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
     const submitLabel = submitButton?.querySelector('[data-submit-label]') as HTMLElement | null;
-    const originalLabel = submitLabel?.textContent ?? 'Subscribe';
+    const originalLabel = submitLabel?.textContent ?? i18n.subscribe;
 
     if (submitButton && submitLabel) {
       submitButton.disabled = true;
-      submitLabel.textContent = 'Subscribing…';
+      submitLabel.textContent = i18n.subscribing;
     }
 
     status.classList.remove('hidden');
@@ -94,18 +151,16 @@ const initialIsError = initialStatus === 'invalid';
       try {
         data = await response.json();
       } catch {
-        throw new Error('Something went wrong. Please try again.');
+        throw new Error(i18n.genericError);
       }
 
-      if (!data.success) throw new Error(data.error || 'Something went wrong. Please try again.');
+      if (!data.success) throw new Error(data.error || i18n.genericError);
 
       form.reset();
-      status.textContent = data.alreadySubscribed
-        ? "You're already subscribed."
-        : 'Almost there — check your inbox for a confirmation email.';
+      status.textContent = data.alreadySubscribed ? i18n.alreadySubscribed : i18n.pending;
       status.classList.add('border-darkslate-400', 'bg-darkslate-700', 'text-neutral-200');
     } catch (error) {
-      status.textContent = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      status.textContent = error instanceof Error ? error.message : i18n.genericError;
       status.classList.add('border-red-500/30', 'bg-red-500/10', 'text-red-400');
     } finally {
       if (submitButton && submitLabel) {
