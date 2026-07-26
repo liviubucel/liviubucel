@@ -1,0 +1,117 @@
+---
+interface Props {
+  /** From ?newsletter=confirmed|unsubscribed|invalid on the current URL. */
+  initialStatus?: string | null;
+}
+
+const { initialStatus = null } = Astro.props;
+
+const initialMessage =
+  initialStatus === 'confirmed'
+    ? "You're subscribed! You'll get an email whenever a new Romania-linked incident is published."
+    : initialStatus === 'unsubscribed'
+      ? "You've been unsubscribed. You won't receive any more emails."
+      : initialStatus === 'invalid'
+        ? 'That link is invalid or has expired.'
+        : null;
+
+const initialIsError = initialStatus === 'invalid';
+---
+
+<section class="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6 mt-3 md:mt-4">
+  <div class="rounded-xl border border-darkslate-400 bg-darkslate-600 p-6 md:p-8">
+    <h2 class="text-lg md:text-xl font-bold text-neutral-100">Romania Cyber Monitor updates</h2>
+    <p class="text-sm text-darkslate-200 mt-1 max-w-xl">
+      Get an email whenever a new, Romania-linked ransomware claim or breach is published. No spam,
+      one email per batch of updates, unsubscribe anytime.
+    </p>
+
+    <form id="newsletter-form" novalidate class="mt-4 flex flex-col sm:flex-row gap-3 max-w-md">
+      <label for="newsletter-email" class="sr-only">Email address</label>
+      <input
+        id="newsletter-email"
+        type="email"
+        name="email"
+        required
+        autocomplete="email"
+        maxlength="254"
+        placeholder="you@example.com"
+        class="flex-1 h-10 rounded-lg border border-darkslate-400 bg-darkslate-700 px-3 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+      />
+      <button
+        type="submit"
+        class="h-10 px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-semibold text-white transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+      >
+        <span data-submit-label>Subscribe</span>
+      </button>
+    </form>
+
+    <p
+      id="newsletter-form-status"
+      role="status"
+      aria-live="polite"
+      class:list={[
+        'mt-3 rounded-lg border px-4 py-2.5 text-sm max-w-md',
+        initialMessage ? 'block' : 'hidden',
+        initialIsError
+          ? 'border-red-500/30 bg-red-500/10 text-red-400'
+          : 'border-darkslate-400 bg-darkslate-700 text-neutral-200',
+      ]}
+    >
+      {initialMessage}
+    </p>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const status = document.getElementById('newsletter-form-status');
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!status) return;
+
+    const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    const submitLabel = submitButton?.querySelector('[data-submit-label]') as HTMLElement | null;
+    const originalLabel = submitLabel?.textContent ?? 'Subscribe';
+
+    if (submitButton && submitLabel) {
+      submitButton.disabled = true;
+      submitLabel.textContent = 'Subscribing…';
+    }
+
+    status.classList.remove('hidden');
+    status.classList.add('block');
+    status.classList.remove(
+      'border-red-500/30', 'bg-red-500/10', 'text-red-400',
+      'border-darkslate-400', 'bg-darkslate-700', 'text-neutral-200',
+    );
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', { method: 'POST', body: new FormData(form) });
+
+      let data: { success: boolean; error?: string; alreadySubscribed?: boolean };
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('Something went wrong. Please try again.');
+      }
+
+      if (!data.success) throw new Error(data.error || 'Something went wrong. Please try again.');
+
+      form.reset();
+      status.textContent = data.alreadySubscribed
+        ? "You're already subscribed."
+        : 'Almost there — check your inbox for a confirmation email.';
+      status.classList.add('border-darkslate-400', 'bg-darkslate-700', 'text-neutral-200');
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      status.classList.add('border-red-500/30', 'bg-red-500/10', 'text-red-400');
+    } finally {
+      if (submitButton && submitLabel) {
+        submitButton.disabled = false;
+        submitLabel.textContent = originalLabel;
+      }
+    }
+  });
+</script>

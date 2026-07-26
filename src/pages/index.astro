@@ -10,11 +10,15 @@ import TimeZone from "../components/TimeZoneCard.astro";
 import AboutMe from "../components/AboutMe.astro";
 import Now from "../components/Now.astro";
 import DesignWorksCard from "../components/DesignWorksCard.astro";
+import NewsletterSignup from "../components/NewsletterSignup.astro";
 import { SITE } from "../site-config";
 import { getPageSeo } from "../lib/sanity-queries";
 
+export const prerender = false;
+
 const lang: Language = 'en';
 const isRO = false;
+const newsletterStatus = Astro.url.searchParams.get('newsletter');
 
 const seo = await getPageSeo("home");
 const seoTitle = seo?.title || `${SITE.author.fullName} - ${SITE.author.jobTitle}`;
@@ -70,6 +74,8 @@ const seoKeywords = seo?.keywords || ["cyber security", "digital forensics", "in
       </p>
     </Card>
   </main>
+
+  <NewsletterSignup initialStatus={newsletterStatus} />
 </Layout>
 
 <script>
