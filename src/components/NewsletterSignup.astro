@@ -67,17 +67,25 @@ const initialMessage =
 const initialIsError = initialStatus === 'invalid';
 ---
 
-<section class="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6 mt-3 md:mt-4">
-  <Card colSpan="" rowSpan="" padding="p-6 md:p-8" height="h-auto">
-    <h2 class="text-lg md:text-xl font-bold text-neutral-100">{t.heading}</h2>
-    <p class="text-sm text-darkslate-200 mt-1 max-w-xl">
+<!--
+  A grid item, not a standalone section - on the homepage bento grid this is
+  sized (md:col-span-2 md:row-span-1) to exactly fill the one empty slot the
+  fixed lg:grid-rows-8 lg:grid-cols-4 layout leaves over (see index.astro).
+  Below md it just stacks like every other card, full-size. At md+ (which
+  covers the fixed-height grid) the copy compacts down (lg:hidden
+  description, smaller text/controls) to fit a single grid row without
+  overflowing it.
+-->
+<Card colSpan="md:col-span-2" rowSpan="md:row-span-1" padding="p-4 md:p-3">
+  <div class="flex flex-col justify-center h-full gap-1.5 md:gap-1">
+    <h2 class="text-base md:text-xs font-bold text-neutral-100 leading-tight">{t.heading}</h2>
+    <p class="text-sm md:hidden text-darkslate-200 leading-snug">
       {t.description}
     </p>
 
     <form
       id="newsletter-form"
       novalidate
-      class="mt-4 max-w-md"
       data-i18n={JSON.stringify({
         subscribe: t.subscribe,
         subscribing: t.subscribing,
@@ -87,7 +95,7 @@ const initialIsError = initialStatus === 'invalid';
         consentRequired: t.consentRequired,
       })}
     >
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div class="flex flex-col sm:flex-row md:flex-row items-stretch sm:items-center md:items-center gap-2">
         <label for="newsletter-email" class="sr-only">{t.emailLabel}</label>
         <input
           id="newsletter-email"
@@ -97,26 +105,26 @@ const initialIsError = initialStatus === 'invalid';
           autocomplete="email"
           maxlength="254"
           placeholder={t.placeholder}
-          class="flex-1 h-10 rounded-lg border-2 border-darkslate-300 bg-darkslate-800 px-3.5 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          class="flex-1 min-w-0 h-9 md:h-7 rounded-lg md:rounded-md border-2 border-darkslate-300 bg-darkslate-800 px-3 md:px-2 text-sm md:text-xs text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         />
         <button
           type="submit"
-          class="w-fit self-start h-9 sm:h-10 px-4 sm:px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-xs sm:text-sm font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+          class="w-fit self-start sm:self-auto md:self-auto h-9 md:h-7 px-4 md:px-3 rounded-lg md:rounded-md bg-primary-600 hover:bg-primary-500 text-xs font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
         >
           <span data-submit-label>{t.subscribe}</span>
         </button>
       </div>
 
-      <div class="mt-3 flex items-start gap-2">
+      <div class="mt-2 md:mt-1 flex items-start gap-1.5">
         <input
           id="newsletter-consent"
           type="checkbox"
           name="consent"
           required
-          class="mt-0.5 h-4 w-4 shrink-0 rounded border-darkslate-300 bg-darkslate-800 text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
+          class="mt-0.5 h-3.5 w-3.5 md:h-3 md:w-3 shrink-0 rounded border-darkslate-300 bg-darkslate-800 text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
         />
-        <label for="newsletter-consent" class="text-xs text-darkslate-300 leading-snug">
-          {t.consentPrefix} <a href={t.privacyHref} class="text-primary-400 hover:underline">{t.consentLinkText}</a> {t.consentSuffix}
+        <label for="newsletter-consent" class="text-xs md:text-[10px] text-darkslate-300 leading-snug md:line-clamp-1">
+          {t.consentPrefix} <a href={t.privacyHref} class="text-primary-400 hover:underline">{t.consentLinkText}</a><span class="md:hidden"> {t.consentSuffix}</span>
         </label>
       </div>
     </form>
@@ -126,7 +134,7 @@ const initialIsError = initialStatus === 'invalid';
       role="status"
       aria-live="polite"
       class:list={[
-        'mt-3 rounded-lg border px-4 py-2.5 text-sm max-w-md',
+        'rounded-lg border px-3 py-1.5 text-xs',
         initialMessage ? 'block' : 'hidden',
         initialIsError
           ? 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -135,8 +143,8 @@ const initialIsError = initialStatus === 'invalid';
     >
       {initialMessage}
     </p>
-  </Card>
-</section>
+  </div>
+</Card>
 
 <script>
   const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
