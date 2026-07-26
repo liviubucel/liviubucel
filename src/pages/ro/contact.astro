@@ -161,6 +161,19 @@ const seoDescription = seo?.description || "Contactează-l pe Liviu Bucel pentru
               ></textarea>
             </div>
 
+            <div class="flex items-start gap-2">
+              <input
+                id="contact-consent"
+                type="checkbox"
+                name="consent"
+                required
+                class="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-600 bg-neutral-900 text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
+              />
+              <label for="contact-consent" class="text-xs text-neutral-400 leading-snug">
+                Sunt de acord cu <a href="/ro/privacy" class="text-primary-400 hover:underline">Politica de confidențialitate</a> și cu procesarea acestui mesaj pentru a-mi răspunde.
+              </label>
+            </div>
+
             <p class="text-xs text-neutral-500">
               <span class="text-red-400" aria-hidden="true">*</span> Câmpuri obligatorii
             </p>
@@ -197,17 +210,26 @@ const seoDescription = seo?.description || "Contactează-l pe Liviu Bucel pentru
     const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
     const submitLabel = submitButton?.querySelector('[data-submit-label]') as HTMLElement | null;
     const originalLabel = submitLabel?.textContent ?? 'Trimite mesajul';
+    const consentInput = form.querySelector('#contact-consent') as HTMLInputElement | null;
+
+    status.classList.remove(
+      'border-red-500/30', 'bg-red-500/10', 'text-red-400',
+      'border-neutral-700', 'bg-neutral-800', 'text-neutral-200',
+    );
+
+    if (consentInput && !consentInput.checked) {
+      status.textContent = 'Trebuie să fii de acord cu politica de confidențialitate pentru a trimite mesajul.';
+      status.classList.remove('hidden');
+      status.classList.add('border-red-500/30', 'bg-red-500/10', 'text-red-400');
+      return;
+    }
+
+    status.classList.add('hidden');
 
     if (submitButton && submitLabel) {
       submitButton.disabled = true;
       submitLabel.textContent = 'Se trimite…';
     }
-
-    status.classList.add('hidden');
-    status.classList.remove(
-      'border-red-500/30', 'bg-red-500/10', 'text-red-400',
-      'border-neutral-700', 'bg-neutral-800', 'text-neutral-200',
-    );
 
     try {
       const response = await fetch('/api/contact', { method: 'POST', body: new FormData(form) });

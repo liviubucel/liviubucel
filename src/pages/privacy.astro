@@ -1,0 +1,158 @@
+---
+import type { Language } from '../lib/i18n';
+import Layout from '../layouts/Layout.astro';
+import Seo from '../components/Seo.astro';
+import { SITE } from '../site-config';
+import { getPageSeo } from '../lib/sanity-queries';
+
+export const prerender = false;
+
+const lang: Language = 'en';
+
+const seo = await getPageSeo('privacy');
+const seoTitle = seo?.title || `Privacy Policy — ${SITE.author.fullName}`;
+const seoDescription =
+  seo?.description || 'How this site collects, uses, and protects your data, and your rights under GDPR.';
+const lastUpdated = 'July 2026';
+---
+
+<Layout description={seoDescription} title={seoTitle} lang={lang}>
+  <Seo
+    title={seoTitle}
+    description={seoDescription}
+    lang={lang}
+    keywords={seo?.keywords}
+    ogImage={seo?.ogImage}
+    canonical={`${SITE.site.url}privacy`}
+  />
+
+  <main class="min-h-screen text-white px-4 py-16 md:py-24 max-w-3xl mx-auto">
+    <a
+      class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg inline-block"
+      href="/">← Back</a
+    >
+
+    <h1 class="text-3xl md:text-4xl font-bold text-neutral-100 mb-2">Privacy Policy</h1>
+    <p class="text-sm text-neutral-500 mb-10">Last updated: {lastUpdated}</p>
+
+    <div class="space-y-8 text-neutral-300 leading-relaxed text-sm md:text-base">
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">1. Who this is</h2>
+        <p>
+          This site (liviubucel.com) is operated by {SITE.author.fullName}. This policy explains what personal
+          data is collected on this site, why, how it's used, and what rights you have over it. It applies to
+          every page on this domain, including the Romania Cyber Monitor section.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">2. What is collected, and why</h2>
+        <p class="mb-3">
+          Only two things on this site ask for your personal data, and both are entirely optional - nothing is
+          collected just by browsing.
+        </p>
+        <ul class="list-disc list-inside space-y-2">
+          <li>
+            <strong class="text-neutral-100">Contact form</strong> - your name, email address, and message, so I
+            can read and reply to you. Sent directly to my inbox; nothing is added to any mailing list from this
+            form alone.
+          </li>
+          <li>
+            <strong class="text-neutral-100">Newsletter subscription</strong> - your email address, so I can send
+            you an email when a new Romania-linked ransomware claim or breach is published on Romania Cyber
+            Monitor. Subscribing uses double opt-in: you'll get a confirmation email first, and nothing is sent
+            to you until you click the link in it. Every digest email includes a one-click unsubscribe link.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">3. Your data is never sold, shared, or used for ads</h2>
+        <p>
+          This is a personal site, not a business collecting data for profit. Your email address and message are
+          used exclusively for the purpose you gave them for - replying to you, or sending the digest you signed
+          up for. They are never sold, rented, shared with third parties, or used for advertising, profiling, or
+          any purpose you didn't ask for. There is no advertising or marketing tracking on this site.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">4. Legal basis and retention</h2>
+        <p class="mb-3">
+          Both the contact form and the newsletter process your data on the basis of your explicit consent
+          (GDPR Art. 6(1)(a)), given by checking the consent box before submitting.
+        </p>
+        <ul class="list-disc list-inside space-y-2">
+          <li>Contact messages are kept only as long as needed to handle your enquiry, then deleted.</li>
+          <li>
+            Newsletter emails are kept until you unsubscribe (link in every email) or your subscription is
+            manually removed on request.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">5. Where data is stored and processed</h2>
+        <p>
+          This site runs entirely on Cloudflare's infrastructure (Workers, D1, Email Workers) - there is no
+          separate marketing platform or third-party mailing list provider involved. Error monitoring is provided
+          by Sentry, which may automatically log basic technical diagnostics (e.g. browser type, approximate
+          location from IP address) purely to help fix bugs - never used to identify or profile individual
+          visitors. No advertising cookies or third-party tracking pixels are used anywhere on this site.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">6. Romania Cyber Monitor - content disclaimer</h2>
+        <p class="mb-3">
+          Romania Cyber Monitor publishes automated summaries of public, open-source threat-intelligence feeds
+          (e.g. ransomware leak-site listings, breach catalogues). This section exists for public-interest
+          awareness - to help Romanian organisations and individuals stay informed - not for commercial gain,
+          sensationalism, or to accuse anyone of wrongdoing.
+        </p>
+        <ul class="list-disc list-inside space-y-2">
+          <li>
+            <strong class="text-neutral-100">Ransomware entries are unconfirmed claims</strong>, not proof of a
+            breach. A claim being listed here does not mean the named organisation was actually compromised, nor
+            does it imply any judgment about the organisation.
+          </li>
+          <li>
+            Entries reflect only what upstream sources report and are generated automatically from that data -
+            no attack vector, financial impact, or attribution is inferred beyond the source material.
+          </li>
+          <li>
+            This content does not constitute legal, financial, or security advice. If your organisation is named
+            here and you believe an entry is inaccurate, contact me and I will review and correct it promptly.
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">7. Your rights under GDPR</h2>
+        <p class="mb-3">If you're in the EU/EEA (or covered by similar law elsewhere), you have the right to:</p>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Access the personal data held about you</li>
+          <li>Correct inaccurate data</li>
+          <li>Request deletion ("right to be forgotten")</li>
+          <li>Withdraw consent at any time (e.g. unsubscribe)</li>
+          <li>Object to or restrict processing</li>
+          <li>Request a copy of your data in a portable format</li>
+          <li>Lodge a complaint with your national data protection authority (in Romania: ANSPDCP, dataprotection.ro)</li>
+        </ul>
+        <p class="mt-3">
+          To exercise any of these rights, email
+          <a href={`mailto:${SITE.links.email}`} class="text-primary-400 hover:underline">{SITE.links.email}</a>.
+          I'll respond within 30 days.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">8. Changes to this policy</h2>
+        <p>
+          If this policy changes materially, the "Last updated" date above will change accordingly. Continued
+          use of the site after an update means you accept the revised policy.
+        </p>
+      </section>
+    </div>
+  </main>
+</Layout>

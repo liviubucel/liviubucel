@@ -40,9 +40,17 @@ export const POST: APIRoute = async (context) => {
 const handleSubscribe: APIRoute = async ({ request }) => {
   const formData = await request.formData();
   const email = (formData.get('email') ?? '').toString().trim().toLowerCase();
+  const consent = formData.get('consent');
 
   if (!email || email.length > MAX_EMAIL_LENGTH || !EMAIL_PATTERN.test(email)) {
     return Response.json({ success: false, error: 'Please enter a valid email address.' }, { status: 400 });
+  }
+
+  if (!consent) {
+    return Response.json(
+      { success: false, error: 'You must agree to the privacy policy to subscribe.' },
+      { status: 400 },
+    );
   }
 
   const cfEnv = env as unknown as CloudflareEnv;
