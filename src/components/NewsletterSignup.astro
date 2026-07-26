@@ -15,14 +15,15 @@ const COPY = {
     heading: 'Romania Cyber Monitor updates',
     description:
       'Get an email whenever a new, Romania-linked ransomware claim or breach is published. No spam, one email per batch of updates, unsubscribe anytime.',
+    shortDescription: 'Free email alerts for new Romania-linked ransomware & breach reports.',
     emailLabel: 'Email address',
     placeholder: 'you@example.com',
     subscribe: 'Subscribe',
     subscribing: 'Subscribing…',
-    consentPrefix: 'I agree to the',
+    consentPrefix: 'I agree to receive these emails per the',
     consentLinkText: 'Privacy Policy',
-    consentSuffix: 'and to receiving these emails.',
     consentRequired: 'Please agree to the privacy policy to subscribe.',
+    tryAgain: 'Try again',
     confirmed: "You're subscribed! You'll get an email whenever a new Romania-linked incident is published.",
     unsubscribed: "You've been unsubscribed. You won't receive any more emails.",
     invalid: 'That link is invalid or has expired.',
@@ -35,14 +36,15 @@ const COPY = {
     heading: 'Actualizări Romania Cyber Monitor',
     description:
       'Primești un e-mail de fiecare dată când apare o revendicare de ransomware sau o breșă legată de România. Fără spam, un singur e-mail per lot de actualizări, te poți dezabona oricând.',
+    shortDescription: 'Alerte gratuite pe e-mail pentru revendicări ransomware și breșe din România.',
     emailLabel: 'Adresă de e-mail',
     placeholder: 'nume@exemplu.ro',
     subscribe: 'Abonează-te',
     subscribing: 'Se procesează…',
-    consentPrefix: 'Sunt de acord cu',
-    consentLinkText: 'Politica de confidențialitate',
-    consentSuffix: 'și consimt să primesc aceste e-mailuri.',
+    consentPrefix: 'Sunt de acord să primesc aceste e-mailuri conform',
+    consentLinkText: 'Politicii de confidențialitate',
     consentRequired: 'Trebuie să fii de acord cu politica de confidențialitate pentru a te abona.',
+    tryAgain: 'Încearcă din nou',
     confirmed: 'Te-ai abonat! Vei primi un e-mail de fiecare dată când apare un nou incident legat de România.',
     unsubscribed: 'Te-ai dezabonat. Nu vei mai primi e-mailuri.',
     invalid: 'Acest link este invalid sau a expirat.',
@@ -72,83 +74,103 @@ const initialIsError = initialStatus === 'invalid';
   sized (md:col-span-2 md:row-span-1) to exactly fill the one empty slot the
   fixed lg:grid-rows-8 lg:grid-cols-4 layout leaves over (see index.astro).
   Below md it just stacks like every other card, full-size. At md+ (which
-  covers the fixed-height grid) the copy compacts down (lg:hidden
-  description, smaller text/controls) to fit a single grid row without
-  overflowing it.
+  covers the fixed-height grid) the copy compacts down to fit a single grid
+  row without overflowing it.
+
+  Idle (heading/description/form) and status (result message) are mutually
+  exclusive views, never shown together - the fixed-height grid row has no
+  room to stack both without the Card's overflow-hidden clipping something.
 -->
 <Card colSpan="md:col-span-2" rowSpan="md:row-span-1" padding="p-4 md:p-3">
-  <div class="flex flex-col justify-center h-full gap-1.5 md:gap-1">
-    <h2 class="text-base md:text-xs font-bold text-neutral-100 leading-tight">{t.heading}</h2>
-    <p class="text-sm md:hidden text-darkslate-200 leading-snug">
-      {t.description}
-    </p>
+  <div class="relative h-full">
+    <div id="newsletter-idle" class:list={['flex flex-col justify-center h-full gap-1.5 md:gap-1', initialMessage ? 'hidden' : '']}>
+      <h2 class="text-base md:text-xs font-bold text-neutral-100 leading-tight">{t.heading}</h2>
+      <p class="text-sm md:hidden text-darkslate-200 leading-snug">
+        {t.description}
+      </p>
+      <p class="hidden md:block md:text-[10px] text-darkslate-300 leading-snug md:truncate">
+        {t.shortDescription}
+      </p>
 
-    <form
-      id="newsletter-form"
-      novalidate
-      data-i18n={JSON.stringify({
-        subscribe: t.subscribe,
-        subscribing: t.subscribing,
-        alreadySubscribed: t.alreadySubscribed,
-        pending: t.pending,
-        genericError: t.genericError,
-        consentRequired: t.consentRequired,
-      })}
+      <form
+        id="newsletter-form"
+        novalidate
+        data-i18n={JSON.stringify({
+          subscribe: t.subscribe,
+          subscribing: t.subscribing,
+          alreadySubscribed: t.alreadySubscribed,
+          pending: t.pending,
+          genericError: t.genericError,
+          consentRequired: t.consentRequired,
+        })}
+      >
+        <div class="flex flex-col sm:flex-row md:flex-row items-stretch sm:items-center md:items-center gap-2">
+          <label for="newsletter-email" class="sr-only">{t.emailLabel}</label>
+          <input
+            id="newsletter-email"
+            type="email"
+            name="email"
+            required
+            autocomplete="email"
+            maxlength="254"
+            placeholder={t.placeholder}
+            class="flex-1 min-w-0 h-9 md:h-7 rounded-lg md:rounded-md border-2 border-darkslate-300 bg-darkslate-800 px-3 md:px-2 text-sm md:text-xs text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          />
+          <button
+            type="submit"
+            class="w-fit self-start sm:self-auto md:self-auto h-9 md:h-7 px-4 md:px-3 rounded-lg md:rounded-md bg-primary-600 hover:bg-primary-500 text-xs font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+          >
+            <span data-submit-label>{t.subscribe}</span>
+          </button>
+        </div>
+
+        <div class="mt-2 md:mt-1 flex items-start gap-1.5">
+          <input
+            id="newsletter-consent"
+            type="checkbox"
+            name="consent"
+            required
+            class="mt-0.5 h-3.5 w-3.5 md:h-3 md:w-3 shrink-0 rounded border-darkslate-300 bg-darkslate-800 text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
+          />
+          <label for="newsletter-consent" class="text-xs md:text-[10px] text-darkslate-300 leading-snug md:truncate md:block">
+            {t.consentPrefix} <a href={t.privacyHref} class="text-primary-400 hover:underline">{t.consentLinkText}</a>.
+          </label>
+        </div>
+      </form>
+    </div>
+
+    <div
+      id="newsletter-status"
+      class:list={['flex flex-col items-start justify-center h-full gap-2', initialMessage ? '' : 'hidden']}
     >
-      <div class="flex flex-col sm:flex-row md:flex-row items-stretch sm:items-center md:items-center gap-2">
-        <label for="newsletter-email" class="sr-only">{t.emailLabel}</label>
-        <input
-          id="newsletter-email"
-          type="email"
-          name="email"
-          required
-          autocomplete="email"
-          maxlength="254"
-          placeholder={t.placeholder}
-          class="flex-1 min-w-0 h-9 md:h-7 rounded-lg md:rounded-md border-2 border-darkslate-300 bg-darkslate-800 px-3 md:px-2 text-sm md:text-xs text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-        />
-        <button
-          type="submit"
-          class="w-fit self-start sm:self-auto md:self-auto h-9 md:h-7 px-4 md:px-3 rounded-lg md:rounded-md bg-primary-600 hover:bg-primary-500 text-xs font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
-        >
-          <span data-submit-label>{t.subscribe}</span>
-        </button>
-      </div>
-
-      <div class="mt-2 md:mt-1 flex items-start gap-1.5">
-        <input
-          id="newsletter-consent"
-          type="checkbox"
-          name="consent"
-          required
-          class="mt-0.5 h-3.5 w-3.5 md:h-3 md:w-3 shrink-0 rounded border-darkslate-300 bg-darkslate-800 text-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 cursor-pointer"
-        />
-        <label for="newsletter-consent" class="text-xs md:text-[10px] text-darkslate-300 leading-snug md:line-clamp-1">
-          {t.consentPrefix} <a href={t.privacyHref} class="text-primary-400 hover:underline">{t.consentLinkText}</a><span class="md:hidden"> {t.consentSuffix}</span>
-        </label>
-      </div>
-    </form>
-
-    <p
-      id="newsletter-form-status"
-      role="status"
-      aria-live="polite"
-      class:list={[
-        'rounded-lg border px-3 py-1.5 text-xs',
-        initialMessage ? 'block' : 'hidden',
-        initialIsError
-          ? 'border-red-500/30 bg-red-500/10 text-red-400'
-          : 'border-darkslate-400 bg-darkslate-700 text-neutral-200',
-      ]}
-    >
-      {initialMessage}
-    </p>
+      <p
+        id="newsletter-status-message"
+        role="status"
+        aria-live="polite"
+        class:list={[
+          'text-xs md:text-[11px] leading-snug',
+          initialIsError ? 'text-red-400' : 'text-neutral-100',
+        ]}
+      >
+        {initialMessage}
+      </p>
+      <button
+        type="button"
+        id="newsletter-try-again"
+        class:list={['text-xs md:text-[10px] font-semibold text-primary-400 hover:underline', initialIsError ? '' : 'hidden']}
+      >
+        {t.tryAgain}
+      </button>
+    </div>
   </div>
 </Card>
 
 <script>
+  const idleView = document.getElementById('newsletter-idle');
+  const statusView = document.getElementById('newsletter-status');
+  const statusMessage = document.getElementById('newsletter-status-message');
+  const tryAgainButton = document.getElementById('newsletter-try-again');
   const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
-  const status = document.getElementById('newsletter-form-status');
 
   interface I18n {
     subscribe: string;
@@ -160,25 +182,32 @@ const initialIsError = initialStatus === 'invalid';
   }
   const i18n: I18n = form ? JSON.parse(form.dataset.i18n ?? '{}') : ({} as I18n);
 
+  function showStatus(message: string, isError: boolean) {
+    if (!statusMessage || !statusView || !idleView || !tryAgainButton) return;
+    statusMessage.textContent = message;
+    statusMessage.classList.toggle('text-red-400', isError);
+    statusMessage.classList.toggle('text-neutral-100', !isError);
+    tryAgainButton.classList.toggle('hidden', !isError);
+    idleView.classList.add('hidden');
+    statusView.classList.remove('hidden');
+  }
+
+  tryAgainButton?.addEventListener('click', () => {
+    if (!idleView || !statusView) return;
+    statusView.classList.add('hidden');
+    idleView.classList.remove('hidden');
+  });
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!status) return;
 
     const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
     const submitLabel = submitButton?.querySelector('[data-submit-label]') as HTMLElement | null;
     const originalLabel = submitLabel?.textContent ?? i18n.subscribe;
     const consentInput = form.querySelector('#newsletter-consent') as HTMLInputElement | null;
 
-    status.classList.remove('hidden');
-    status.classList.add('block');
-    status.classList.remove(
-      'border-red-500/30', 'bg-red-500/10', 'text-red-400',
-      'border-darkslate-400', 'bg-darkslate-700', 'text-neutral-200',
-    );
-
     if (consentInput && !consentInput.checked) {
-      status.textContent = i18n.consentRequired;
-      status.classList.add('border-red-500/30', 'bg-red-500/10', 'text-red-400');
+      showStatus(i18n.consentRequired, true);
       return;
     }
 
@@ -200,11 +229,9 @@ const initialIsError = initialStatus === 'invalid';
       if (!data.success) throw new Error(data.error || i18n.genericError);
 
       form.reset();
-      status.textContent = data.alreadySubscribed ? i18n.alreadySubscribed : i18n.pending;
-      status.classList.add('border-darkslate-400', 'bg-darkslate-700', 'text-neutral-200');
+      showStatus(data.alreadySubscribed ? i18n.alreadySubscribed : i18n.pending, false);
     } catch (error) {
-      status.textContent = error instanceof Error ? error.message : i18n.genericError;
-      status.classList.add('border-red-500/30', 'bg-red-500/10', 'text-red-400');
+      showStatus(error instanceof Error ? error.message : i18n.genericError, true);
     } finally {
       if (submitButton && submitLabel) {
         submitButton.disabled = false;
