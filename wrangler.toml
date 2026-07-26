@@ -43,6 +43,9 @@ SOURCE_ENISA_CIRAS_ENABLED="false"
 [[send_email]]
 name = "EMAIL"
 
+[ai]
+binding = "AI"
+
 [[d1_databases]]
 binding = "ROMANIA_MONITOR_DB"
 database_name = "romania-cyber-monitor"

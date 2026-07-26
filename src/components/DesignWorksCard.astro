@@ -13,13 +13,20 @@ import StockMarketUpIllustration from "../assets/illustrations/stock_market_up.w
 import HouseIllustration from "../assets/illustrations/house.webp";
 import HexElementIllustration from "../assets/illustrations/hex_element.png";
 import BoneLogoExplorationIllustration from "../assets/illustrations/bone_logo_exploration.webp";
+
+interface Props {
+  lang?: "en" | "ro";
+}
+
+const { lang = "en" } = Astro.props;
+const isRO = lang === "ro";
 ---
 
 <Card
   colSpan="lg:col-span-1"
   rowSpan="md:row-span-1"
-  title="Projects"
-  href="/projects"
+  title={isRO ? "Proiecte" : "Projects"}
+  href={isRO ? "/ro/projects" : "/projects"}
 >
   <div
     class="absolute inset-0 z-[-1] opacity-20 grid grid-cols-[repeat(4,2.5rem)] grid-rows-[repeat(3,2.5rem)] gap-2 rotate-40 w-fit"

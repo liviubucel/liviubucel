@@ -1,0 +1,38 @@
+name: Translate blog posts to Romanian
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max posts to translate in this run (each run only picks up untranslated ones, so re-running is safe)"
+        required: false
+        default: "10"
+  schedule:
+    # Daily at 05:00 UTC - picks up anything published (manually or by the
+    # daily-blog pipeline) since the last run. A no-op when nothing is new.
+    - cron: "0 5 * * *"
+
+jobs:
+  translate:
+    name: Translate untranslated posts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Translate posts missing a Romanian version
+        run: npm run blog:translate -- --limit "${LIMIT}"
+        env:
+          LIMIT: ${{ github.event.inputs.limit || '10' }}
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ vars.SANITY_DATASET }}
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -75,10 +75,18 @@ const handleContactSubmission: APIRoute = async ({ request }) => {
   const rawTopic = sanitize((formData.get('topic') ?? '').toString());
   const topic = VALID_TOPICS.has(rawTopic) ? rawTopic : '';
   const message = sanitize((formData.get('message') ?? '').toString());
+  const consent = formData.get('consent');
 
   if (!name || !email || !message) {
     return Response.json(
       { success: false, error: 'Please fill in all required fields.' },
+      { status: 400 },
+    );
+  }
+
+  if (!consent) {
+    return Response.json(
+      { success: false, error: 'You must agree to the privacy policy to send a message.' },
       { status: 400 },
     );
   }

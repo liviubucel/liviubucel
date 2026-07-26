@@ -45,8 +45,8 @@ const seoKeywords = seo?.keywords || ["securitate cibernetică", "criminalistic�
     <IntroCard lang={lang} />
     <AboutMe lang={lang} />
     <ContactsCard lang={lang} />
-    <TimeZone />
-    <DesignWorksCard />
+    <TimeZone lang={lang} />
+    <DesignWorksCard lang={lang} />
     <Now lang={lang} />
     <Card
       href="/ro/contact"
@@ -68,12 +68,12 @@ const seoKeywords = seo?.keywords || ["securitate cibernetică", "criminalistic�
           class="text-red-500"
           href="https://astro.build/"
           target="_blank">Astro</a
-        > de mine.
+        > de mine. · <a class="text-darkslate-200 hover:text-primary-400 underline" href="/ro/privacy">Politica de confidențialitate</a>
       </p>
     </Card>
   </main>
 
-  <NewsletterSignup initialStatus={newsletterStatus} />
+  <NewsletterSignup initialStatus={newsletterStatus} lang={lang} />
 </Layout>
 
 <script>

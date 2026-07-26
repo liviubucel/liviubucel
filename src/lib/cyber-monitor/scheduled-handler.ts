@@ -12,8 +12,10 @@ import {
   persistIndicator,
   persistMalwareMetadata,
 } from './persist';
-import { generateIncidentArticle, persistGeneratedArticle } from './article-generation';
+import { buildRomanianArticle, generateIncidentArticle, persistGeneratedArticle } from './article-generation';
 import { sendNewsletterDigest, type DigestItem } from './newsletter-digest';
+import { translateArticleToRomanian } from './translate';
+import { RECORD_TYPE_LABEL } from './labels';
 
 function incidentUrl(env: Record<string, unknown>, slug: string): string {
   const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/';
@@ -42,8 +44,19 @@ async function persistIncidentAndPublishArticle(
       digestSink.push({
         title: article.title,
         excerpt: article.excerpt,
+        badge: RECORD_TYPE_LABEL[record.recordType],
+        date: record.discoveredDate ?? record.incidentDate,
         url: incidentUrl(context.env, record.slug),
       });
+
+      // Best-effort: publish the Romanian counterpart via Workers AI
+      // translation. Never blocks or fails the sync run - if this doesn't
+      // produce a usable result, the RO page just falls back to English.
+      const translated = await translateArticleToRomanian(context.env, article);
+      if (translated) {
+        const roArticle = buildRomanianArticle(article, translated, record.dedupKey);
+        await persistGeneratedArticle(context.db, roArticle, result.id, nowIso);
+      }
     }
   }
 

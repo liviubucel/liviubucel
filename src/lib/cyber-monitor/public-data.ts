@@ -59,6 +59,14 @@ function mapIncidentRow(row: IncidentQueryRow): PublicIncidentRow {
   };
 }
 
+// Each incident can have both an English and a Romanian published article
+// (see translate.ts). The subquery picks whichever matches the requested
+// language, falling back to any other published language (in practice
+// always English, since translation is best-effort and may not exist yet)
+// rather than a naive language-filtered JOIN, which would either return two
+// rows per incident or drop incidents whose translation hasn't landed yet.
+// ?1 is always the language parameter - every caller binds it first so its
+// position stays fixed regardless of which other filters are appended.
 const INCIDENT_LIST_SELECT = `
   SELECT
     i.id, i.slug, i.record_type, i.organisation_display_name, i.threat_group_id,
@@ -66,7 +74,12 @@ const INCIDENT_LIST_SELECT = `
     i.summary, i.sector, i.published_at,
     a.title AS article_title, a.excerpt AS article_excerpt
   FROM incidents i
-  LEFT JOIN articles a ON a.related_incident_id = i.id AND a.status = 'published'
+  LEFT JOIN articles a ON a.id = (
+    SELECT id FROM articles
+    WHERE related_incident_id = i.id AND status = 'published'
+    ORDER BY CASE WHEN language = ?1 THEN 0 ELSE 1 END
+    LIMIT 1
+  )
   WHERE i.editorial_status IN ('published', 'updated')
 `;
 
@@ -74,6 +87,9 @@ export interface ListIncidentsOptions {
   recordType?: RecordType;
   limit?: number;
   offset?: number;
+  /** Preferred article language; falls back to any other published language
+   * (in practice English) when no translation exists yet. Defaults to 'en'. */
+  lang?: 'en' | 'ro';
 }
 
 // Ordered by when the incident actually happened/was reported upstream
@@ -87,13 +103,15 @@ const RECENCY_ORDER = 'COALESCE(i.discovered_date, i.incident_date, i.published_
 
 export async function listPublicIncidents(
   db: D1Database,
-  { recordType, limit = 20, offset = 0 }: ListIncidentsOptions = {}
+  { recordType, limit = 20, offset = 0, lang = 'en' }: ListIncidentsOptions = {}
 ): Promise<PublicIncidentRow[]> {
   const query = recordType
-    ? `${INCIDENT_LIST_SELECT} AND i.record_type = ?1 ORDER BY ${RECENCY_ORDER} LIMIT ?2 OFFSET ?3`
-    : `${INCIDENT_LIST_SELECT} ORDER BY ${RECENCY_ORDER} LIMIT ?1 OFFSET ?2`;
+    ? `${INCIDENT_LIST_SELECT} AND i.record_type = ?2 ORDER BY ${RECENCY_ORDER} LIMIT ?3 OFFSET ?4`
+    : `${INCIDENT_LIST_SELECT} ORDER BY ${RECENCY_ORDER} LIMIT ?2 OFFSET ?3`;
 
-  const stmt = recordType ? db.prepare(query).bind(recordType, limit, offset) : db.prepare(query).bind(limit, offset);
+  const stmt = recordType
+    ? db.prepare(query).bind(lang, recordType, limit, offset)
+    : db.prepare(query).bind(lang, limit, offset);
 
   const { results } = await stmt.all<IncidentQueryRow>();
   return (results ?? []).map(mapIncidentRow);
@@ -121,7 +139,11 @@ export interface PublicIncidentDetail extends PublicIncidentRow {
   }>;
 }
 
-export async function getPublicIncidentBySlug(db: D1Database, slug: string): Promise<PublicIncidentDetail | null> {
+export async function getPublicIncidentBySlug(
+  db: D1Database,
+  slug: string,
+  lang: 'en' | 'ro' = 'en'
+): Promise<PublicIncidentDetail | null> {
   const incidentRow = await db
     .prepare(
       `SELECT
@@ -131,11 +153,16 @@ export async function getPublicIncidentBySlug(db: D1Database, slug: string): Pro
         a.title AS article_title, a.excerpt AS article_excerpt, a.body AS article_body,
         a.language AS article_language
       FROM incidents i
-      LEFT JOIN articles a ON a.related_incident_id = i.id AND a.status = 'published'
+      LEFT JOIN articles a ON a.id = (
+        SELECT id FROM articles
+        WHERE related_incident_id = i.id AND status = 'published'
+        ORDER BY CASE WHEN language = ?2 THEN 0 ELSE 1 END
+        LIMIT 1
+      )
       WHERE i.slug = ?1 AND i.editorial_status IN ('published', 'updated')
       LIMIT 1`
     )
-    .bind(slug)
+    .bind(slug, lang)
     .first<IncidentQueryRow & { article_body: string | null; article_language: string | null }>();
 
   if (!incidentRow) return null;
