@@ -62,21 +62,23 @@ const seoKeywords = seo?.keywords || ["securitate cibernetică", "criminalistic�
     />
     <DonateCard lang={lang} />
 
-    <Card colSpan="md:col-span-1" rowSpan="md:row-span-1">
-      <p class="text-xs">
-        © 2025 · Creat cu ♥️ folosind <a
-          class="text-red-500"
-          href="https://astro.build/"
-          target="_blank">Astro</a
-        > de mine. · <a class="text-darkslate-200 hover:text-primary-400 underline" href="/ro/privacy">Politica de confidențialitate</a>
-      </p>
-      <div class="flex items-center gap-2 mt-1.5">
-        <a href="/" class="flex items-center gap-1 text-xs text-darkslate-300 hover:text-primary-400 transition-colors duration-150">
-          <span aria-hidden="true">🇺🇸</span> EN
-        </a>
-        <span aria-current="true" class="flex items-center gap-1 text-xs text-neutral-100 font-semibold">
-          <span aria-hidden="true">🇷🇴</span> RO
-        </span>
+    <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4 md:p-3">
+      <div class="flex flex-col h-full justify-center gap-1.5 md:gap-1">
+        <p class="text-xs md:text-[11px] leading-snug">
+          © 2025 · Creat cu ♥️ folosind <a
+            class="text-red-500"
+            href="https://astro.build/"
+            target="_blank">Astro</a
+          > de mine. · <a class="text-darkslate-200 hover:text-primary-400 underline" href="/ro/privacy">Politica de confidențialitate</a>
+        </p>
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <a href="/" class="flex items-center gap-1 text-xs md:text-[11px] text-darkslate-300 hover:text-primary-400 transition-colors duration-150">
+            <span aria-hidden="true">🇺🇸</span> EN
+          </a>
+          <span aria-current="true" class="flex items-center gap-1 text-xs md:text-[11px] text-neutral-100 font-semibold">
+            <span aria-hidden="true">🇷🇴</span> RO
+          </span>
+        </div>
       </div>
     </Card>
 
