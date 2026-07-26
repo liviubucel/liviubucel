@@ -75,6 +75,36 @@ describe('generateIncidentArticle - ransomware_claim', () => {
     const b = generateIncidentArticle(baseIncident());
     expect(a?.slug).toBe(b?.slug);
   });
+
+  it('includes generic hardening guidance and a contact CTA', () => {
+    const article = generateIncidentArticle(baseIncident());
+    expect(article?.body).toContain('## What organisations can do about ransomware risk');
+    expect(article?.body).toContain('offline, tested backups');
+    expect(article?.body).toContain('[get in touch](/contact)');
+  });
+
+  it('profiles a known threat group by its proper display name, not the raw slug', () => {
+    const article = generateIncidentArticle(baseIncident({ threatGroupId: 'lockbit' }));
+    expect(article?.body).toContain('## About LockBit');
+    expect(article?.body).not.toContain('## About lockbit');
+    expect(article?.body).toContain('ransomware-as-a-service');
+  });
+
+  it('title-cases an unknown threat group slug as a fallback', () => {
+    const article = generateIncidentArticle(baseIncident({ threatGroupId: 'some-new-crew' }));
+    expect(article?.body).toContain('## About Some New Crew');
+  });
+
+  it('adds sector context when a recognised sector is present', () => {
+    const article = generateIncidentArticle(baseIncident({ sector: 'Manufacturing' }));
+    expect(article?.body).toContain('## Why this sector is targeted');
+    expect(article?.body).toContain('operational-technology');
+  });
+
+  it('omits the sector section entirely when no sector is known', () => {
+    const article = generateIncidentArticle(baseIncident({ sector: null }));
+    expect(article?.body).not.toContain('## Why this sector is targeted');
+  });
 });
 
 describe('generateIncidentArticle - verified_breach', () => {
@@ -98,6 +128,13 @@ describe('generateIncidentArticle - verified_breach', () => {
   it('reflects an unverified HIBP status truthfully', () => {
     const article = generateIncidentArticle({ ...breachIncident, verificationStatus: 'unverified_claim' });
     expect(article?.body).toContain('unverified within the Have I Been Pwned catalogue');
+  });
+
+  it('includes guidance for both affected individuals and organisations, plus a contact CTA', () => {
+    const article = generateIncidentArticle(breachIncident);
+    expect(article?.body).toContain('## If you think your data may be affected');
+    expect(article?.body).toContain('## For organisations');
+    expect(article?.body).toContain('[get in touch](/contact)');
   });
 });
 
@@ -133,5 +170,17 @@ describe('buildRomanianArticle', () => {
     );
 
     expect(ro.slug).not.toBe(en.slug);
+  });
+
+  it('rewrites the /contact CTA link to /ro/contact after translation', () => {
+    const en = generateIncidentArticle(baseIncident())!;
+    const ro = buildRomanianArticle(
+      en,
+      { title: 'Titlu RO', excerpt: 'x', body: 'Text [contacteaza-ma](/contact) final.' },
+      baseIncident().dedupKey
+    );
+
+    expect(ro.body).toContain('(/ro/contact)');
+    expect(ro.body).not.toContain('(/contact)');
   });
 });
