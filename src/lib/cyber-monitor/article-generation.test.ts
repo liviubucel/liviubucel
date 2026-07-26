@@ -75,6 +75,13 @@ describe('generateIncidentArticle - ransomware_claim', () => {
     const b = generateIncidentArticle(baseIncident());
     expect(a?.slug).toBe(b?.slug);
   });
+
+  it('includes generic hardening guidance and a contact CTA', () => {
+    const article = generateIncidentArticle(baseIncident());
+    expect(article?.body).toContain('## What organisations can do about ransomware risk');
+    expect(article?.body).toContain('offline, tested backups');
+    expect(article?.body).toContain('[get in touch](/contact)');
+  });
 });
 
 describe('generateIncidentArticle - verified_breach', () => {
@@ -98,6 +105,13 @@ describe('generateIncidentArticle - verified_breach', () => {
   it('reflects an unverified HIBP status truthfully', () => {
     const article = generateIncidentArticle({ ...breachIncident, verificationStatus: 'unverified_claim' });
     expect(article?.body).toContain('unverified within the Have I Been Pwned catalogue');
+  });
+
+  it('includes guidance for both affected individuals and organisations, plus a contact CTA', () => {
+    const article = generateIncidentArticle(breachIncident);
+    expect(article?.body).toContain('## If you think your data may be affected');
+    expect(article?.body).toContain('## For organisations');
+    expect(article?.body).toContain('[get in touch](/contact)');
   });
 });
 

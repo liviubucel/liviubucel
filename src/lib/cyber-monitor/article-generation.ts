@@ -15,6 +15,34 @@ import { slugify } from './slugify';
 const RANSOMWARE_CLAIM_DISCLAIMER =
   'This entry records a public claim made by a ransomware group. It does not by itself prove that the organisation was compromised or that the threat actor’s statements are accurate.';
 
+// Generic, universally-applicable hardening guidance - never incident-specific
+// claims. Safe to state for any organisation regardless of what actually
+// happened here, and it's the genuinely useful part of the page: turning a
+// bare feed entry into something a reader can act on.
+const RANSOMWARE_GUIDANCE = [
+  '- Keep offline, tested backups - ransomware operators routinely target backup systems first; a backup you have never restored from is not a backup.',
+  '- Enforce multi-factor authentication on every remote-access point (VPN, RDP, email, admin panels) - stolen or weak credentials remain the most common entry point.',
+  '- Patch internet-facing systems promptly - most ransomware intrusions start from a known, unpatched vulnerability, not a novel exploit.',
+  '- Segment your network so a single compromised workstation cannot reach domain controllers or backup infrastructure directly.',
+  '- Have a written incident response plan and know who to call (a Romanian incident responder, DNSC, your insurer) before an incident happens, not during one.',
+];
+
+const BREACH_GUIDANCE_INDIVIDUALS = [
+  '- Change the password for any account that used the same password as this service, and use a unique password per site going forward (a password manager makes this practical).',
+  '- Enable multi-factor authentication wherever it is offered - it stops the overwhelming majority of account-takeover attempts even after a password leaks.',
+  '- Watch for phishing referencing this breach - attackers frequently use breach news itself as a pretext to send convincing fake "verify your account" emails.',
+  '- Check whether your email address appears in other breaches at haveibeenpwned.com.',
+];
+
+const BREACH_GUIDANCE_ORGANISATIONS = [
+  '- If you operate the named service, confirm the scope of the exposure and notify affected users and, where applicable, the Romanian data protection authority (ANSPDCP) within the legal timeframe.',
+  '- Rotate any credentials, API keys, or tokens that could plausibly have been exposed alongside the breached data.',
+  '- Review authentication logs for the affected period for signs the exposed credentials were actually used elsewhere.',
+];
+
+const NEED_HELP_CTA =
+  'If you want a proper, individualised review of your security posture rather than a generic checklist - hardening, incident response planning, or a full audit - [get in touch](/contact).';
+
 function formatDate(value: string | null): string {
   if (!value) return 'an unspecified date';
   const parsed = new Date(value);
@@ -44,10 +72,16 @@ function buildRansomwareClaimBrief(incident: NormalisedIncident): { title: strin
     `- Discovered/listed: ${discovered}`,
     incident.incidentDate ? `- Alleged incident date: ${formatDate(incident.incidentDate)}` : null,
     ``,
+    `## What organisations can do about ransomware risk`,
+    `Regardless of whether this specific claim is accurate, ransomware remains one of the most common serious incidents Romanian organisations face. The basics below stop most attacks before they reach the encryption stage:`,
+    ...RANSOMWARE_GUIDANCE,
+    ``,
     `## Methodology and limitations`,
     `This page is generated automatically from a public ransomware threat-intelligence feed. See /methodology for the full Romania eligibility and verification policy.`,
     ``,
     RANSOMWARE_CLAIM_DISCLAIMER,
+    ``,
+    NEED_HELP_CTA,
   ]
     .filter((line) => line !== null)
     .join('\n');
@@ -76,8 +110,16 @@ function buildVerifiedBreachBrief(incident: NormalisedIncident): { title: string
       : 'This breach is marked as unverified within the Have I Been Pwned catalogue.',
     `This reflects Have I Been Pwned’s own catalogue process, not confirmation by a Romanian authority.`,
     ``,
+    `## If you think your data may be affected`,
+    ...BREACH_GUIDANCE_INDIVIDUALS,
+    ``,
+    `## For organisations`,
+    ...BREACH_GUIDANCE_ORGANISATIONS,
+    ``,
     `## Methodology and limitations`,
     `This page is generated automatically from a public breach-catalogue feed. See /methodology for the full Romania eligibility and verification policy.`,
+    ``,
+    NEED_HELP_CTA,
   ].join('\n');
 
   return { title, excerpt, body };
