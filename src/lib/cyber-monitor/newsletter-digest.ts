@@ -27,7 +27,8 @@ export async function sendNewsletterDigest(
   }
 
   const fromEmail = (env.NEWSLETTER_FROM_EMAIL as string | undefined) ?? 'newsletter@liviubucel.com';
-  const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/';
+  const siteUrl = ((env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/').replace(/\/$/, '');
+  const monitorUrl = `${siteUrl}/romania-cyber-monitor`;
 
   const { results: subscribers } = await db
     .prepare(`SELECT email, unsubscribe_token FROM newsletter_subscribers WHERE status = 'confirmed'`)
@@ -36,8 +37,8 @@ export async function sendNewsletterDigest(
   if (!subscribers || subscribers.length === 0) return;
 
   for (const subscriber of subscribers) {
-    const unsubscribeUrl = `${siteUrl.replace(/\/$/, '')}/api/newsletter/unsubscribe?token=${subscriber.unsubscribe_token}`;
-    const { subject, text, html } = newsletterDigestEmail(items, unsubscribeUrl);
+    const unsubscribeUrl = `${siteUrl}/api/newsletter/unsubscribe?token=${subscriber.unsubscribe_token}`;
+    const { subject, text, html } = newsletterDigestEmail(items, unsubscribeUrl, monitorUrl);
 
     try {
       // eslint-disable-next-line no-await-in-loop

@@ -12,7 +12,15 @@ function fakeDb(subscribers: Array<{ email: string; unsubscribe_token: string }>
   } as unknown as D1Database;
 }
 
-const ITEMS = [{ title: 'Acme SRL: ransomware group listing (unconfirmed claim)', excerpt: 'A group listed Acme.', url: 'https://liviubucel.com/romania-cyber-monitor/incidents/acme-abc123' }];
+const ITEMS = [
+  {
+    title: 'Acme SRL: ransomware group listing (unconfirmed claim)',
+    excerpt: 'A group listed Acme.',
+    url: 'https://liviubucel.com/romania-cyber-monitor/incidents/acme-abc123',
+    badge: 'Ransomware claim',
+    date: '2026-07-20',
+  },
+];
 
 describe('sendNewsletterDigest', () => {
   it('does nothing when there are no newly published items', async () => {
@@ -50,6 +58,8 @@ describe('sendNewsletterDigest', () => {
       title: `Victim ${i}`,
       excerpt: 'claim',
       url: `https://liviubucel.com/romania-cyber-monitor/incidents/victim-${i}`,
+      badge: 'Ransomware claim',
+      date: '2026-07-20',
     }));
 
     await sendNewsletterDigest(db, { EMAIL: { send } }, manyItems);

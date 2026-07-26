@@ -14,6 +14,7 @@ import {
 } from './persist';
 import { generateIncidentArticle, persistGeneratedArticle } from './article-generation';
 import { sendNewsletterDigest, type DigestItem } from './newsletter-digest';
+import { RECORD_TYPE_LABEL } from './labels';
 
 function incidentUrl(env: Record<string, unknown>, slug: string): string {
   const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/';
@@ -42,6 +43,8 @@ async function persistIncidentAndPublishArticle(
       digestSink.push({
         title: article.title,
         excerpt: article.excerpt,
+        badge: RECORD_TYPE_LABEL[record.recordType],
+        date: record.discoveredDate ?? record.incidentDate,
         url: incidentUrl(context.env, record.slug),
       });
     }
