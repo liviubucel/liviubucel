@@ -13,14 +13,24 @@ import {
   persistMalwareMetadata,
 } from './persist';
 import { generateIncidentArticle, persistGeneratedArticle } from './article-generation';
+import { sendNewsletterDigest, type DigestItem } from './newsletter-digest';
+
+function incidentUrl(env: Record<string, unknown>, slug: string): string {
+  const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/';
+  return `${siteUrl.replace(/\/$/, '')}/romania-cyber-monitor/incidents/${slug}`;
+}
 
 /** Persists an incident and, per operator decision, immediately generates
  * and publishes a blog article for any newly published incident - no
  * separate editorial approval step. Returns just the outcome string so it
- * satisfies runSourceSync's generic persist() callback shape. */
+ * satisfies runSourceSync's generic persist() callback shape. Newly
+ * published articles are appended to digestSink so the caller can send a
+ * single digest email covering the whole run, instead of one email per
+ * incident. */
 async function persistIncidentAndPublishArticle(
   context: SyncContext,
-  record: NormalisedIncident
+  record: NormalisedIncident,
+  digestSink: DigestItem[]
 ): Promise<'inserted' | 'updated'> {
   const nowIso = context.now().toISOString();
   const result = await persistIncident(context.db, record, nowIso);
@@ -29,6 +39,11 @@ async function persistIncidentAndPublishArticle(
     const article = generateIncidentArticle(record);
     if (article) {
       await persistGeneratedArticle(context.db, article, result.id, nowIso);
+      digestSink.push({
+        title: article.title,
+        excerpt: article.excerpt,
+        url: incidentUrl(context.env, record.slug),
+      });
     }
   }
 
@@ -43,13 +58,13 @@ async function persistIncidentAndPublishArticle(
 // not create cross-source rate-limit contention.
 const SEQUENTIAL_SOURCES = new Set<SourceId>(['leakix']);
 
-async function runOneSource(sourceId: SourceId, context: SyncContext): Promise<SyncRunSummary> {
+async function runOneSource(sourceId: SourceId, context: SyncContext, digestSink: DigestItem[]): Promise<SyncRunSummary> {
   const adapter = ADAPTER_REGISTRY[sourceId];
 
   switch (sourceId) {
     case 'ransomware_live':
     case 'hibp':
-      return runSourceSync(adapter, context, (record) => persistIncidentAndPublishArticle(context, record));
+      return runSourceSync(adapter, context, (record) => persistIncidentAndPublishArticle(context, record, digestSink));
     case 'leakix':
       return runSourceSync(adapter, context, (record) => persistExposure(context.db, record, context.now().toISOString()));
     case 'threatfox':
@@ -80,16 +95,17 @@ export async function runScheduledSources(
   cron: string
 ): Promise<ScheduledRunResult> {
   const context: SyncContext = { db, env, now, triggerType: 'cron' };
+  const digestSink: DigestItem[] = [];
 
   const sequential = sourceIds.filter((id) => SEQUENTIAL_SOURCES.has(id));
   const concurrent = sourceIds.filter((id) => !SEQUENTIAL_SOURCES.has(id));
 
-  const concurrentResults = await Promise.allSettled(concurrent.map((id) => runOneSource(id, context)));
+  const concurrentResults = await Promise.allSettled(concurrent.map((id) => runOneSource(id, context, digestSink)));
 
   const sequentialResults: SyncRunSummary[] = [];
   for (const id of sequential) {
     // eslint-disable-next-line no-await-in-loop
-    sequentialResults.push(await runOneSource(id, context));
+    sequentialResults.push(await runOneSource(id, context, digestSink));
   }
 
   const results: SyncRunSummary[] = [
@@ -109,6 +125,15 @@ export async function runScheduledSources(
     ),
     ...sequentialResults,
   ];
+
+  // One digest email per run, covering everything newly published across
+  // every source in this run - never one email per incident. A failure
+  // here never affects the sync results already recorded above.
+  try {
+    await sendNewsletterDigest(db, env, digestSink);
+  } catch (error) {
+    console.error('[cyber-monitor] newsletter digest failed:', error);
+  }
 
   return { cron, results };
 }

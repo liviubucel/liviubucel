@@ -23,6 +23,7 @@ SANITY_PROJECT_ID="8atrdwjk"
 SANITY_DATASET="production"
 CONTACT_TO_EMAIL="contact@liviubucel.com"
 CONTACT_FROM_EMAIL="noreply@liviubucel.com"
+NEWSLETTER_FROM_EMAIL="newsletter@liviubucel.com"
 
 # Romania Cyber Monitor - source feature flags (all default to disabled except
 # the two sources that require no API key: Ransomware.live and HIBP breach catalogue)
