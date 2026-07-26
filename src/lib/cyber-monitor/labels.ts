@@ -14,6 +14,16 @@ export const RECORD_TYPE_LABEL: Record<RecordType, string> = {
   aggregate_statistics: 'Aggregate statistics',
 };
 
+export const RECORD_TYPE_LABEL_RO: Record<RecordType, string> = {
+  ransomware_claim: 'Revendicare ransomware',
+  verified_breach: 'Breșă verificată',
+  public_exposure: 'Expunere publică',
+  threat_indicator: 'Indicator de amenințare',
+  malware_distribution: 'Distribuție malware',
+  malware_intelligence: 'Informații despre malware',
+  aggregate_statistics: 'Statistici agregate',
+};
+
 export const RECORD_TYPE_SECTION_PATH: Partial<Record<RecordType, string>> = {
   ransomware_claim: '/romania-cyber-monitor/ransomware',
   verified_breach: '/romania-cyber-monitor/breaches',
@@ -33,9 +43,20 @@ export const VERIFICATION_STATUS_LABEL: Record<string, string> = {
   false_positive: 'False positive',
 };
 
-export function formatIsoDate(iso: string | null): string {
-  if (!iso) return 'Unknown date';
+export const VERIFICATION_STATUS_LABEL_RO: Record<string, string> = {
+  unverified_claim: 'Revendicare neverificată',
+  source_verified: 'Verificat de sursă',
+  media_corroborated: 'Confirmat de presă',
+  organisation_confirmed: 'Confirmat de organizație',
+  authority_confirmed: 'Confirmat de autorități',
+  disputed: 'Contestat',
+  false_positive: 'Fals pozitiv',
+};
+
+export function formatIsoDate(iso: string | null, lang: 'en' | 'ro' = 'en'): string {
+  if (!iso) return lang === 'ro' ? 'Dată necunoscută' : 'Unknown date';
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return iso;
-  return parsed.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  const locale = lang === 'ro' ? 'ro-RO' : 'en-GB';
+  return parsed.toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 }

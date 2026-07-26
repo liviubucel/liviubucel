@@ -18,16 +18,19 @@ try {
 const isEmployed = profile?.isCurrentlyEmployed ?? false;
 const cvUrl = profile?.cvUrl ?? null;
 const experienceHref = lang === "ro" ? "/ro/experience" : "/experience";
+const isRO = lang === "ro";
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4">
   <a href={experienceHref} class="block">
     <div class="flex justify-between w-full items-start mb-2">
-      <h2 class="text-white text-xl font-bold">Experience</h2>
+      <h2 class="text-white text-xl font-bold">{isRO ? "Experiență" : "Experience"}</h2>
       <Pulse isEmployed={isEmployed} />
     </div>
     <p class="text-xs text-darkslate-300 mb-2">
-      {isEmployed ? 'Currently employed' : 'Open to opportunities'}
+      {isRO
+        ? (isEmployed ? 'Angajat în prezent' : 'Deschis la oportunități')
+        : (isEmployed ? 'Currently employed' : 'Open to opportunities')}
     </p>
   </a>
   {cvUrl ? (
@@ -36,12 +39,12 @@ const experienceHref = lang === "ro" ? "/ro/experience" : "/experience";
       class="text-xs flex items-center gap-1 text-primary-400 hover:text-primary-300 transition-colors duration-150 cursor-pointer"
     >
       <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
+      {isRO ? "Descarcă CV-ul" : "Download CV"}
     </a>
   ) : (
     <span class="text-xs flex items-center gap-1 text-darkslate-500 cursor-default">
       <Icon name="ri:download-line" class="h-3 w-3" />
-      Download CV
+      {isRO ? "Descarcă CV-ul" : "Download CV"}
     </span>
   )}
 </Card>

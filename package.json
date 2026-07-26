@@ -19,7 +19,8 @@
     "i18n:audit": "node scripts/i18n-audit.mjs",
     "security:scan": "node scripts/security-scan.mjs",
     "security:audit": "pnpm audit --prod --audit-level high",
-    "sitemap:generate": "SITE_URL=https://liviubucel.com/ node scripts/generate-sitemap.mjs"
+    "sitemap:generate": "SITE_URL=https://liviubucel.com/ node scripts/generate-sitemap.mjs",
+    "blog:translate": "node scripts/translate-blog-posts.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",

@@ -7,7 +7,7 @@ import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
 import { listPublicIncidents } from '../../../lib/cyber-monitor/public-data';
-import { RECORD_TYPE_LABEL } from '../../../lib/cyber-monitor/labels';
+import { RECORD_TYPE_LABEL_RO } from '../../../lib/cyber-monitor/labels';
 
 export const prerender = false;
 
@@ -25,7 +25,8 @@ interface Post {
 
 let posts: Post[] = [];
 try {
-  // Try RO posts first, fall back to EN (no separate RO posts yet)
+  // Try RO posts first, fall back to EN (Sanity RO translation is not
+  // wired up yet - see docs/romania-cyber-monitor.md).
   let allPosts = await getPosts(lang);
   if (allPosts.length === 0) {
     allPosts = await getPosts('en');
@@ -41,13 +42,13 @@ try {
 }
 
 try {
-  const incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { limit: 50 });
+  const incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { limit: 50, lang: 'ro' });
   const cyberMonitorPosts: Post[] = incidents.map((incident) => ({
     id: incident.slug,
     title: incident.articleTitle ?? incident.organisationDisplayName ?? 'Actualizare Romania Cyber Monitor',
     pubDate: incident.discoveredDate ?? incident.incidentDate ?? incident.publishedAt,
-    href: `/romania-cyber-monitor/incidents/${incident.slug}`,
-    badge: RECORD_TYPE_LABEL[incident.recordType],
+    href: `/ro/romania-cyber-monitor/incidents/${incident.slug}`,
+    badge: RECORD_TYPE_LABEL_RO[incident.recordType],
     excerpt: incident.articleExcerpt ?? incident.summary ?? undefined,
   }));
   posts = [...posts, ...cyberMonitorPosts].sort(

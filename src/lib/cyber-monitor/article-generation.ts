@@ -89,7 +89,7 @@ export interface GeneratedArticle {
   excerpt: string;
   body: string;
   articleType: 'incident_brief' | 'verified_breach_profile';
-  language: 'en';
+  language: 'en' | 'ro';
 }
 
 /** Builds a deterministic article draft for a newly published incident.
@@ -120,6 +120,24 @@ export function generateIncidentArticle(incident: NormalisedIncident): Generated
   }
 
   return null;
+}
+
+/** Builds the Romanian counterpart of a generated article from already-
+ * translated fields. Uses a distinct slug (articles.slug is globally unique
+ * across languages) so it never collides with the English row. */
+export function buildRomanianArticle(
+  enArticle: GeneratedArticle,
+  translated: { title: string; excerpt: string; body: string },
+  dedupKey: string
+): GeneratedArticle {
+  return {
+    slug: `${slugify(translated.title)}-ro-${dedupKey.slice(0, 8)}`,
+    title: translated.title,
+    excerpt: translated.excerpt,
+    body: translated.body,
+    articleType: enArticle.articleType,
+    language: 'ro',
+  };
 }
 
 export async function persistGeneratedArticle(

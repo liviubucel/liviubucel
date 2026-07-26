@@ -4,6 +4,13 @@ import { Icon } from "astro-icon/components";
 import { SITE } from "../site-config";
 import { getProfileSettings, getCertifications } from "../lib/sanity-queries";
 
+interface Props {
+  lang?: "en" | "ro";
+}
+
+const { lang = "en" } = Astro.props;
+const isRO = lang === "ro";
+
 const profile = await getProfileSettings();
 
 let certs = await getCertifications();
@@ -22,11 +29,11 @@ if (!certs.length) {
   <div class="h-full flex flex-col">
     <header class="flex items-center">
       <h2 class="text-white text-xl font-bold">
-        Let's start working together!
+        {isRO ? "Hai să lucrăm împreună!" : "Let's start working together!"}
       </h2>
     </header>
     <div class="flex flex-col mt-4 gap-1">
-      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">Contact Details</h2>
+      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">{isRO ? "Detalii de contact" : "Contact Details"}</h2>
       <a
         href={`mailto:${SITE.links.email}`}
         class="text-sm hover:text-primary-400 transition-colors duration-150"
@@ -45,7 +52,7 @@ if (!certs.length) {
     </div>
 
     <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-darkslate-700">
-      <h2 class="text-white text-base font-bold">Certifications</h2>
+      <h2 class="text-white text-base font-bold">{isRO ? "Certificări" : "Certifications"}</h2>
       <div class="flex flex-wrap items-start gap-x-6 gap-y-5">
         {certs.map((cert) => {
           const Tag = cert.credentialUrl ? 'a' : 'div';

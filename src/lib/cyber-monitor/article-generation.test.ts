@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateIncidentArticle } from './article-generation';
+import { buildRomanianArticle, generateIncidentArticle } from './article-generation';
 import type { NormalisedIncident } from './types';
 
 function baseIncident(overrides: Partial<NormalisedIncident> = {}): NormalisedIncident {
@@ -105,5 +105,33 @@ describe('generateIncidentArticle - unsupported record types', () => {
   it('returns null for a record type with no article template yet', () => {
     const article = generateIncidentArticle(baseIncident({ recordType: 'aggregate_statistics' }));
     expect(article).toBeNull();
+  });
+});
+
+describe('buildRomanianArticle', () => {
+  it('uses the translated fields and marks the article as Romanian', () => {
+    const en = generateIncidentArticle(baseIncident())!;
+    const ro = buildRomanianArticle(
+      en,
+      { title: 'Titlu RO', excerpt: 'Rezumat RO', body: 'Corp RO' },
+      baseIncident().dedupKey
+    );
+
+    expect(ro.language).toBe('ro');
+    expect(ro.title).toBe('Titlu RO');
+    expect(ro.excerpt).toBe('Rezumat RO');
+    expect(ro.body).toBe('Corp RO');
+    expect(ro.articleType).toBe(en.articleType);
+  });
+
+  it('produces a slug distinct from the English article (slug is globally unique)', () => {
+    const en = generateIncidentArticle(baseIncident())!;
+    const ro = buildRomanianArticle(
+      en,
+      { title: en.title, excerpt: 'x', body: 'y' },
+      baseIncident().dedupKey
+    );
+
+    expect(ro.slug).not.toBe(en.slug);
   });
 });

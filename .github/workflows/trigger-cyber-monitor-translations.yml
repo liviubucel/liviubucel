@@ -1,0 +1,47 @@
+name: Trigger Romania Cyber Monitor RO translation backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max incidents to translate in this run (each run only picks up untranslated ones, so re-running is safe)"
+        required: false
+        default: "20"
+
+jobs:
+  trigger-backfill:
+    name: Run translation backfill now
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Call the manual backfill-translations endpoint
+        run: |
+          if [ -z "${TRIGGER_TOKEN}" ]; then
+            echo "::error::CYBER_MONITOR_TRIGGER_TOKEN repository secret is not set. Add it in Settings > Secrets and variables > Actions with the same value used for 'wrangler secret put CYBER_MONITOR_TRIGGER_TOKEN'."
+            exit 1
+          fi
+
+          # Same host/header rationale as trigger-cyber-monitor-sync.yml -
+          # target www.liviubucel.com directly and set Origin/Referer to
+          # satisfy Astro's same-origin check on POST requests.
+          http_code=$(curl -sS \
+            -o response.json -w "%{http_code}" -X POST \
+            "https://www.liviubucel.com/api/cyber-monitor/backfill-translations?limit=${LIMIT}" \
+            -H "Authorization: Bearer ${TRIGGER_TOKEN}" \
+            -H "User-Agent: liviubucel-website-ops/1.0" \
+            -H "Origin: https://www.liviubucel.com" \
+            -H "Referer: https://www.liviubucel.com/")
+
+          echo "HTTP status: ${http_code}"
+          echo "Response:"
+          cat response.json
+          echo
+
+          if [ "${http_code}" -ge 300 ]; then
+            echo "::error::Translation backfill failed with HTTP ${http_code}"
+            exit 1
+          fi
+        env:
+          TRIGGER_TOKEN: ${{ secrets.CYBER_MONITOR_TRIGGER_TOKEN }}
+          LIMIT: ${{ github.event.inputs.limit }}
