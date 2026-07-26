@@ -12,6 +12,10 @@ interface Props {
 }
 
 const { title, description, lang = 'en' } = Astro.props;
+
+// The homepage already has EN/RO flag links in its footer card, so the
+// floating switcher would be a redundant, worse-looking duplicate there.
+const isHomepage = ['/', '/ro', '/ro/'].includes(Astro.url.pathname);
 ---
 
 <BasicLayout description={description} title={title} lang={lang}>
@@ -19,7 +23,7 @@ const { title, description, lang = 'en' } = Astro.props;
     class="loader bg-darkslate-700 text-neutral-50 text-3xl font-black uppercase flex justify-center items-center w-screen h-screen z-50 fixed top-0 bottom-0 right-0 left-0"     slot="loader"
   >
   </div>
-  <LanguageSwitcher currentLang={lang} pathname={Astro.url.pathname} />
+  {!isHomepage && <LanguageSwitcher currentLang={lang} pathname={Astro.url.pathname} />}
   <slot />
 </BasicLayout>
 
