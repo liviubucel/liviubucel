@@ -8,9 +8,11 @@ interface Props {
   id: string;
   lang?: Language;
   href?: string;
+  badge?: string;
+  excerpt?: string;
 }
 
-const { title, date, id, lang = 'en', href: hrefOverride } = Astro.props;
+const { title, date, id, lang = 'en', href: hrefOverride, badge, excerpt } = Astro.props;
 const href = hrefOverride ?? (lang === 'en' ? `/blog/${id}` : `/ro/blog/${id}`);
 ---
 
@@ -19,17 +21,23 @@ const href = hrefOverride ?? (lang === 'en' ? `/blog/${id}` : `/ro/blog/${id}`);
     class="block w-full bg-darkslate-500 hover:bg-darkslate-600 border border-darkslate-400 hover:border-darkslate-300 rounded-lg p-4 md:p-5 transition-all duration-200 ease-in-out"
     href={href}
   >
-    <div class="flex flex-col md:flex-row justify-between md:items-center gap-3">
-      <h2 class="text-lg md:text-xl font-semibold text-neutral-100 hover:text-neutral-50 transition-colors flex-1 pr-4">
-        {title}
-      </h2>
-      <time
-        class="text-sm text-darkslate-300 whitespace-nowrap flex-shrink-0"
-        data-date={date.toISOString()}
-        datetime={date.toISOString()}
-      >
-        {formatDate(date)}
-      </time>
-    </div>
+    {badge && (
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <span class="text-xs uppercase tracking-wide font-semibold text-primary-400 bg-primary-900/40 px-2 py-0.5 rounded">
+          {badge}
+        </span>
+      </div>
+    )}
+    <h2 class="text-lg md:text-xl font-semibold text-neutral-100 hover:text-neutral-50 transition-colors">
+      {title}
+    </h2>
+    {excerpt && <p class="text-sm text-darkslate-200 mt-2 line-clamp-2">{excerpt}</p>}
+    <time
+      class="block text-sm text-darkslate-300 mt-3"
+      data-date={date.toISOString()}
+      datetime={date.toISOString()}
+    >
+      {formatDate(date)}
+    </time>
   </a>
 </li>
