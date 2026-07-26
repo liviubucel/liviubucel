@@ -1,5 +1,6 @@
 ---
 import type { Language } from '../lib/i18n';
+import Card from './Card/index.astro';
 
 interface Props {
   /** From ?newsletter=confirmed|unsubscribed|invalid on the current URL. */
@@ -57,7 +58,7 @@ const initialIsError = initialStatus === 'invalid';
 ---
 
 <section class="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6 mt-3 md:mt-4">
-  <div class="rounded-xl border border-darkslate-400 bg-darkslate-600 p-6 md:p-8">
+  <Card colSpan="" rowSpan="" padding="p-6 md:p-8" height="h-auto">
     <h2 class="text-lg md:text-xl font-bold text-neutral-100">{t.heading}</h2>
     <p class="text-sm text-darkslate-200 mt-1 max-w-xl">
       {t.description}
@@ -66,7 +67,7 @@ const initialIsError = initialStatus === 'invalid';
     <form
       id="newsletter-form"
       novalidate
-      class="mt-4 flex flex-col sm:flex-row gap-3 max-w-md"
+      class="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 max-w-md"
       data-i18n={JSON.stringify({
         subscribe: t.subscribe,
         subscribing: t.subscribing,
@@ -84,11 +85,11 @@ const initialIsError = initialStatus === 'invalid';
         autocomplete="email"
         maxlength="254"
         placeholder={t.placeholder}
-        class="flex-1 h-11 rounded-lg border-2 border-darkslate-300 bg-darkslate-800 px-3.5 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        class="flex-1 h-10 rounded-lg border-2 border-darkslate-300 bg-darkslate-800 px-3.5 text-sm text-neutral-100 placeholder:text-darkslate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
       />
       <button
         type="submit"
-        class="h-11 px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
+        class="self-start sm:self-auto h-10 px-5 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-semibold text-darkslate-900 transition-colors duration-150 disabled:opacity-60 disabled:pointer-events-none cursor-pointer"
       >
         <span data-submit-label>{t.subscribe}</span>
       </button>
@@ -108,7 +109,7 @@ const initialIsError = initialStatus === 'invalid';
     >
       {initialMessage}
     </p>
-  </div>
+  </Card>
 </section>
 
 <script>
