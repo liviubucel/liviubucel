@@ -7,6 +7,7 @@ import Layout from '../../../layouts/Layout.astro';
 import PostRow from '../../../components/Blog/PostRow.astro';
 import { SITE } from '../../../site-config';
 import { listPublicIncidents } from '../../../lib/cyber-monitor/public-data';
+import { RECORD_TYPE_LABEL } from '../../../lib/cyber-monitor/labels';
 
 export const prerender = false;
 
@@ -18,6 +19,8 @@ interface Post {
   title: string;
   pubDate: string | Date;
   href?: string;
+  badge?: string;
+  excerpt?: string;
 }
 
 let posts: Post[] = [];
@@ -30,7 +33,8 @@ try {
   posts = allPosts.map(p => ({
     id: p.slug,
     title: p.title,
-    pubDate: p.pubDate
+    pubDate: p.pubDate,
+    excerpt: p.description,
   }));
 } catch (error) {
   console.warn('Failed to fetch posts from Sanity:', error);
@@ -43,6 +47,8 @@ try {
     title: incident.articleTitle ?? incident.organisationDisplayName ?? 'Actualizare Romania Cyber Monitor',
     pubDate: incident.discoveredDate ?? incident.incidentDate ?? incident.publishedAt,
     href: `/romania-cyber-monitor/incidents/${incident.slug}`,
+    badge: RECORD_TYPE_LABEL[incident.recordType],
+    excerpt: incident.articleExcerpt ?? incident.summary ?? undefined,
   }));
   posts = [...posts, ...cyberMonitorPosts].sort(
     (a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()
@@ -97,6 +103,8 @@ const seoDescription = seo?.description || "Articole de securitate cibernetică,
             title={post.title || 'Fără titlu'}
             lang={lang}
             href={post.href}
+            badge={post.badge}
+            excerpt={post.excerpt}
           />
         ))
       }
