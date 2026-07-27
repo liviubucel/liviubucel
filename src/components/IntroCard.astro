@@ -5,7 +5,7 @@ import { LINKS } from "../lib/constants";
 import { Icon } from "astro-icon/components";
 import { Image } from "astro:assets";
 import { SITE } from "../site-config";
-import { getProfileSettings } from "../lib/sanity-queries";
+import { getProfileSettings, type ProfileSettings } from "../lib/sanity-queries";
 import MemojiAvatarDefault from "../assets/me.webp";
 import MemojiAvatarBlue from "../assets/me-blue.webp";
 import MemojiAvatarGreen from "../assets/me-green.webp";
@@ -19,15 +19,23 @@ interface Props {
   github?: string;
   linkedin?: string;
   lang?: "en" | "ro";
+  /** Pass this down from the page when it's already been fetched there
+   * (e.g. alongside ContactsCard/Now's own need for it) to avoid firing
+   * the same Sanity query multiple times per page render. Falls back to
+   * fetching it itself so the component still works standalone. */
+  profile?: ProfileSettings | null;
 }
 
-const profile = await getProfileSettings();
-
 const {
-  github = profile?.github || LINKS.github,
-  linkedin = profile?.linkedin || LINKS.linkedin,
+  profile: profileProp,
+  github: githubProp,
+  linkedin: linkedinProp,
   lang = "en",
 } = Astro.props;
+
+const profile = profileProp !== undefined ? profileProp : await getProfileSettings();
+const github = githubProp ?? profile?.github ?? LINKS.github;
+const linkedin = linkedinProp ?? profile?.linkedin ?? LINKS.linkedin;
 
 const isRO = lang === "ro";
 const heading = isRO ? "Sunt Liviu Bucel" : "I'm Liviu Bucel";

@@ -2,18 +2,27 @@
 import Card from "./Card/index.astro";
 import Pulse from "./Pulse.astro";
 import { Icon } from "astro-icon/components";
-import { getProfileSettings } from "../lib/sanity-queries";
+import { getProfileSettings, type ProfileSettings } from "../lib/sanity-queries";
 
 interface Props {
   lang?: "en" | "ro";
+  /** Pass this down from the page when it's already been fetched there
+   * (e.g. alongside IntroCard/ContactsCard's own need for it) to avoid
+   * firing the same Sanity query multiple times per page render. Falls
+   * back to fetching it itself so the component still works standalone. */
+  profile?: ProfileSettings | null;
 }
 
-const { lang = "en" } = Astro.props;
+const { lang = "en", profile: profileProp } = Astro.props;
 
-let profile = null;
-try {
-  profile = await getProfileSettings();
-} catch {}
+let profile: ProfileSettings | null = null;
+if (profileProp !== undefined) {
+  profile = profileProp;
+} else {
+  try {
+    profile = await getProfileSettings();
+  } catch {}
+}
 
 const isEmployed = profile?.isCurrentlyEmployed ?? false;
 const cvUrl = profile?.cvUrl ?? null;

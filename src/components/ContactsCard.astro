@@ -2,18 +2,25 @@
 import Card from "./Card/index.astro";
 import { Icon } from "astro-icon/components";
 import { SITE } from "../site-config";
-import { getProfileSettings, getCertifications } from "../lib/sanity-queries";
+import { getProfileSettings, getCertifications, type ProfileSettings, type Certification } from "../lib/sanity-queries";
 
 interface Props {
   lang?: "en" | "ro";
+  /** Pass these down from the page when already fetched there (e.g.
+   * alongside IntroCard/Now's own need for the profile) to avoid firing
+   * the same Sanity queries multiple times per page render. Each falls
+   * back to fetching independently so the component still works
+   * standalone. */
+  profile?: ProfileSettings | null;
+  certifications?: Certification[];
 }
 
-const { lang = "en" } = Astro.props;
+const { lang = "en", profile: profileProp, certifications: certificationsProp } = Astro.props;
 const isRO = lang === "ro";
 
-const profile = await getProfileSettings();
+const profile = profileProp !== undefined ? profileProp : await getProfileSettings();
 
-let certs = await getCertifications();
+let certs = certificationsProp !== undefined ? certificationsProp : await getCertifications();
 
 if (!certs.length) {
   certs = [
