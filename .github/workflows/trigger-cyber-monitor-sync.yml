@@ -10,27 +10,6 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: TEMP DEBUG - inspect homepage response
-        run: |
-          echo "=== Response headers for / ==="
-          curl -sS -D - -o /tmp/body.html "https://www.liviubucel.com/" \
-            -H "User-Agent: liviubucel-website-ops/1.0 (debug)" \
-            -w "\nHTTP_CODE:%{http_code}\n"
-
-          echo
-          echo "=== _astro script/link references in HTML ==="
-          grep -oE '/_astro/[A-Za-z0-9._-]+\.(js|css)' /tmp/body.html | sort -u
-
-          echo
-          echo "=== Probe one referenced JS asset directly ==="
-          ASSET=$(grep -oE '/_astro/[A-Za-z0-9._-]+\.js' /tmp/body.html | head -1)
-          if [ -n "$ASSET" ]; then
-            echo "Probing: https://www.liviubucel.com${ASSET}"
-            curl -sS -D - -o /dev/null "https://www.liviubucel.com${ASSET}" -w "\nHTTP_CODE:%{http_code}\n"
-          else
-            echo "No _astro asset reference found in HTML."
-          fi
-
       - name: Call the manual trigger endpoint
         run: |
           if [ -z "${TRIGGER_TOKEN}" ]; then
