@@ -40,6 +40,12 @@ SOURCE_ENISA_CIRAS_ENABLED="false"
 # an encrypted secret (wrangler secret put CYBER_MONITOR_TRIGGER_TOKEN),
 # never declared here - see that file's header comment.
 
+# BLOG_TRANSLATE_TRIGGER_TOKEN for /api/blog/translate and
+# SANITY_API_WRITE_TOKEN (a Sanity Editor token with write access) are also
+# encrypted secrets (wrangler secret put BLOG_TRANSLATE_TRIGGER_TOKEN /
+# wrangler secret put SANITY_API_WRITE_TOKEN) - see
+# docs/blog-translate-webhook.md.
+
 [[send_email]]
 name = "EMAIL"
 
