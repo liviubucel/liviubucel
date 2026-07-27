@@ -49,13 +49,16 @@ export function getCacheControl(pathname: string): string {
   }
 
   // HTML pages - each page references the current build's content-hashed
-  // JS/CSS filenames, which are pruned on every deploy. A long CDN cache
-  // here means visitors can get served old HTML pointing at asset files
-  // that no longer exist (404s, blank page) until the cache entry expires
-  // or is purged - so keep the CDN cache window short enough to self-heal
-  // between deploys instead of relying on a manual purge every time.
+  // JS/CSS filenames, which are pruned on every deploy. Too long a CDN
+  // cache here means visitors can get served old HTML pointing at asset
+  // files that no longer exist (404s, blank page) until the cache entry
+  // expires or is purged - but too short (or no browser cache at all)
+  // makes every navigation pay a full round trip, which is its own real
+  // performance regression. 30 minutes bounds the post-deploy staleness
+  // window to something reasonable while still caching normal traffic;
+  // a short browser cache keeps back/forward and repeat views snappy.
   if (pathname.endsWith('/') || pathname.endsWith('.html')) {
-    return 'public, max-age=0, s-maxage=300, stale-while-revalidate=60'; // no browser cache, 5m CDN
+    return 'public, max-age=60, s-maxage=1800, stale-while-revalidate=300'; // 1m client, 30m CDN
   }
 
   // API routes - no cache
