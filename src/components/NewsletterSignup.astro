@@ -83,18 +83,20 @@ const initialIsError = initialStatus === 'invalid';
 -->
 <Card colSpan="md:col-span-2" rowSpan="md:row-span-1" padding="p-4 md:p-3">
   <div class="relative h-full">
-    <div id="newsletter-idle" class:list={['flex flex-col justify-center h-full gap-1.5 md:gap-1', initialMessage ? 'hidden' : '']}>
-      <h2 class="text-base md:text-xs font-bold text-neutral-100 leading-tight">{t.heading}</h2>
-      <p class="text-sm md:hidden text-darkslate-200 leading-snug">
-        {t.description}
-      </p>
-      <p class="hidden md:block md:text-[10px] text-darkslate-300 leading-snug md:truncate">
-        {t.shortDescription}
-      </p>
+    <div id="newsletter-idle" class:list={['flex flex-col md:flex-row md:items-center justify-center h-full gap-1.5 md:gap-4', initialMessage ? 'hidden' : '']}>
+      <div class="md:flex-1 md:min-w-0">
+        <h2 class="text-base md:text-xs font-bold text-neutral-100 leading-tight">{t.heading}</h2>
+        <p class="text-sm md:hidden text-darkslate-200 leading-snug">
+          {t.description}
+        </p>
+        <p class="hidden md:block md:text-[10px] text-darkslate-300 leading-snug md:truncate">
+          {t.shortDescription}
+        </p>
+      </div>
 
       <form
         id="newsletter-form"
-        class="md:max-w-xs"
+        class="md:flex-1 md:min-w-0"
         novalidate
         data-i18n={JSON.stringify({
           subscribe: t.subscribe,
