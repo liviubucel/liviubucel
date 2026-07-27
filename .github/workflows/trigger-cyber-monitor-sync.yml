@@ -24,10 +24,15 @@ jobs:
           # (astro.config.mjs security.checkOrigin), which otherwise returns
           # "Cross-site POST form submissions are forbidden" for any request
           # with no matching Origin header.
+          if [ -z "${WAF_BYPASS_TOKEN}" ]; then
+            echo "::warning::CF_WAF_BYPASS_TOKEN repository secret is not set. If Cloudflare's Bot Fight Mode blocks this request with a 403 challenge page, add it and a matching WAF Custom Rule (see docs/cyber-monitor-waf-bypass.md)."
+          fi
+
           http_code=$(curl -sS \
             -o response.json -w "%{http_code}" -X POST \
             "https://www.liviubucel.com/api/cyber-monitor/trigger-sync" \
             -H "Authorization: Bearer ${TRIGGER_TOKEN}" \
+            -H "X-Cyber-Monitor-Bypass: ${WAF_BYPASS_TOKEN}" \
             -H "User-Agent: liviubucel-website-ops/1.0" \
             -H "Origin: https://www.liviubucel.com" \
             -H "Referer: https://www.liviubucel.com/")
@@ -43,3 +48,4 @@ jobs:
           fi
         env:
           TRIGGER_TOKEN: ${{ secrets.CYBER_MONITOR_TRIGGER_TOKEN }}
+          WAF_BYPASS_TOKEN: ${{ secrets.CF_WAF_BYPASS_TOKEN }}
