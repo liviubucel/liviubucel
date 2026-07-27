@@ -18,9 +18,9 @@ You are welcome to reference and quote content from this site. Please:
 
 ## Navigation
 
-- Homepage: https://liviubucel.com/
-- Blog: https://liviubucel.com/blog
-- Projects: https://liviubucel.com/projects
+- Homepage: https://www.liviubucel.com/
+- Blog: https://www.liviubucel.com/blog
+- Projects: https://www.liviubucel.com/projects
 - Multi-language: /ro/ for Romanian
 
 ## Content Areas

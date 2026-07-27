@@ -18,7 +18,7 @@ import { translateArticleToRomanian } from './translate';
 import { RECORD_TYPE_LABEL } from './labels';
 
 function incidentUrl(env: Record<string, unknown>, slug: string): string {
-  const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/';
+  const siteUrl = (env.SITE_URL as string | undefined) ?? 'https://www.liviubucel.com/';
   return `${siteUrl.replace(/\/$/, '')}/romania-cyber-monitor/incidents/${slug}`;
 }
 

@@ -197,7 +197,7 @@ const handleCvRequest: APIRoute = async ({ request }) => {
 
   const toEmail = cvRequest.email;
   const fromEmail = cfEnv.CV_FROM_EMAIL ?? 'noreply@liviubucel.com';
-  const siteUrl = cfEnv.SITE_URL ?? 'https://liviubucel.com';
+  const siteUrl = cfEnv.SITE_URL ?? 'https://www.liviubucel.com';
   const downloadUrl = `${siteUrl}/api/cv/download?token=${token}`;
 
   const subject = 'Your CV is Ready for Download';

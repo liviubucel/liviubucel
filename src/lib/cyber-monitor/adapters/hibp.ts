@@ -26,7 +26,7 @@ export const HIBP_HOST = 'haveibeenpwned.com';
 export const HIBP_BREACHES_ENDPOINT = 'https://haveibeenpwned.com/api/v3/breaches';
 
 const HIBP_USER_AGENT =
-  'RomaniaCyberMonitor/1.0 (+https://liviubucel.com/romania-cyber-monitor; contact@liviubucel.com)';
+  'RomaniaCyberMonitor/1.0 (+https://www.liviubucel.com/romania-cyber-monitor; contact@liviubucel.com)';
 
 const HibpBreachSchema = z
   .object({
