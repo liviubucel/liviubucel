@@ -48,9 +48,14 @@ export function getCacheControl(pathname: string): string {
     return 'public, max-age=31536000, immutable'; // 1 year
   }
 
-  // HTML pages - cache short + revalidate
+  // HTML pages - each page references the current build's content-hashed
+  // JS/CSS filenames, which are pruned on every deploy. A long CDN cache
+  // here means visitors can get served old HTML pointing at asset files
+  // that no longer exist (404s, blank page) until the cache entry expires
+  // or is purged - so keep the CDN cache window short enough to self-heal
+  // between deploys instead of relying on a manual purge every time.
   if (pathname.endsWith('/') || pathname.endsWith('.html')) {
-    return 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'; // 1h client, 1d CDN
+    return 'public, max-age=0, s-maxage=300, stale-while-revalidate=60'; // no browser cache, 5m CDN
   }
 
   // API routes - no cache
