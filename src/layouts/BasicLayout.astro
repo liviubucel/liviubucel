@@ -11,11 +11,16 @@ interface Props {
   slug?: string | undefined;
   pubDate?: string;
   lang?: Language;
+  keywords?: string[];
+  ogImage?: string;
 }
 
-const { title, description, page, pubDate, lang = 'en' } = Astro.props;
-const image = `${Astro.url.origin}/og-image.png`;
+const { title, description, page, pubDate, lang = 'en', keywords, ogImage } = Astro.props;
+const image = ogImage || `${Astro.url.origin}/og-image.png`;
 const canonical = new URL(Astro.url.pathname, SITE.site.url).href;
+const keywordsContent = keywords && keywords.length > 0
+  ? keywords.join(', ')
+  : `cyber security, cybersecurity, DFIR, digital forensics, incident response, security operations, SOC, penetration testing, ethical hacking, security researcher, ${SITE.location.countryName}`;
 
 const schema =
   page !== "blog"
@@ -76,7 +81,7 @@ const schema =
     <meta name="author" content={SITE.author.fullName} />
     <meta
       name="keywords"
-      content={`cyber security, cybersecurity, DFIR, digital forensics, incident response, security operations, SOC, penetration testing, ethical hacking, security researcher, ${SITE.location.countryName}`}
+      content={keywordsContent}
     />
     <meta name="generator" content="Sanity CMS" />
     <meta content="website" property="og:type" />
@@ -86,7 +91,7 @@ const schema =
     <meta property="og:site_name" content={SITE.author.fullName} />
     <meta property="og:locale" content={lang === "ro" ? "ro_RO" : "en_GB"} />
     <meta
-      content={image || `${Astro.url.origin}/og-image.png`}
+      content={image}
       property="og:image"
     />
     <meta property="og:image:alt" content={description} />
@@ -96,7 +101,7 @@ const schema =
     <meta content={description} name="twitter:description" />
     <meta name="twitter:creator" content={`@${SITE.author.twitterHandle}`} />
     <meta
-      content={image || `${Astro.url.origin}/og-image.png`}
+      content={image}
       name="twitter:image"
     />
 
