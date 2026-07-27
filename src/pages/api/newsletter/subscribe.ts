@@ -94,7 +94,7 @@ const handleSubscribe: APIRoute = async ({ request }) => {
     );
   }
 
-  const siteUrl = (cfEnv.SITE_URL ?? 'https://liviubucel.com/').replace(/\/$/, '');
+  const siteUrl = (cfEnv.SITE_URL ?? 'https://www.liviubucel.com/').replace(/\/$/, '');
   const confirmUrl = `${siteUrl}/api/newsletter/confirm?token=${confirmToken}`;
   const fromEmail = cfEnv.NEWSLETTER_FROM_EMAIL ?? 'newsletter@liviubucel.com';
   const { subject, text, html } = newsletterConfirmationEmail(confirmUrl);

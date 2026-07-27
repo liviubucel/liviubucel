@@ -65,7 +65,7 @@ export function newsletterConfirmationEmail(confirmUrl: string): RenderedEmail {
      </p>
      <p style="color:${MUTED_COLOR};font-size:13px;">If you didn't request this, you can safely ignore this email - you won't be subscribed unless you click the link above.</p>`,
     `You're receiving this because this email address was entered on the Romania Cyber Monitor subscription form at
-     <a href="https://liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.`,
+     <a href="https://www.liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.`,
   );
   const text = [
     'Thanks for subscribing to Romania Cyber Monitor updates.',
@@ -147,7 +147,7 @@ export function newsletterDigestEmail(items: DigestItem[], unsubscribeUrl: strin
     items.length === 1 ? items[0].title : `${items.length} new Romania-linked updates`,
     introHtml + itemsHtml + outroHtml,
     `You're receiving this because you subscribed to Romania Cyber Monitor updates on
-     <a href="https://liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.
+     <a href="https://www.liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.
      <a href="${unsubscribeUrl}" style="color:${MUTED_COLOR};">Unsubscribe</a>.`,
   );
 

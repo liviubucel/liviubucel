@@ -27,7 +27,7 @@ export async function sendNewsletterDigest(
   }
 
   const fromEmail = (env.NEWSLETTER_FROM_EMAIL as string | undefined) ?? 'newsletter@liviubucel.com';
-  const siteUrl = ((env.SITE_URL as string | undefined) ?? 'https://liviubucel.com/').replace(/\/$/, '');
+  const siteUrl = ((env.SITE_URL as string | undefined) ?? 'https://www.liviubucel.com/').replace(/\/$/, '');
   const monitorUrl = `${siteUrl}/romania-cyber-monitor`;
 
   const { results: subscribers } = await db

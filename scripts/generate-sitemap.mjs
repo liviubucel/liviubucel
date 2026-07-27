@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const BASE_URL = process.env.SITE_URL || 'https://liviubucel.com/';
+const BASE_URL = process.env.SITE_URL || 'https://www.liviubucel.com/';
 const PAGES_DIR = './src/pages';
 const LANGUAGES = ['en', 'ro'];
 

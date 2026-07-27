@@ -11,7 +11,7 @@ import svelte from "@astrojs/svelte";
 import sentry from "@sentry/astro";
 import react from "@astrojs/react";
 
-const envSiteUrl = process.env.SITE_URL || "https://liviubucel.com/";
+const envSiteUrl = process.env.SITE_URL || "https://www.liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
 

@@ -1,6 +1,6 @@
 export const SITE = {
   site: {
-    url: "https://liviubucel.com/",
+    url: "https://www.liviubucel.com/",
   },
   author: {
     firstName: "Liviu",

@@ -67,7 +67,7 @@ export const ransomwareLiveAdapter: ThreatSourceAdapter<RansomwareLiveVictim, No
     const result = await guardedFetch(RANSOMWARE_LIVE_RO_ENDPOINT, {
       allowedHosts: [RANSOMWARE_LIVE_HOST],
       headers: {
-        'User-Agent': 'RomaniaCyberMonitor/1.0 (+https://liviubucel.com/romania-cyber-monitor)',
+        'User-Agent': 'RomaniaCyberMonitor/1.0 (+https://www.liviubucel.com/romania-cyber-monitor)',
         Accept: 'application/json',
       },
     });

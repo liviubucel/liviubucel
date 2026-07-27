@@ -25,7 +25,7 @@ function layout(preheader: string, bodyHtml: string): string {
             <tr>
               <td style="padding:20px 32px;border-top:1px solid #e5e7eb;color:${MUTED_COLOR};font-size:12px;">
                 You received this email because you submitted a contact form on
-                <a href="https://liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.
+                <a href="https://www.liviubucel.com" style="color:${MUTED_COLOR};">liviubucel.com</a>.
               </td>
             </tr>
           </table>
