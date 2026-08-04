@@ -3,8 +3,8 @@ import { translatePostFields, translatePostBody, type PortableTextBlock } from '
 
 const FIELDS = { title: 'Acme breach', description: 'A short summary.', metaDescription: 'Meta.', keywords: ['ransomware'], tags: ['breach'] };
 
-function aiEnv(run: (model: string) => Promise<unknown>) {
-  return { AI: { run: vi.fn((model: string) => run(model)) } };
+function aiEnv(run: (model: string, inputs: { messages: { role: string; content: string }[] }) => Promise<unknown>) {
+  return { AI: { run: vi.fn((model: string, inputs: { messages: { role: string; content: string }[] }) => run(model, inputs)) } };
 }
 
 describe('translatePostFields', () => {
@@ -93,6 +93,42 @@ describe('translatePostBody', () => {
     const env = aiEnv(async () => ({ response: JSON.stringify(['only one']) }));
 
     await expect(translatePostBody(env, BODY)).resolves.toBeNull();
+  });
+
+  it('splits long bodies into multiple chunked model calls and reassembles the result', async () => {
+    // Each paragraph is ~2500 chars, well over the 2000-char chunk budget,
+    // so every paragraph should land in its own call.
+    const longBody: PortableTextBlock[] = [
+      { _type: 'block', children: [{ _type: 'span', text: 'A'.repeat(2500) }] },
+      { _type: 'block', children: [{ _type: 'span', text: 'B'.repeat(2500) }] },
+      { _type: 'block', children: [{ _type: 'span', text: 'C'.repeat(2500) }] },
+    ];
+
+    const env = aiEnv(async (_model, inputs) => {
+      const sent = JSON.parse(inputs.messages[1].content) as string[];
+      return { response: JSON.stringify(sent.map((s: string) => `translated-${s[0]}`)) };
+    });
+
+    const result = await translatePostBody(env, longBody);
+
+    expect(result?.map((b) => b.children?.[0].text)).toEqual(['translated-A', 'translated-B', 'translated-C']);
+    expect(env.AI.run).toHaveBeenCalledTimes(3);
+  });
+
+  it('returns null (never a mixed-language body) if any chunk fails to translate', async () => {
+    const longBody: PortableTextBlock[] = [
+      { _type: 'block', children: [{ _type: 'span', text: 'A'.repeat(2500) }] },
+      { _type: 'block', children: [{ _type: 'span', text: 'B'.repeat(2500) }] },
+    ];
+
+    let call = 0;
+    const env = aiEnv(async () => {
+      call += 1;
+      if (call === 1) return { response: JSON.stringify(['translated-A']) };
+      return { response: 'not json' };
+    });
+
+    await expect(translatePostBody(env, longBody)).resolves.toBeNull();
   });
 
   it('skips non-block/non-text content untouched', async () => {

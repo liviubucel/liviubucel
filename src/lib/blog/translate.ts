@@ -119,9 +119,60 @@ export async function translatePostFields(
   }
 }
 
+// Long-form blog posts can easily add up to tens of spans / thousands of
+// characters - sending them all in a single model call risks hitting the
+// model's output-token limit, which truncates the JSON response mid-array
+// and makes the whole translation unparsable. Chunk by a conservative
+// character budget instead of a flat span count, since a handful of long
+// paragraphs can blow the budget just as easily as many short ones.
+const BODY_CHUNK_CHAR_BUDGET = 2000;
+
+function chunkSpansByCharBudget(spans: PortableTextSpan[]): PortableTextSpan[][] {
+  const chunks: PortableTextSpan[][] = [];
+  let current: PortableTextSpan[] = [];
+  let currentChars = 0;
+
+  for (const span of spans) {
+    const len = (span.text ?? '').length;
+    if (current.length > 0 && currentChars + len > BODY_CHUNK_CHAR_BUDGET) {
+      chunks.push(current);
+      current = [];
+      currentChars = 0;
+    }
+    current.push(span);
+    currentChars += len;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
+
+async function translateSpanChunk(ai: AiBinding, chunk: PortableTextSpan[]): Promise<boolean> {
+  const json = await runWithFallback(ai, BODY_SYSTEM_PROMPT, JSON.stringify(chunk.map((s) => s.text)));
+  if (!json) return false;
+
+  try {
+    const translated = JSON.parse(json) as unknown;
+    if (!Array.isArray(translated) || translated.length !== chunk.length) {
+      console.error(
+        `[blog] body chunk translation returned ${Array.isArray(translated) ? translated.length : 'non-array'} items, expected ${chunk.length}`
+      );
+      return false;
+    }
+    chunk.forEach((span, i) => {
+      const value = translated[i];
+      span.text = typeof value === 'string' ? value : String(span.text ?? '');
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Translates a Portable Text body's span strings in place, returning a deep
- * copy. Returns null (never throws) if the AI binding isn't configured or
- * translation fails - callers should treat that as "keep the English body". */
+ * copy, chunked to stay within the model's output-token budget. Returns null
+ * (never throws) if the AI binding isn't configured or any chunk fails to
+ * translate - callers should treat that as "keep the English body" rather
+ * than publishing a body mixing both languages. */
 export async function translatePostBody(
   env: Record<string, unknown>,
   body: PortableTextBlock[] | undefined
@@ -147,23 +198,12 @@ export async function translatePostBody(
   }
   if (spanRefs.length === 0) return clone;
 
-  const json = await runWithFallback(ai, BODY_SYSTEM_PROMPT, JSON.stringify(spanRefs.map((s) => s.text)));
-  if (!json) return null;
-
-  try {
-    const translated = JSON.parse(json) as unknown;
-    if (!Array.isArray(translated) || translated.length !== spanRefs.length) {
-      console.error(
-        `[blog] body translation returned ${Array.isArray(translated) ? translated.length : 'non-array'} items, expected ${spanRefs.length}`
-      );
-      return null;
-    }
-    spanRefs.forEach((span, i) => {
-      const value = translated[i];
-      span.text = typeof value === 'string' ? value : String(span.text ?? '');
-    });
-    return clone;
-  } catch {
-    return null;
+  const chunks = chunkSpansByCharBudget(spanRefs);
+  for (const chunk of chunks) {
+    // eslint-disable-next-line no-await-in-loop
+    const ok = await translateSpanChunk(ai, chunk);
+    if (!ok) return null;
   }
+
+  return clone;
 }

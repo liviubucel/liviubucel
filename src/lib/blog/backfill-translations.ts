@@ -36,8 +36,12 @@ interface EnPostCandidate {
 export interface BlogBackfillResult {
   candidates: number;
   translated: number;
+  /** Published, but the body translation failed/was skipped so the post
+   * keeps its English body under a Romanian title/SEO fields - better than
+   * nothing, and a clear signal of exactly what still needs a retry. */
+  partial: string[];
   failed: number;
-  failedSlugs: string[];
+  failedSlugs: { slug: string; reason: 'fields_translation_failed' | 'persist_failed' }[];
 }
 
 export function getSanityWriteClient(env: Record<string, unknown>): SanityClient | null {
@@ -64,7 +68,7 @@ export async function backfillBlogTranslations(
 ): Promise<BlogBackfillResult> {
   if (!client) {
     console.warn('[blog] SANITY_API_WRITE_TOKEN is not configured, cannot backfill translations.');
-    return { candidates: 0, translated: 0, failed: 0, failedSlugs: [] };
+    return { candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] };
   }
 
   const [enPosts, roSlugs] = await Promise.all([
@@ -82,7 +86,8 @@ export async function backfillBlogTranslations(
 
   let translated = 0;
   let failed = 0;
-  const failedSlugs: string[] = [];
+  const partial: string[] = [];
+  const failedSlugs: { slug: string; reason: 'fields_translation_failed' | 'persist_failed' }[] = [];
 
   for (const post of candidates) {
     // eslint-disable-next-line no-await-in-loop
@@ -96,17 +101,16 @@ export async function backfillBlogTranslations(
 
     if (!fields) {
       failed += 1;
-      failedSlugs.push(post.slug);
+      failedSlugs.push({ slug: post.slug, reason: 'fields_translation_failed' });
       continue;
     }
 
+    // A failed body translation isn't fatal - publish with the English body
+    // rather than losing the (already-translated) RO title/SEO fields too.
     // eslint-disable-next-line no-await-in-loop
-    const body = await translatePostBody(env, post.body);
-    if (!body) {
-      failed += 1;
-      failedSlugs.push(post.slug);
-      continue;
-    }
+    const translatedBody = await translatePostBody(env, post.body);
+    const bodyFellBack = translatedBody === null && !!post.body?.length;
+    const body = translatedBody ?? post.body;
 
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -127,12 +131,13 @@ export async function backfillBlogTranslations(
         published: true,
       });
       translated += 1;
+      if (bodyFellBack) partial.push(post.slug);
     } catch (error) {
       console.error(`[blog] failed to persist RO translation for ${post.slug}:`, error);
       failed += 1;
-      failedSlugs.push(post.slug);
+      failedSlugs.push({ slug: post.slug, reason: 'persist_failed' });
     }
   }
 
-  return { candidates: candidates.length, translated, failed, failedSlugs };
+  return { candidates: candidates.length, translated, partial, failed, failedSlugs };
 }

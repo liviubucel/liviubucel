@@ -43,7 +43,7 @@ function aiEnv() {
 describe('backfillBlogTranslations', () => {
   it('returns an empty result when no Sanity write client is configured', async () => {
     const result = await backfillBlogTranslations({}, 10, null);
-    expect(result).toEqual({ candidates: 0, translated: 0, failed: 0, failedSlugs: [] });
+    expect(result).toEqual({ candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] });
   });
 
   it('skips EN posts that already have a published RO counterpart', async () => {
@@ -53,7 +53,7 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(aiEnv(), 10, client);
 
-    expect(result).toEqual({ candidates: 0, translated: 0, failed: 0, failedSlugs: [] });
+    expect(result).toEqual({ candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] });
     expect(client.create).not.toHaveBeenCalled();
   });
 
@@ -63,7 +63,7 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(env, 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 1, failed: 0, failedSlugs: [] });
+    expect(result).toEqual({ candidates: 1, translated: 1, partial: [], failed: 0, failedSlugs: [] });
     expect(client.create).toHaveBeenCalledTimes(1);
     expect(client.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -86,18 +86,24 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(env, 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 0, failed: 1, failedSlugs: ['acme-breach'] });
+    expect(result).toEqual({
+      candidates: 1,
+      translated: 0,
+      partial: [],
+      failed: 1,
+      failedSlugs: [{ slug: 'acme-breach', reason: 'fields_translation_failed' }],
+    });
     expect(client.create).not.toHaveBeenCalled();
   });
 
-  it('counts a post as failed when body translation fails, without persisting anything', async () => {
+  it('still publishes with the English body (as a partial success) when only body translation fails', async () => {
     const client = fakeClient();
     let call = 0;
     const env = {
       AI: {
         run: vi.fn(async () => {
           call += 1;
-          if (call === 1) return { response: JSON.stringify({ title: 'T', description: 'D' }) };
+          if (call === 1) return { response: JSON.stringify({ title: 'Breșă Acme', description: 'Un rezumat scurt.' }) };
           throw new Error('model unavailable');
         }),
       },
@@ -105,8 +111,13 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(env, 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 0, failed: 1, failedSlugs: ['acme-breach'] });
-    expect(client.create).not.toHaveBeenCalled();
+    expect(result).toEqual({ candidates: 1, translated: 1, partial: ['acme-breach'], failed: 0, failedSlugs: [] });
+    expect(client.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Breșă Acme',
+        body: EN_POST.body, // fell back to the untranslated English body
+      })
+    );
   });
 
   it('counts a post as failed when persisting to Sanity throws', async () => {
@@ -114,7 +125,13 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(aiEnv(), 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 0, failed: 1, failedSlugs: ['acme-breach'] });
+    expect(result).toEqual({
+      candidates: 1,
+      translated: 0,
+      partial: [],
+      failed: 1,
+      failedSlugs: [{ slug: 'acme-breach', reason: 'persist_failed' }],
+    });
   });
 
   it('respects the limit parameter', async () => {
