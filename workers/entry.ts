@@ -2,7 +2,7 @@
 // schedules, and a lightweight bilingual-blog repair cron.
 //
 // fetch() is delegated to Astro's generated Worker. scheduled() routes the
-// dedicated blog-translation cron separately, while all existing cyber-monitor
+// dedicated blog-translation crons separately, while all existing cyber-monitor
 // cron expressions continue through the source scheduler unchanged.
 
 import astroWorker from '@astrojs/cloudflare/entrypoints/server.js';
@@ -11,6 +11,7 @@ import { sourcesForCron } from '../src/lib/cyber-monitor/cron-schedule';
 import { runScheduledSources } from '../src/lib/cyber-monitor/scheduled-handler';
 
 const BLOG_TRANSLATION_CRON = '30 * * * *';
+const BLOG_TRANSLATION_BOOTSTRAP_CRON = '40 19 7 8 *';
 
 interface Env {
   ROMANIA_MONITOR_DB: D1Database;
@@ -21,7 +22,7 @@ export default {
   fetch: astroWorker.fetch,
 
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    if (event.cron === BLOG_TRANSLATION_CRON) {
+    if (event.cron === BLOG_TRANSLATION_CRON || event.cron === BLOG_TRANSLATION_BOOTSTRAP_CRON) {
       console.log(JSON.stringify({ event: 'blog_translation_backfill_started', cron: event.cron }));
 
       ctx.waitUntil(
