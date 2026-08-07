@@ -9,7 +9,9 @@ interface Props {
 const { currentLang, pathname } = Astro.props;
 
 const getLanguageUrl = (lang: Language): string => {
-  const cleanPath = pathname.replace(/^\/(ro)/, '');
+  // Remove only the actual Romanian locale prefix (/ro or /ro/...), never
+  // words that merely start with "ro" such as /romania-cyber-monitor.
+  const cleanPath = pathname.replace(/^\/ro(?=\/|$)/, '');
   if (lang === DEFAULT_LANGUAGE) {
     return cleanPath || '/';
   }
