@@ -20,6 +20,7 @@
     "security:scan": "node scripts/security-scan.mjs",
     "security:audit": "pnpm audit --prod --audit-level high",
     "sitemap:generate": "SITE_URL=https://www.liviubucel.com/ node scripts/generate-sitemap.mjs",
+    "blog:generate": "node scripts/generate-daily-blog.mjs",
     "blog:translate": "node scripts/translate-blog-posts.mjs"
   },
   "dependencies": {
