@@ -1,21 +1,4 @@
 #!/usr/bin/env node
-// Romania Cyber Monitor / main blog - auto-translates every published
-// English Sanity `post` document into Romanian via Cloudflare Workers AI,
-// and publishes the result as a sibling document (same slug, language:'ro').
-// Safe to run repeatedly/on a schedule: it only ever selects EN posts whose
-// slug has no published RO counterpart yet.
-//
-// Usage: node scripts/translate-blog-posts.mjs [--limit N]
-//
-// Env required:
-//   PUBLIC_SANITY_PROJECT_ID / SANITY_PROJECT_ID - already used across the project
-//   SANITY_DATASET            - defaults to "production"
-//   SANITY_API_WRITE_TOKEN    - Sanity Editor token (write access)
-//   CLOUDFLARE_ACCOUNT_ID     - account that hosts Workers AI
-//   CLOUDFLARE_API_TOKEN      - needs "Workers AI" read/edit permission
-//
-// Designed to run unattended from .github/workflows/translate-blog-posts.yml.
-
 import { createClient } from '@sanity/client';
 
 const projectId = process.env.PUBLIC_SANITY_PROJECT_ID || process.env.SANITY_PROJECT_ID || '8atrdwjk';
@@ -27,6 +10,7 @@ const apiToken = process.env.CLOUDFLARE_API_TOKEN;
 const PRIMARY_MODEL = process.env.WORKERS_AI_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const FALLBACK_MODEL = process.env.WORKERS_AI_FALLBACK_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast';
 const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+const BODY_CHUNK_CHAR_BUDGET = 2000;
 
 const limitArgIndex = process.argv.indexOf('--limit');
 const limit = limitArgIndex !== -1 ? Number(process.argv[limitArgIndex + 1]) || 10 : 10;
@@ -40,13 +24,7 @@ if (!accountId || !apiToken) {
   process.exit(1);
 }
 
-const client = createClient({
-  projectId,
-  dataset,
-  useCdn: false,
-  apiVersion: '2025-02-20',
-  token: writeToken,
-});
+const client = createClient({ projectId, dataset, useCdn: false, apiVersion: '2025-02-20', token: writeToken });
 
 async function callWorkersAi(systemPrompt, userPrompt, model = PRIMARY_MODEL, attempt = 1) {
   const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
@@ -63,11 +41,9 @@ async function callWorkersAi(systemPrompt, userPrompt, model = PRIMARY_MODEL, at
   if (!res.ok) {
     const body = await res.text();
     if (RETRYABLE_STATUSES.has(res.status) && attempt < 3) {
-      console.warn(`Workers AI error ${res.status} (attempt ${attempt}, model ${model}), retrying: ${body}`);
       return callWorkersAi(systemPrompt, userPrompt, model, attempt + 1);
     }
     if (RETRYABLE_STATUSES.has(res.status) && model !== FALLBACK_MODEL) {
-      console.warn(`Workers AI error ${res.status}: ${body}\nFalling back to ${FALLBACK_MODEL} after exhausting retries on ${model}.`);
       return callWorkersAi(systemPrompt, userPrompt, FALLBACK_MODEL, 1);
     }
     throw new Error(`Workers AI request failed: ${res.status} ${body}`);
@@ -78,7 +54,6 @@ async function callWorkersAi(systemPrompt, userPrompt, model = PRIMARY_MODEL, at
   return typeof text === 'string' ? text : JSON.stringify(text);
 }
 
-// Strips ```json fences and any leading/trailing prose some models still add.
 function extractJson(raw) {
   const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = (fenced ? fenced[1] : raw).trim();
@@ -91,20 +66,33 @@ function extractJson(raw) {
 async function translateFields(fields) {
   const systemPrompt = [
     'You are a professional Romanian translator for a cybersecurity blog.',
-    'Translate the given English JSON object into natural, professional Romanian, keeping the exact same JSON shape and keys.',
-    'Preserve technical terms, product names, and acronyms unchanged where a literal translation would be non-standard.',
-    'Respond with the JSON object only, nothing else.',
+    'Translate the English JSON object into natural, professional Romanian while preserving the exact keys and JSON shape.',
+    'Preserve technical terms, product names and acronyms when Romanian security writing normally uses the English form.',
+    'Do not add, remove or embellish factual content.',
+    'Respond with JSON only.',
   ].join(' ');
-
-  const raw = await callWorkersAi(systemPrompt, JSON.stringify(fields));
-  return extractJson(raw);
+  return extractJson(await callWorkersAi(systemPrompt, JSON.stringify(fields)));
 }
 
-// Portable Text is an array of blocks; each block's translatable content
-// lives in `children[].text` (for text blocks) or `code`/`caption` for other
-// block types we don't expect here. We only ever send the raw strings to the
-// model - never the block structure - so translation can't corrupt marks,
-// list nesting, or block ordering.
+function chunkSpanRefs(spanRefs) {
+  const chunks = [];
+  let current = [];
+  let chars = 0;
+
+  for (const span of spanRefs) {
+    const len = span.text.length;
+    if (current.length > 0 && chars + len > BODY_CHUNK_CHAR_BUDGET) {
+      chunks.push(current);
+      current = [];
+      chars = 0;
+    }
+    current.push(span);
+    chars += len;
+  }
+  if (current.length) chunks.push(current);
+  return chunks;
+}
+
 async function translateBody(body) {
   if (!Array.isArray(body) || body.length === 0) return body;
 
@@ -112,9 +100,7 @@ async function translateBody(body) {
   for (const block of body) {
     if (block._type === 'block' && Array.isArray(block.children)) {
       for (const child of block.children) {
-        if (typeof child.text === 'string' && child.text.trim()) {
-          spanRefs.push(child);
-        }
+        if (typeof child.text === 'string' && child.text.trim()) spanRefs.push(child);
       }
     }
   }
@@ -122,21 +108,24 @@ async function translateBody(body) {
 
   const systemPrompt = [
     'You are a professional Romanian translator for a cybersecurity blog.',
-    'Translate each string in this JSON array from English to Romanian, preserving order.',
-    'Preserve technical terms, product names, and acronyms unchanged where a literal translation would be non-standard.',
-    'Respond with a JSON array of the same length containing only the translated strings, nothing else.',
+    'Translate every string in the JSON array from English to Romanian and preserve order and array length exactly.',
+    'Preserve technical terms, product names and acronyms where appropriate.',
+    'Do not summarize or shorten the text.',
+    'Respond with one JSON array only.',
   ].join(' ');
 
-  const raw = await callWorkersAi(systemPrompt, JSON.stringify(spanRefs.map((s) => s.text)));
-  const translated = extractJson(raw);
-
-  if (!Array.isArray(translated) || translated.length !== spanRefs.length) {
-    throw new Error(`Body translation returned ${Array.isArray(translated) ? translated.length : 'non-array'} items, expected ${spanRefs.length}`);
+  for (const chunk of chunkSpanRefs(spanRefs)) {
+    const translated = extractJson(await callWorkersAi(systemPrompt, JSON.stringify(chunk.map((span) => span.text))));
+    if (!Array.isArray(translated) || translated.length !== chunk.length) {
+      throw new Error(`Body translation returned ${Array.isArray(translated) ? translated.length : 'non-array'} items, expected ${chunk.length}`);
+    }
+    chunk.forEach((span, index) => {
+      if (typeof translated[index] !== 'string' || !translated[index].trim()) {
+        throw new Error(`Body translation returned invalid text at index ${index}`);
+      }
+      span.text = translated[index];
+    });
   }
-
-  spanRefs.forEach((span, i) => {
-    span.text = translated[i];
-  });
 
   return body;
 }
@@ -152,21 +141,17 @@ async function main() {
 
   const roSlugSet = new Set(roSlugs);
   const candidates = enPosts.filter((post) => post.slug && !roSlugSet.has(post.slug)).slice(0, limit);
-
   if (candidates.length === 0) {
     console.log('No untranslated posts found.');
     return;
   }
 
-  console.log(`Translating ${candidates.length} post(s) to Romanian...`);
-
-  let translated = 0;
+  let translatedCount = 0;
   let failed = 0;
 
   for (const post of candidates) {
     try {
-      console.log(`- ${post.slug}`);
-      // eslint-disable-next-line no-await-in-loop
+      console.log(`Translating ${post.slug}`);
       const fields = await translateFields({
         title: post.title,
         description: post.description,
@@ -174,10 +159,8 @@ async function main() {
         keywords: post.keywords ?? [],
         tags: post.tags ?? [],
       });
-      // eslint-disable-next-line no-await-in-loop
       const body = await translateBody(post.body ? JSON.parse(JSON.stringify(post.body)) : post.body);
 
-      // eslint-disable-next-line no-await-in-loop
       await client.create({
         _type: 'post',
         title: fields.title,
@@ -194,16 +177,15 @@ async function main() {
         body,
         published: true,
       });
-
-      translated += 1;
+      translatedCount += 1;
     } catch (error) {
       failed += 1;
-      console.error(`  Failed to translate ${post.slug}:`, error.message);
+      console.error(`Failed to translate ${post.slug}:`, error.message);
     }
   }
 
-  console.log(`Done. Translated ${translated}, failed ${failed}.`);
-  if (failed > 0 && translated === 0) process.exitCode = 1;
+  console.log(`Done. Translated ${translatedCount}, failed ${failed}.`);
+  if (failed > 0) process.exitCode = 1;
 }
 
 main().catch((error) => {
