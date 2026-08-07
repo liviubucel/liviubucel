@@ -12,14 +12,13 @@ if (!slug) {
   return Astro.redirect('/ro/blog');
 }
 
-// Try Romanian first, fall back to English
-let post = await getPost(slug, lang).catch(() => null);
-if (!post) {
-  post = await getPost(slug, 'en').catch(() => null);
-}
+// Romanian routes must render an actual Romanian document. Do not silently
+// serve the English sibling under a Romanian URL, because that hides broken
+// translation/backfill jobs and produces misleading language metadata.
+const post = await getPost(slug, lang).catch(() => null);
 
 if (!post) {
-  return new Response(null, { status: 404, statusText: 'Not found' });
+  return new Response(null, { status: 404, statusText: 'Traducerea în limba română nu este disponibilă' });
 }
 
 const pubDate = post.pubDate ? new Date(post.pubDate) : new Date();
@@ -45,7 +44,7 @@ const canonical = `${SITE.site.url}ro/blog/${slug}`;
   pubDate={pubDate}
   minutesRead={minutesRead}
   url={canonical}
-  lang={post.language}
+  lang={lang}
   keywords={post.keywords}
   ogImage={post.featuredImage?.asset?.url}
 >
