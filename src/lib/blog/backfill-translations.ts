@@ -1,12 +1,12 @@
-// Blog post translation backfill - selects every published English post
-// with no published Romanian counterpart yet and translates it via
-// Cloudflare Workers AI, then publishes the result as a sibling Sanity
-// document using the same slug and language:'ro'.
+// Blog post translation backfill - selects published English posts that
+// either have no Romanian counterpart or have a Romanian document whose body
+// is still effectively English, translates them through the native Workers AI
+// binding, and persists a proper Romanian sibling using the same slug.
 //
-// A Romanian document is published only when both metadata and body
-// translation complete successfully. We never publish an English body under
-// a Romanian URL because that hides translation failures and produces
-// misleading language metadata.
+// Before selecting candidates we also normalize safe legacy Sanity metadata
+// created by the historical seed script: missing language is inferred from
+// content and only known recovered public `post-*` documents are promoted to
+// published when they have a date and body.
 
 import { createClient, type SanityClient } from '@sanity/client';
 import { translatePostFields, translatePostBody, type PortableTextBlock } from './translate';
@@ -18,28 +18,39 @@ interface SanityEnvConfig {
   SANITY_DATASET?: string;
 }
 
-interface EnPostCandidate {
+interface BlogPostBase {
   _id: string;
+  title?: string;
+  description?: string;
+  body?: PortableTextBlock[];
+  pubDate?: string;
+}
+
+interface EnPostCandidate extends BlogPostBase {
   title: string;
   description: string;
   metaDescription?: string;
   keywords?: string[];
   tags?: string[];
   slug: string;
-  pubDate?: string;
   category?: unknown;
   author?: unknown;
   featuredImage?: unknown;
+}
+
+interface RoCounterpart {
+  _id: string;
+  slug: string;
   body?: PortableTextBlock[];
 }
 
 type FailureReason = 'fields_translation_failed' | 'body_translation_failed' | 'persist_failed';
 
 export interface BlogBackfillResult {
+  normalized: number;
   candidates: number;
   translated: number;
-  /** Kept for backwards-compatible API responses. Partial mixed-language
-   * publications are no longer created, so this is always empty. */
+  repaired: number;
   partial: string[];
   failed: number;
   failedSlugs: { slug: string; reason: FailureReason }[];
@@ -62,6 +73,85 @@ export function getSanityWriteClient(env: Record<string, unknown>): SanityClient
   });
 }
 
+function bodyText(body: PortableTextBlock[] | undefined): string {
+  if (!Array.isArray(body)) return '';
+  return body
+    .filter((block) => block?._type === 'block' && Array.isArray(block.children))
+    .flatMap((block) => block.children ?? [])
+    .map((child) => (typeof child?.text === 'string' ? child.text : ''))
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function romanianSignalScore(text: string): number {
+  if (!text) return 0;
+  const value = text.toLowerCase();
+  const patterns = [
+    /[ăâîșşțţ]/g,
+    /\b(și|este|sunt|pentru|despre|cum|care|din|în|împotriva|securitate|vulnerabilitate|atac|ghid|după|fără|site-uri|utilizatori|date|sistem|sisteme|această|acest|prin|poate|trebuie)\b/g,
+  ];
+
+  let score = 0;
+  for (const pattern of patterns) {
+    score += value.match(pattern)?.length ?? 0;
+  }
+  return score;
+}
+
+function inferLanguage(post: BlogPostBase): 'en' | 'ro' {
+  const text = `${post.title ?? ''} ${post.description ?? ''} ${bodyText(post.body)}`;
+  return romanianSignalScore(text) >= 2 ? 'ro' : 'en';
+}
+
+async function normalizeLegacyBlogMetadata(client: SanityClient): Promise<number> {
+  const posts = await client.fetch<
+    (BlogPostBase & { language?: string; published?: boolean })[]
+  >(`*[_type == "post" && (!defined(language) || !defined(published))]{
+    _id, title, description, body, pubDate, language, published
+  }`);
+
+  let normalized = 0;
+  for (const post of posts) {
+    const patch: Record<string, unknown> = {};
+
+    if (!post.language) {
+      patch.language = inferLanguage(post);
+    }
+
+    if (
+      typeof post.published !== 'boolean' &&
+      post._id.startsWith('post-') &&
+      post.pubDate &&
+      Array.isArray(post.body) &&
+      post.body.length > 0
+    ) {
+      patch.published = true;
+    }
+
+    if (Object.keys(patch).length === 0) continue;
+
+    // eslint-disable-next-line no-await-in-loop
+    await client.patch(post._id).set(patch).commit();
+    normalized += 1;
+  }
+
+  return normalized;
+}
+
+function needsRomanianRepair(source: EnPostCandidate, target: RoCounterpart | undefined): boolean {
+  if (!target) return true;
+
+  const sourceBody = bodyText(source.body);
+  const targetBody = bodyText(target.body);
+
+  if (sourceBody && !targetBody) return true;
+  if (sourceBody && targetBody && sourceBody === targetBody) return true;
+  if (targetBody && romanianSignalScore(targetBody) < 2) return true;
+
+  return false;
+}
+
 export async function backfillBlogTranslations(
   env: Record<string, unknown>,
   limit = 10,
@@ -69,23 +159,40 @@ export async function backfillBlogTranslations(
 ): Promise<BlogBackfillResult> {
   if (!client) {
     console.warn('[blog] SANITY_API_WRITE_TOKEN is not configured, cannot backfill translations.');
-    return { candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] };
+    return {
+      normalized: 0,
+      candidates: 0,
+      translated: 0,
+      repaired: 0,
+      partial: [],
+      failed: 0,
+      failedSlugs: [],
+    };
   }
 
-  const [enPosts, roSlugs] = await Promise.all([
+  const normalized = await normalizeLegacyBlogMetadata(client);
+
+  const [enPosts, roPosts] = await Promise.all([
     client.fetch<EnPostCandidate[]>(
-      `*[_type == "post" && published == true && language == "en"]{
+      `*[_type == "post" && published == true && language == "en"] | order(pubDate desc){
         _id, title, description, metaDescription, keywords, tags,
         "slug": slug.current, pubDate, category, author, featuredImage, body
       }`
     ),
-    client.fetch<string[]>(`*[_type == "post" && published == true && language == "ro"].slug.current`),
+    client.fetch<RoCounterpart[]>(
+      `*[_type == "post" && published == true && language == "ro"]{
+        _id, "slug": slug.current, body
+      }`
+    ),
   ]);
 
-  const roSlugSet = new Set(roSlugs);
-  const candidates = enPosts.filter((post) => post.slug && !roSlugSet.has(post.slug)).slice(0, limit);
+  const roBySlug = new Map(roPosts.filter((post) => post.slug).map((post) => [post.slug, post]));
+  const candidates = enPosts
+    .filter((post) => post.slug && needsRomanianRepair(post, roBySlug.get(post.slug)))
+    .slice(0, limit);
 
   let translated = 0;
+  let repaired = 0;
   let failed = 0;
   const failedSlugs: { slug: string; reason: FailureReason }[] = [];
 
@@ -114,25 +221,35 @@ export async function backfillBlogTranslations(
       continue;
     }
 
+    const translatedDocument = {
+      _type: 'post' as const,
+      title: fields.title,
+      description: fields.description,
+      metaDescription: fields.metaDescription,
+      keywords: fields.keywords,
+      tags: fields.tags,
+      language: 'ro' as const,
+      slug: { _type: 'slug' as const, current: post.slug },
+      pubDate: post.pubDate,
+      category: post.category,
+      author: post.author,
+      featuredImage: post.featuredImage,
+      body: translatedBody ?? post.body,
+      published: true,
+    };
+
     try {
-      // eslint-disable-next-line no-await-in-loop
-      await client.create({
-        _type: 'post',
-        title: fields.title,
-        description: fields.description,
-        metaDescription: fields.metaDescription,
-        keywords: fields.keywords,
-        tags: fields.tags,
-        language: 'ro',
-        slug: { _type: 'slug', current: post.slug },
-        pubDate: post.pubDate,
-        category: post.category,
-        author: post.author,
-        featuredImage: post.featuredImage,
-        body: translatedBody ?? post.body,
-        published: true,
-      });
-      translated += 1;
+      const existing = roBySlug.get(post.slug);
+      if (existing) {
+        // eslint-disable-next-line no-await-in-loop
+        await client.patch(existing._id).set(translatedDocument).commit();
+        repaired += 1;
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        const created = await client.create(translatedDocument);
+        roBySlug.set(post.slug, { _id: created._id, slug: post.slug, body: translatedDocument.body });
+        translated += 1;
+      }
     } catch (error) {
       console.error(`[blog] failed to persist RO translation for ${post.slug}:`, error);
       failed += 1;
@@ -140,5 +257,13 @@ export async function backfillBlogTranslations(
     }
   }
 
-  return { candidates: candidates.length, translated, partial: [], failed, failedSlugs };
+  return {
+    normalized,
+    candidates: candidates.length,
+    translated,
+    repaired,
+    partial: [],
+    failed,
+    failedSlugs,
+  };
 }
