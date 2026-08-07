@@ -120,6 +120,38 @@ function collectSpanRefs(body) {
   return refs;
 }
 
+function bodyPlainText(body) {
+  return collectSpanRefs(body).map((span) => span.text).join(' ').replace(/\s+/g, ' ').trim();
+}
+
+function looksRomanian(text) {
+  const lower = text.toLowerCase();
+  const diacritics = lower.match(/[ăâîșşțţ]/g)?.length ?? 0;
+  const words = lower.match(/\b(și|este|sunt|pentru|despre|cum|care|din|în|împotriva|securitate|vulnerabilitate|atac|ghid|după|fără|utilizatori|organizații|date|amenințare|risc)\b/g)?.length ?? 0;
+  return diacritics + words >= 2;
+}
+
+function targetNeedsRepair(sourcePost, targetPost) {
+  if (!targetPost) return true;
+
+  const sourceText = bodyPlainText(sourcePost.body);
+  const targetText = bodyPlainText(targetPost.body);
+
+  if (sourceText && !targetText) return true;
+  if (sourceText && targetText && sourceText === targetText) return true;
+
+  // For substantive bodies, verify that the actual content language agrees
+  // with the Sanity `language` field. This catches historical RO documents
+  // whose title was translated but whose English body was copied unchanged.
+  if (targetText.length >= 160) {
+    const romanian = looksRomanian(targetText);
+    if (targetLanguage === 'ro' && !romanian) return true;
+    if (targetLanguage === 'en' && romanian) return true;
+  }
+
+  return false;
+}
+
 function chunkRefs(refs) {
   const chunks = [];
   let current = [];
@@ -173,7 +205,7 @@ async function translateBody(body) {
 }
 
 async function main() {
-  const [sourcePosts, targetSlugs] = await Promise.all([
+  const [sourcePosts, targetPosts] = await Promise.all([
     client.fetch(
       `*[_type == "post" && published == true && language == $language] | order(pubDate desc) {
         _id, title, description, metaDescription, keywords, tags, pubDate,
@@ -182,29 +214,33 @@ async function main() {
       { language: sourceLanguage }
     ),
     client.fetch(
-      `*[_type == "post" && published == true && language == $language].slug.current`,
+      `*[_type == "post" && published == true && language == $language] {
+        _id, "slug": slug.current, body
+      }`,
       { language: targetLanguage }
     ),
   ]);
 
-  const targetSlugSet = new Set(targetSlugs.filter(Boolean));
+  const targetBySlug = new Map(targetPosts.filter((post) => post.slug).map((post) => [post.slug, post]));
   const candidates = sourcePosts
-    .filter((post) => post.slug && !targetSlugSet.has(post.slug))
+    .filter((post) => post.slug && targetNeedsRepair(post, targetBySlug.get(post.slug)))
     .slice(0, limit);
 
   if (candidates.length === 0) {
-    console.log(`No ${sourceLanguage.toUpperCase()} posts missing a ${targetLanguage.toUpperCase()} counterpart.`);
+    console.log(`No ${sourceLanguage.toUpperCase()} posts need a ${targetLanguage.toUpperCase()} counterpart or repair.`);
     return;
   }
 
-  console.log(`Creating ${candidates.length} ${targetLanguage.toUpperCase()} counterpart(s) from ${sourceLanguage.toUpperCase()} source posts.`);
+  console.log(`Processing ${candidates.length} ${targetLanguage.toUpperCase()} counterpart(s) from ${sourceLanguage.toUpperCase()} source posts.`);
 
   let translatedCount = 0;
+  let repairedCount = 0;
   let failed = 0;
 
   for (const post of candidates) {
+    const existingTarget = targetBySlug.get(post.slug);
     try {
-      console.log(`- ${post.slug}`);
+      console.log(`- ${post.slug}${existingTarget ? ' (repair existing)' : ' (create)'}`);
       const fields = await translateFields({
         title: post.title,
         description: post.description ?? '',
@@ -215,9 +251,7 @@ async function main() {
 
       const bodyClone = post.body ? JSON.parse(JSON.stringify(post.body)) : post.body;
       const translatedBody = await translateBody(bodyClone);
-
-      await client.create({
-        _type: 'post',
+      const translatedDocument = {
         title: fields.title,
         description: fields.description || '',
         metaDescription: fields.metaDescription || undefined,
@@ -231,17 +265,22 @@ async function main() {
         featuredImage: post.featuredImage,
         body: translatedBody,
         published: true,
-      });
+      };
 
-      translatedCount += 1;
-      targetSlugSet.add(post.slug);
+      if (existingTarget) {
+        await client.patch(existingTarget._id).set(translatedDocument).commit();
+        repairedCount += 1;
+      } else {
+        await client.create({ _type: 'post', ...translatedDocument });
+        translatedCount += 1;
+      }
     } catch (error) {
       failed += 1;
       console.error(`  Failed to translate ${post.slug}:`, error?.message ?? String(error));
     }
   }
 
-  console.log(`Done. Created ${translatedCount} ${targetLanguage.toUpperCase()} post(s), failed ${failed}.`);
+  console.log(`Done. Created ${translatedCount}, repaired ${repairedCount}, failed ${failed}.`);
   if (failed > 0) process.exitCode = 1;
 }
 
