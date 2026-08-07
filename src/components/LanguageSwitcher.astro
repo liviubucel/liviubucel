@@ -12,10 +12,11 @@ const getLanguageUrl = (lang: Language): string => {
   // Remove only the actual Romanian locale prefix (/ro or /ro/...), never
   // words that merely start with "ro" such as /romania-cyber-monitor.
   const cleanPath = pathname.replace(/^\/ro(?=\/|$)/, '');
-  if (lang === DEFAULT_LANGUAGE) {
-    return cleanPath || '/';
-  }
-  return `/${lang}${cleanPath}` || `/${lang}`;
+  const targetPath = lang === DEFAULT_LANGUAGE ? cleanPath || '/' : `/${lang}${cleanPath}` || `/${lang}`;
+
+  // Middleware consumes this one-time query parameter, stores the user's
+  // explicit choice in a first-party cookie, then redirects to the clean URL.
+  return `${targetPath}${targetPath.includes('?') ? '&' : '?'}lang=${lang}`;
 };
 ---
 
