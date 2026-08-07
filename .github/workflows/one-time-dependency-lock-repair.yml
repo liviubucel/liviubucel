@@ -3,7 +3,7 @@ name: One-time dependency lock repair
 on:
   workflow_dispatch:
   schedule:
-    - cron: '45 20 7 8 *'
+    - cron: '50 20 7 8 *'
 
 permissions:
   contents: write
