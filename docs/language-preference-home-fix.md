@@ -1,1 +1,0 @@
-Homepage language links must use the middleware's explicit `?lang=` parameter so a manual EN/RO choice overwrites any prior `lb_lang_pref` cookie. This file documents the regression fix and can be removed later if desired.
