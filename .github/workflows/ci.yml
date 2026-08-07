@@ -10,7 +10,7 @@ env:
 
 jobs:
   lint-and-test:
-    name: Lint & Type Check
+    name: Lint, Type Check & Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -35,6 +35,9 @@ jobs:
 
       - name: Type check
         run: pnpm check
+
+      - name: Run unit tests
+        run: pnpm test
 
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level high
