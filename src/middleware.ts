@@ -1,19 +1,20 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getCacheControl, getSecurityHeaders } from './middleware/headers';
+import {
+  automaticLanguage,
+  clearLegacyLanguageCookie,
+  getManualLanguage,
+  hasRomanianPrefix,
+  languageCookie,
+  withLanguage,
+  type SiteLanguage,
+} from './lib/language-routing';
 
 const CANONICAL_HOST = 'www.liviubucel.com';
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1']);
-const LANGUAGE_COOKIE = 'lb_lang';
-const LANGUAGE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 const NON_LOCALISED_PREFIXES = ['/api/', '/studio', '/_astro/', '/favicon', '/robots.txt', '/sitemap'];
 const BOT_UA = /bot|crawler|spider|slurp|bingpreview|facebookexternalhit|twitterbot|linkedinbot|duckduckbot|baiduspider|yandex/i;
-
-interface CloudflareRequest extends Request {
-  cf?: {
-    country?: string;
-  };
-}
 
 function isLocalisedPageRequest(request: Request, pathname: string): boolean {
   if (request.method !== 'GET' && request.method !== 'HEAD') return false;
@@ -25,43 +26,31 @@ function isLocalisedPageRequest(request: Request, pathname: string): boolean {
   return true;
 }
 
-function getCookieValue(cookieHeader: string | null, name: string): string | null {
-  if (!cookieHeader) return null;
-  for (const part of cookieHeader.split(';')) {
-    const [key, ...valueParts] = part.trim().split('=');
-    if (key === name) return decodeURIComponent(valueParts.join('='));
+function languageRedirect(url: URL, language: SiteLanguage, persistManualChoice = false): Response {
+  const target = new URL(url);
+  target.searchParams.delete('lang');
+  target.pathname = withLanguage(url.pathname, language);
+
+  const headers = new Headers({
+    Location: target.toString(),
+    'Cache-Control': 'private, no-store',
+  });
+
+  if (persistManualChoice) {
+    headers.append('Set-Cookie', languageCookie(language));
+    // Ignore and remove the old auto-detection cookie used by the previous
+    // implementation so a past UK/RO visit cannot pin the wrong language.
+    headers.append('Set-Cookie', clearLegacyLanguageCookie());
   }
-  return null;
-}
 
-function languageFromCountry(request: Request): 'ro' | 'en' {
-  // Cloudflare supplies only a coarse ISO country code with the request.
-  // It is used transiently to choose the first-visit language and is not
-  // written to D1/Sanity or otherwise persisted by this application.
-  const country = (request as CloudflareRequest).cf?.country?.toUpperCase();
-  return country === 'RO' || country === 'MD' ? 'ro' : 'en';
-}
-
-function withLanguage(pathname: string, language: 'en' | 'ro'): string {
-  // Remove only an actual /ro route segment, never the "ro" at the start of
-  // words such as /romania-cyber-monitor.
-  const cleanPath = pathname === '/ro' ? '/' : pathname.replace(/^\/ro(?=\/)/, '');
-  if (language === 'en') return cleanPath || '/';
-  return cleanPath === '/' ? '/ro' : `/ro${cleanPath}`;
-}
-
-function languageCookie(language: 'en' | 'ro'): string {
-  return `${LANGUAGE_COOKIE}=${language}; Path=/; Max-Age=${LANGUAGE_COOKIE_MAX_AGE}; SameSite=Lax; Secure`;
+  return new Response(null, { status: 302, headers });
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = context.url;
 
   // Enforce a single canonical host/scheme in the app itself, not just at
-  // Cloudflare's edge - a DNS/redirect-rule misconfiguration there
-  // shouldn't be the only thing standing between visitors and the apex
-  // domain or plain HTTP. Left alone in local dev, where the hostname is
-  // never the production one.
+  // Cloudflare's edge. Local development is intentionally left alone.
   if (!LOCAL_HOSTS.has(url.hostname) && (url.hostname !== CANONICAL_HOST || url.protocol !== 'https:')) {
     const canonicalUrl = new URL(url);
     canonicalUrl.protocol = 'https:';
@@ -70,47 +59,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return Response.redirect(canonicalUrl.toString(), 301);
   }
 
-  let languageToPersist: 'en' | 'ro' | null = null;
-
   if (isLocalisedPageRequest(context.request, url.pathname)) {
     const explicitLanguage = url.searchParams.get('lang');
     if (explicitLanguage === 'en' || explicitLanguage === 'ro') {
-      // A manual choice always wins over geolocation. Store it, then remove
-      // the control query parameter so canonical/shared URLs remain clean.
-      const target = new URL(url);
-      target.searchParams.delete('lang');
-      target.pathname = withLanguage(url.pathname, explicitLanguage);
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: target.toString(),
-          'Set-Cookie': languageCookie(explicitLanguage),
-          'Cache-Control': 'private, no-store',
-        },
-      });
+      // The language switcher is an explicit user choice and is the only
+      // path that persists a language preference.
+      return languageRedirect(url, explicitLanguage, true);
     }
 
-    const saved = getCookieValue(context.request.headers.get('cookie'), LANGUAGE_COOKIE);
-    // Country is the automatic source of truth. Browser UI language is
-    // intentionally ignored: RO/MD visitors default to Romanian and all
-    // other countries default to English. A saved manual choice still wins.
-    const preferredLanguage = saved === 'en' || saved === 'ro' ? saved : languageFromCountry(context.request);
+    // An explicit /ro URL is itself an explicit language request. Always
+    // honour it regardless of the visitor's country or a previous preference.
+    // This keeps shared/bookmarked Romanian URLs stable and avoids geo loops.
+    if (!hasRomanianPrefix(url.pathname)) {
+      const manualLanguage = getManualLanguage(context.request);
+      const preferredLanguage = manualLanguage ?? automaticLanguage(context.request);
 
-    const currentLanguage: 'en' | 'ro' = url.pathname === '/ro' || url.pathname.startsWith('/ro/') ? 'ro' : 'en';
-
-    if (!saved) languageToPersist = preferredLanguage;
-
-    if (preferredLanguage !== currentLanguage) {
-      const target = new URL(url);
-      target.pathname = withLanguage(url.pathname, preferredLanguage);
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: target.toString(),
-          'Set-Cookie': languageCookie(preferredLanguage),
-          'Cache-Control': 'private, no-store',
-        },
-      });
+      // Only unprefixed URLs need automatic routing. English is canonical at
+      // the root, while RO/MD visitors without a manual preference are sent
+      // to the matching /ro route. The automatic country result is NOT saved,
+      // so travelling from the UK to Romania (or vice versa) is re-evaluated.
+      if (preferredLanguage === 'ro') {
+        return languageRedirect(url, 'ro');
+      }
     }
   }
 
@@ -121,10 +91,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     headers.set(name, value);
   }
 
-  headers.set('Cache-Control', languageToPersist ? 'private, no-store' : getCacheControl(context.url.pathname));
-  if (languageToPersist) {
-    headers.append('Set-Cookie', languageCookie(languageToPersist));
-  }
+  headers.set('Cache-Control', getCacheControl(context.url.pathname));
 
   return new Response(response.body, {
     status: response.status,
