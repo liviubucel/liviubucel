@@ -38,18 +38,20 @@ jobs:
           SANITY_DATASET: ${{ vars.SANITY_DATASET }}
           SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
 
-      - name: Create missing English counterparts
-        run: pnpm blog:translate -- --to en --limit "${LIMIT}"
-        env:
-          LIMIT: ${{ github.event.inputs.limit || '20' }}
-          PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
-          SANITY_DATASET: ${{ vars.SANITY_DATASET }}
-          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Complete missing English and Romanian counterparts
+        shell: bash
+        run: |
+          set +e
+          pnpm blog:translate -- --to en --limit "${LIMIT}"
+          en_status=$?
+          pnpm blog:translate -- --to ro --limit "${LIMIT}"
+          ro_status=$?
+          set -e
 
-      - name: Create missing Romanian counterparts
-        run: pnpm blog:translate -- --to ro --limit "${LIMIT}"
+          if [ "${en_status}" -ne 0 ] || [ "${ro_status}" -ne 0 ]; then
+            echo "::error::One or more translation directions reported failures (EN=${en_status}, RO=${ro_status})."
+            exit 1
+          fi
         env:
           LIMIT: ${{ github.event.inputs.limit || '20' }}
           PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
