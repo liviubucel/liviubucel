@@ -1,11 +1,17 @@
-// Blog seed script - reads all deleted blog posts from git history and uploads to Sanity
+// Blog seed script - reads recovered blog posts from git history and uploads them to Sanity.
+// Requires SANITY_API_WRITE_TOKEN in the environment. Never hardcode credentials here.
 import { execSync } from "child_process";
 
-const PROJECT_ID = "8atrdwjk";
-const DATASET = "production";
-const TOKEN = "skhSbfwhqC6JYYN4IkNIjz4iPJRPKCAQsmI6xVm8IzKEHNCqHb7fic2G64RfiZiPeBcxUUAjhyX0fPUiF6TLme8wW6lX3qNJsqbUXZdhsFa0dVbstmXQ2UzJcs3lBWmOl5CuAmzllDOoiX0o0rtf3MIswf6DbrvvpG0epaxmIyRGuq6m2wkT";
+const PROJECT_ID = process.env.SANITY_PROJECT_ID || "8atrdwjk";
+const DATASET = process.env.SANITY_DATASET || "production";
+const TOKEN = process.env.SANITY_API_WRITE_TOKEN;
 const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2024-03-15/data/mutate/${DATASET}`;
-const GIT_PARENT_COMMIT = "217993f"; // commit before deletion
+const GIT_PARENT_COMMIT = "217993f";
+
+if (!TOKEN) {
+  console.error("Missing SANITY_API_WRITE_TOKEN.");
+  process.exit(1);
+}
 
 const blogFiles = [
   "brea-salesloft-drift-salesforce-impactul-asupra-cloudflare-cronologie-complet-i-ghid-de-rspuns.md",
@@ -38,9 +44,9 @@ async function mutate(mutations) {
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return { title: "Unknown", description: "", pubDate: null, body: raw };
-  
+
   const frontmatter = {};
-  match[1].split("\n").forEach(line => {
+  match[1].split("\n").forEach((line) => {
     const colonIdx = line.indexOf(":");
     if (colonIdx === -1) return;
     const key = line.slice(0, colonIdx).trim();
@@ -56,46 +62,45 @@ function filenameToSlug(filename) {
   return filename.replace(".md", "");
 }
 
-function textToBlocks(text) {
-  // Remove the Odoo JSON wrapper if present
-  let cleaned = text;
-  
-  // Try to extract en_US content if it's the Odoo format
-  const odooMatch = text.match(/"en_US":\s*"([\s\S]*)"/);
-  if (odooMatch) {
-    cleaned = odooMatch[1];
-  }
+function detectLanguage(title, body, filename) {
+  const text = `${title || ""} ${body || ""} ${filename || ""}`.toLowerCase();
+  const diacritics = text.match(/[ăâîșşțţ]/g)?.length ?? 0;
+  const words = text.match(/\b(și|este|pentru|despre|cum|care|din|în|securitate|vulnerabilitate|atac|ghid|după|fără)\b/g)?.length ?? 0;
+  return diacritics + words >= 2 ? "ro" : "en";
+}
 
-  // Convert to lines and create paragraph blocks
+function textToBlocks(text) {
+  let cleaned = text;
+  const odooMatch = text.match(/"en_US":\s*"([\s\S]*)"/);
+  if (odooMatch) cleaned = odooMatch[1];
+
   const lines = cleaned
     .split(/\n+/)
-    .map(l => l.trim())
-    .filter(l => l.length > 0 && l !== '"}');
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && line !== '"}');
 
-  if (lines.length === 0) return [{
-    _type: "block",
-    _key: "block-0",
-    style: "normal",
-    children: [{ _type: "span", _key: "span-0", text: text.slice(0, 500), marks: [] }],
-    markDefs: [],
-  }];
+  if (lines.length === 0) {
+    return [{
+      _type: "block",
+      _key: "block-0",
+      style: "normal",
+      children: [{ _type: "span", _key: "span-0", text: text.slice(0, 500), marks: [] }],
+      markDefs: [],
+    }];
+  }
 
   return lines.slice(0, 100).map((line, i) => {
-    // Detect headings
     let style = "normal";
     let cleanLine = line;
-    
+
     if (line.startsWith("### ")) { style = "h3"; cleanLine = line.slice(4); }
     else if (line.startsWith("## ")) { style = "h2"; cleanLine = line.slice(3); }
     else if (line.startsWith("# ")) { style = "h1"; cleanLine = line.slice(2); }
     else if (line.startsWith("##### ")) { style = "h5"; cleanLine = line.slice(6); }
     else if (line.startsWith("#### ")) { style = "h4"; cleanLine = line.slice(5); }
 
-    // Remove markdown bold/italic
     cleanLine = cleanLine.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1");
-    // Remove HTML tags
     cleanLine = cleanLine.replace(/<[^>]+>/g, "");
-    // Remove image references
     if (cleanLine.startsWith("![")) return null;
 
     cleanLine = cleanLine.trim();
@@ -112,39 +117,38 @@ function textToBlocks(text) {
 }
 
 async function seedBlogs() {
-  console.log("📚 Seeding all blog posts from git history...\n");
-  
+  console.log("Seeding recovered blog posts from git history...\n");
+
   for (const filename of blogFiles) {
     const slug = filenameToSlug(filename);
-    console.log(`→ Processing: ${filename.slice(0, 60)}...`);
-    
+    console.log(`Processing: ${filename.slice(0, 60)}...`);
+
     let rawContent = "";
     try {
       rawContent = execSync(
         `git show "${GIT_PARENT_COMMIT}:src/data/blog/${filename}"`,
         { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 }
       );
-    } catch (e) {
-      console.log(`  ⚠ Could not read from ${GIT_PARENT_COMMIT}, trying other commits...`);
+    } catch {
       try {
-        rawContent = execSync(
+        const commitHash = execSync(
           `git log --all --format="%H" -- "src/data/blog/${filename}" | head -1`,
           { encoding: "utf8" }
         ).trim();
-        const commitHash = rawContent.trim();
         const parentHash = execSync(`git rev-parse ${commitHash}^`, { encoding: "utf8" }).trim();
         rawContent = execSync(
           `git show "${parentHash}:src/data/blog/${filename}"`,
           { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 }
         );
-      } catch (e2) {
-        console.log(`  ✗ Could not recover ${filename}`);
+      } catch {
+        console.log(`Could not recover ${filename}`);
         continue;
       }
     }
 
     const { title, description, pubDate, body } = parseFrontmatter(rawContent);
     const blocks = textToBlocks(body || "");
+    const language = detectLanguage(title, body, filename);
 
     try {
       await mutate([{
@@ -154,17 +158,22 @@ async function seedBlogs() {
           title: title || "Untitled",
           slug: { _type: "slug", current: slug },
           description: description || "",
+          language,
+          published: true,
           pubDate: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
           body: blocks,
         },
       }]);
-      console.log(`  ✅ Uploaded: "${title?.slice(0, 60)}"\n`);
-    } catch (e) {
-      console.error(`  ✗ Failed to upload ${slug}:`, e.message);
+      console.log(`Uploaded (${language.toUpperCase()}): "${title?.slice(0, 60)}"\n`);
+    } catch (error) {
+      console.error(`Failed to upload ${slug}:`, error.message);
     }
   }
 
-  console.log("🎉 All blog posts seeded! Go to https://liviubucel.sanity.studio/");
+  console.log("All recovered blog posts seeded.");
 }
 
-seedBlogs().catch(console.error);
+seedBlogs().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

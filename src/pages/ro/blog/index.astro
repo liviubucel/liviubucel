@@ -1,6 +1,6 @@
 ---
 import { env } from 'cloudflare:workers';
-import { DEFAULT_LANGUAGE, type Language } from '../../../lib/i18n';
+import type { Language } from '../../../lib/i18n';
 import Seo from '../../../components/Seo.astro';
 import { getPosts, getPageSeo } from '../../../lib/sanity-queries';
 import Layout from '../../../layouts/Layout.astro';
@@ -12,7 +12,6 @@ import { RECORD_TYPE_LABEL_RO } from '../../../lib/cyber-monitor/labels';
 export const prerender = false;
 
 const lang: Language = 'ro';
-const isRO = true;
 
 interface Post {
   id: string;
@@ -25,20 +24,15 @@ interface Post {
 
 let posts: Post[] = [];
 try {
-  // Try RO posts first, fall back to EN (Sanity RO translation is not
-  // wired up yet - see docs/romania-cyber-monitor.md).
-  let allPosts = await getPosts(lang);
-  if (allPosts.length === 0) {
-    allPosts = await getPosts('en');
-  }
-  posts = allPosts.map(p => ({
+  const allPosts = await getPosts(lang);
+  posts = allPosts.map((p) => ({
     id: p.slug,
     title: p.title,
     pubDate: p.pubDate,
     excerpt: p.description,
   }));
 } catch (error) {
-  console.warn('Failed to fetch posts from Sanity:', error);
+  console.warn('Failed to fetch Romanian posts from Sanity:', error);
 }
 
 try {
@@ -68,7 +62,6 @@ const seoDescription = seo?.description || "Articole de securitate cibernetică,
   import { loaderAnimation } from '../../../lib/constants';
 
   const sequence = [loaderAnimation];
-
   animate(sequence as AnimationSequence);
 </script>
 
@@ -85,19 +78,15 @@ const seoDescription = seo?.description || "Articole de securitate cibernetică,
     ogImage={seo?.ogImage}
     canonical={`${SITE.site.url}ro/blog`}
   />
-  <main
-    class="w-screen h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8"
-  >
+  <main class="w-screen h-screen flex flex-col justify-start items-start max-w-3xl mx-auto p-8">
     <a
       class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg"
       href="/ro/">Înapoi</a
     >
-    <h1 class="text-4xl font-bold mb-4 text-neutral-100">
-      Articole
-    </h1>
-    <ul class="w-full">
-      {
-        posts?.map((post) => (
+    <h1 class="text-4xl font-bold mb-4 text-neutral-100">Articole</h1>
+    {posts.length > 0 ? (
+      <ul class="w-full">
+        {posts.map((post) => (
           <PostRow
             date={post.pubDate ? new Date(post.pubDate) : new Date()}
             id={post.id}
@@ -107,8 +96,10 @@ const seoDescription = seo?.description || "Articole de securitate cibernetică,
             badge={post.badge}
             excerpt={post.excerpt}
           />
-        ))
-      }
-    </ul>
+        ))}
+      </ul>
+    ) : (
+      <p class="text-neutral-400">Nu există încă articole publicate în limba română.</p>
+    )}
   </main>
 </Layout>

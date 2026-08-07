@@ -1,12 +1,12 @@
 // Blog post translation backfill - selects every published English post
 // with no published Romanian counterpart yet and translates it via
-// Cloudflare Workers AI (translatePostFields/translatePostBody), then
-// publishes the result as a sibling Sanity document (same slug,
-// language: 'ro'). Safe to call repeatedly/on a schedule: only ever
-// selects EN posts still missing a RO counterpart.
+// Cloudflare Workers AI, then publishes the result as a sibling Sanity
+// document using the same slug and language:'ro'.
 //
-// Runs entirely inside the Worker via the native `env.AI` binding and a
-// Sanity write token passed through `env` - no GitHub Actions run needed.
+// A Romanian document is published only when both metadata and body
+// translation complete successfully. We never publish an English body under
+// a Romanian URL because that hides translation failures and produces
+// misleading language metadata.
 
 import { createClient, type SanityClient } from '@sanity/client';
 import { translatePostFields, translatePostBody, type PortableTextBlock } from './translate';
@@ -33,15 +33,16 @@ interface EnPostCandidate {
   body?: PortableTextBlock[];
 }
 
+type FailureReason = 'fields_translation_failed' | 'body_translation_failed' | 'persist_failed';
+
 export interface BlogBackfillResult {
   candidates: number;
   translated: number;
-  /** Published, but the body translation failed/was skipped so the post
-   * keeps its English body under a Romanian title/SEO fields - better than
-   * nothing, and a clear signal of exactly what still needs a retry. */
+  /** Kept for backwards-compatible API responses. Partial mixed-language
+   * publications are no longer created, so this is always empty. */
   partial: string[];
   failed: number;
-  failedSlugs: { slug: string; reason: 'fields_translation_failed' | 'persist_failed' }[];
+  failedSlugs: { slug: string; reason: FailureReason }[];
 }
 
 export function getSanityWriteClient(env: Record<string, unknown>): SanityClient | null {
@@ -86,8 +87,7 @@ export async function backfillBlogTranslations(
 
   let translated = 0;
   let failed = 0;
-  const partial: string[] = [];
-  const failedSlugs: { slug: string; reason: 'fields_translation_failed' | 'persist_failed' }[] = [];
+  const failedSlugs: { slug: string; reason: FailureReason }[] = [];
 
   for (const post of candidates) {
     // eslint-disable-next-line no-await-in-loop
@@ -105,12 +105,14 @@ export async function backfillBlogTranslations(
       continue;
     }
 
-    // A failed body translation isn't fatal - publish with the English body
-    // rather than losing the (already-translated) RO title/SEO fields too.
     // eslint-disable-next-line no-await-in-loop
     const translatedBody = await translatePostBody(env, post.body);
-    const bodyFellBack = translatedBody === null && !!post.body?.length;
-    const body = translatedBody ?? post.body;
+    if (post.body?.length && translatedBody === null) {
+      console.error(`[blog] refusing to publish mixed-language RO post for ${post.slug}: body translation failed.`);
+      failed += 1;
+      failedSlugs.push({ slug: post.slug, reason: 'body_translation_failed' });
+      continue;
+    }
 
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -127,11 +129,10 @@ export async function backfillBlogTranslations(
         category: post.category,
         author: post.author,
         featuredImage: post.featuredImage,
-        body,
+        body: translatedBody ?? post.body,
         published: true,
       });
       translated += 1;
-      if (bodyFellBack) partial.push(post.slug);
     } catch (error) {
       console.error(`[blog] failed to persist RO translation for ${post.slug}:`, error);
       failed += 1;
@@ -139,5 +140,5 @@ export async function backfillBlogTranslations(
     }
   }
 
-  return { candidates: candidates.length, translated, partial, failed, failedSlugs };
+  return { candidates: candidates.length, translated, partial: [], failed, failedSlugs };
 }

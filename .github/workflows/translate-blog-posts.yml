@@ -1,22 +1,20 @@
-name: Translate blog posts to Romanian
+name: Repair and translate blog posts
 
 on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Max posts to translate in this run (each run only picks up untranslated ones, so re-running is safe)"
+        description: "Max missing counterparts to create per language"
         required: false
-        default: "10"
+        default: "20"
   schedule:
-    # Daily at 05:00 UTC - picks up anything published (manually or by the
-    # daily-blog pipeline) since the last run. A no-op when nothing is new.
     - cron: "0 5 * * *"
 
 jobs:
   translate:
-    name: Translate untranslated posts
+    name: Normalize metadata and complete EN/RO pairs
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
@@ -25,12 +23,37 @@ jobs:
         with:
           node-version: 22
 
-      - run: pnpm install --frozen-lockfile
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
 
-      - name: Translate posts missing a Romanian version
-        run: npm run blog:translate -- --limit "${LIMIT}"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Normalize legacy blog metadata
+        run: pnpm blog:normalize
         env:
-          LIMIT: ${{ github.event.inputs.limit || '10' }}
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ vars.SANITY_DATASET }}
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+
+      - name: Complete missing English and Romanian counterparts
+        shell: bash
+        run: |
+          set +e
+          pnpm blog:translate -- --to en --limit "${LIMIT}"
+          en_status=$?
+          pnpm blog:translate -- --to ro --limit "${LIMIT}"
+          ro_status=$?
+          set -e
+
+          if [ "${en_status}" -ne 0 ] || [ "${ro_status}" -ne 0 ]; then
+            echo "::error::One or more translation directions reported failures (EN=${en_status}, RO=${ro_status})."
+            exit 1
+          fi
+        env:
+          LIMIT: ${{ github.event.inputs.limit || '20' }}
           PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
           SANITY_DATASET: ${{ vars.SANITY_DATASET }}
           SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
