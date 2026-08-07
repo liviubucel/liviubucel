@@ -20,8 +20,10 @@
     "security:scan": "node scripts/security-scan.mjs",
     "security:audit": "pnpm audit --prod --audit-level high",
     "sitemap:generate": "SITE_URL=https://www.liviubucel.com/ node scripts/generate-sitemap.mjs",
+    "blog:normalize": "node scripts/normalize-blog-metadata.mjs",
     "blog:generate": "node scripts/generate-daily-blog.mjs",
-    "blog:translate": "node scripts/translate-blog-posts.mjs"
+    "blog:translate": "node scripts/translate-blog-posts.mjs",
+    "blog:translate-en": "node scripts/translate-blog-posts-to-english.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
