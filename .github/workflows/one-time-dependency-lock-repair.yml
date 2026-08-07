@@ -1,0 +1,63 @@
+name: One-time dependency lock repair
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 20 7 8 *'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    name: Regenerate and audit pnpm lockfiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout security branch
+        uses: actions/checkout@v6
+        with:
+          ref: agent/harden-dependency-security
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Regenerate root lockfile from security overrides
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+
+      - name: Regenerate isolated Sanity Studio lockfile
+        run: pnpm install --ignore-workspace --lockfile-only --no-frozen-lockfile
+        working-directory: studio-liviubucel
+
+      - name: Validate generated diff
+        run: |
+          git diff --check
+          git status --short
+
+      - name: Commit regenerated lockfiles to security PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml studio-liviubucel/pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "Lockfiles already match the security overrides."
+          else
+            git commit -m "security: regenerate pnpm locks with patched transitive dependencies"
+            git push origin HEAD:agent/harden-dependency-security
+          fi
+
+      - name: Audit root dependency graph (moderate+)
+        run: pnpm audit --audit-level moderate
+
+      - name: Audit Studio dependency graph (moderate+)
+        run: pnpm audit --ignore-workspace --audit-level moderate
+        working-directory: studio-liviubucel
