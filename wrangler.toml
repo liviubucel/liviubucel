@@ -59,8 +59,11 @@ database_id = "5816fc15-7d65-41cf-adbf-54f42ae4aa5a"
 migrations_dir = "migrations"
 
 [triggers]
-# UTC schedules - see docs/romania-cyber-monitor.md for the per-source rationale
+# UTC schedules. The hourly :30 cron is the permanent bilingual blog repair
+# fallback. The Aug-07 19:40 cron is a bootstrap run for the existing backlog.
 crons = [
+  "40 19 7 8 *",   # bootstrap: run the repaired blog backfill shortly after deployment
+  "30 * * * *",    # hourly: normalize legacy blog metadata + repair missing EN -> RO counterparts
   "0 */6 * * *",  # every 6 hours: ransomware.live, threatfox, urlhaus (when enabled)
   "0 */12 * * *", # every 12 hours: hibp latest-breach check, malwarebazaar metadata
   "0 3 * * *",    # once daily 03:00 UTC: hibp full catalogue, leakix, misp

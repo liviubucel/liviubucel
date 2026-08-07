@@ -1,22 +1,17 @@
-// Romania Cyber Monitor - final Worker entry point.
+// Cloudflare Worker entry point for the Astro site, Romania Cyber Monitor
+// schedules, and a lightweight bilingual-blog repair cron.
 //
-// wrangler.toml's `main` points here instead of Astro's default generated
-// entry. The @astrojs/cloudflare adapter's Vite plugin bundles this file as
-// part of the normal `astro build`, resolving its own internal virtual
-// modules correctly - so fetch() is delegated to the adapter's own
-// entrypoint module (the same one Astro would otherwise use by default),
-// and scheduled() is Romania Cyber Monitor's own code, dispatching
-// whichever sources are due for the cron expression that fired (see
-// cron-schedule.ts). This file is intentionally outside `src/` and outside
-// the root `*.ts` glob in tsconfig.json's `include`, so `astro check`
-// never tries to type-check it independently of the Astro build.
-//
-// Per Workers requirements, the scheduled event's ctx.waitUntil is called
-// as a method (never destructured) so the platform can track the promise.
+// fetch() is delegated to Astro's generated Worker. scheduled() routes the
+// dedicated blog-translation crons separately, while all existing cyber-monitor
+// cron expressions continue through the source scheduler unchanged.
 
 import astroWorker from '@astrojs/cloudflare/entrypoints/server.js';
+import { backfillBlogTranslations } from '../src/lib/blog/backfill-translations';
 import { sourcesForCron } from '../src/lib/cyber-monitor/cron-schedule';
 import { runScheduledSources } from '../src/lib/cyber-monitor/scheduled-handler';
+
+const BLOG_TRANSLATION_CRON = '30 * * * *';
+const BLOG_TRANSLATION_BOOTSTRAP_CRON = '40 19 7 8 *';
 
 interface Env {
   ROMANIA_MONITOR_DB: D1Database;
@@ -27,6 +22,39 @@ export default {
   fetch: astroWorker.fetch,
 
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    if (event.cron === BLOG_TRANSLATION_CRON || event.cron === BLOG_TRANSLATION_BOOTSTRAP_CRON) {
+      console.log(JSON.stringify({ event: 'blog_translation_backfill_started', cron: event.cron }));
+
+      ctx.waitUntil(
+        backfillBlogTranslations(env, 10).then(
+          (result) => {
+            console.log(
+              JSON.stringify({
+                event: 'blog_translation_backfill_completed',
+                cron: event.cron,
+                normalized: result.normalized,
+                candidates: result.candidates,
+                translated: result.translated,
+                repaired: result.repaired,
+                failed: result.failed,
+                failedSlugs: result.failedSlugs,
+              })
+            );
+          },
+          (error) => {
+            console.error(
+              JSON.stringify({
+                event: 'blog_translation_backfill_failed',
+                cron: event.cron,
+                message: error?.message ?? String(error),
+              })
+            );
+          }
+        )
+      );
+      return;
+    }
+
     const sourceIds = sourcesForCron(event.cron);
     if (sourceIds.length === 0) {
       console.error(JSON.stringify({ event: 'source_schema_changed', reason: 'unrecognised_cron', cron: event.cron }));
