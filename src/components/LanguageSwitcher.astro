@@ -9,11 +9,14 @@ interface Props {
 const { currentLang, pathname } = Astro.props;
 
 const getLanguageUrl = (lang: Language): string => {
-  const cleanPath = pathname.replace(/^\/(ro)/, '');
-  if (lang === DEFAULT_LANGUAGE) {
-    return cleanPath || '/';
-  }
-  return `/${lang}${cleanPath}` || `/${lang}`;
+  // Remove only the real /ro locale prefix, never the "ro" at the start of
+  // words such as /romania-cyber-monitor.
+  const cleanPath = pathname.replace(/^\/ro(?=\/|$)/, '');
+  const targetPath = lang === DEFAULT_LANGUAGE ? cleanPath || '/' : `/${lang}${cleanPath}` || `/${lang}`;
+
+  // Middleware consumes this one-time parameter, stores the explicit user
+  // preference, then redirects to the clean canonical URL.
+  return `${targetPath}${targetPath.includes('?') ? '&' : '?'}lang=${lang}`;
 };
 ---
 
