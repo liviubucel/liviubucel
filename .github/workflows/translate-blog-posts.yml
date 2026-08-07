@@ -8,15 +8,13 @@ on:
         required: false
         default: "10"
   schedule:
-    # Daily at 05:00 UTC - picks up anything published (manually or by the
-    # daily-blog pipeline) since the last run. A no-op when nothing is new.
     - cron: "0 5 * * *"
 
 jobs:
   translate:
     name: Translate untranslated posts
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v6
@@ -25,10 +23,16 @@ jobs:
         with:
           node-version: 22
 
-      - run: pnpm install --frozen-lockfile
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Translate posts missing a Romanian version
-        run: npm run blog:translate -- --limit "${LIMIT}"
+        run: pnpm blog:translate -- --limit "${LIMIT}"
         env:
           LIMIT: ${{ github.event.inputs.limit || '10' }}
           PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
