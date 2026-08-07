@@ -30,7 +30,7 @@ jobs:
       - name: Enable pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@10.33.0 --activate
+          corepack prepare pnpm@10.34.0 --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -84,8 +84,6 @@ jobs:
             HEADER_ARGS+=(-H "X-Cyber-Monitor-Bypass: ${WAF_BYPASS_TOKEN}")
           fi
 
-          # Cache-bust the SSR checks so a stale edge object cannot make a bad
-          # deployment look healthy.
           HOME=$(curl -fsSL "${HEADER_ARGS[@]}" "${BASE}/?deploy_sha=${GITHUB_SHA}")
           EXPERIENCE=$(curl -fsSL "${HEADER_ARGS[@]}" "${BASE}/experience?deploy_sha=${GITHUB_SHA}")
 
@@ -102,8 +100,6 @@ jobs:
             exit 1
           fi
 
-          # Manual language selection is deterministic and therefore suitable
-          # for a CI smoke test even though the runner's physical country is not.
           HEADERS=$(curl -sS -D - -o /dev/null "${HEADER_ARGS[@]}" "${BASE}/romania-cyber-monitor?lang=ro")
           LOCATION=$(printf '%s\n' "$HEADERS" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $2); print $2; exit}')
           if [ "$LOCATION" != "${BASE}/ro/romania-cyber-monitor" ]; then
