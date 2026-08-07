@@ -1,10 +1,10 @@
-name: Translate blog posts to Romanian
+name: Repair and translate blog posts
 
 on:
   workflow_dispatch:
     inputs:
       limit:
-        description: "Max posts to translate in this run (each run only picks up untranslated ones, so re-running is safe)"
+        description: "Max missing counterparts to create per direction"
         required: false
         default: "10"
   schedule:
@@ -12,9 +12,9 @@ on:
 
 jobs:
   translate:
-    name: Translate untranslated posts
+    name: Normalize metadata and complete EN/RO pairs
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v6
@@ -31,7 +31,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Translate posts missing a Romanian version
+      - name: Normalize legacy Sanity post metadata
+        run: pnpm blog:normalize
+        env:
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ vars.SANITY_DATASET }}
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+
+      - name: Create missing English counterparts for Romanian-only posts
+        run: pnpm blog:translate-en -- --limit "${LIMIT}"
+        env:
+          LIMIT: ${{ github.event.inputs.limit || '10' }}
+          PUBLIC_SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ vars.SANITY_DATASET }}
+          SANITY_API_WRITE_TOKEN: ${{ secrets.SANITY_API_WRITE_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Create missing Romanian counterparts for English posts
         run: pnpm blog:translate -- --limit "${LIMIT}"
         env:
           LIMIT: ${{ github.event.inputs.limit || '10' }}
