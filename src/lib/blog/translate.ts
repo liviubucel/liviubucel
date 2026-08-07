@@ -1,10 +1,6 @@
 // Blog post EN -> RO translation via Cloudflare Workers AI, using the
-// native `env.AI` binding (no separate REST API token needed, unlike the
-// standalone scripts/translate-blog-posts.mjs script this replaces as the
-// primary path). Two passes: plain fields (title/description/keywords/tags),
-// and Portable Text body content - the body is translated by extracting only
-// the raw span strings, never the block structure, so translation can't
-// corrupt marks, list nesting, or block ordering.
+// native `env.AI` binding. Metadata and Portable Text body are translated
+// separately so long-form bodies can be chunked without corrupting structure.
 
 const PRIMARY_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
@@ -13,14 +9,16 @@ const FIELDS_SYSTEM_PROMPT = [
   'You are a professional Romanian translator for a cybersecurity blog.',
   'Translate the given English JSON object into natural, professional Romanian, keeping the exact same JSON shape and keys.',
   'Preserve technical terms, product names, and acronyms unchanged where a literal translation would be non-standard.',
-  'Do not add, remove, or embellish any factual content - translate only what is present.',
+  'Do not add, remove, summarize, or embellish factual content - translate only what is present.',
+  'Empty strings must remain empty strings.',
   'Respond with the JSON object only, nothing else.',
 ].join(' ');
 
 const BODY_SYSTEM_PROMPT = [
   'You are a professional Romanian translator for a cybersecurity blog.',
   'Translate each string in this JSON array from English to Romanian, preserving order and array length exactly.',
-  'Preserve technical terms, product names, and acronyms unchanged where a literal translation would be non-standard.',
+  'Preserve technical terms, product names, commands, CVE identifiers, URLs, acronyms, and code unchanged where appropriate.',
+  'Do not summarize, shorten, expand, or add information.',
   'Respond with a JSON array of the same length containing only the translated strings, nothing else.',
 ].join(' ');
 
@@ -87,8 +85,6 @@ async function runWithFallback(ai: AiBinding, systemPrompt: string, userContent:
   }
 }
 
-/** Translates title/description/metaDescription/keywords/tags. Returns null
- * (never throws) if the AI binding isn't configured or both models fail. */
 export async function translatePostFields(
   env: Record<string, unknown>,
   fields: TranslatablePostFields
@@ -104,7 +100,7 @@ export async function translatePostFields(
 
   try {
     const parsed = JSON.parse(json) as Partial<TranslatablePostFields>;
-    if (typeof parsed.title !== 'string' || typeof parsed.description !== 'string' || !parsed.title.trim() || !parsed.description.trim()) {
+    if (typeof parsed.title !== 'string' || !parsed.title.trim() || typeof parsed.description !== 'string') {
       return null;
     }
     return {
@@ -119,12 +115,6 @@ export async function translatePostFields(
   }
 }
 
-// Long-form blog posts can easily add up to tens of spans / thousands of
-// characters - sending them all in a single model call risks hitting the
-// model's output-token limit, which truncates the JSON response mid-array
-// and makes the whole translation unparsable. Chunk by a conservative
-// character budget instead of a flat span count, since a handful of long
-// paragraphs can blow the budget just as easily as many short ones.
 const BODY_CHUNK_CHAR_BUDGET = 2000;
 
 function chunkSpansByCharBudget(spans: PortableTextSpan[]): PortableTextSpan[][] {
@@ -168,11 +158,6 @@ async function translateSpanChunk(ai: AiBinding, chunk: PortableTextSpan[]): Pro
   }
 }
 
-/** Translates a Portable Text body's span strings in place, returning a deep
- * copy, chunked to stay within the model's output-token budget. Returns null
- * (never throws) if the AI binding isn't configured or any chunk fails to
- * translate - callers should treat that as "keep the English body" rather
- * than publishing a body mixing both languages. */
 export async function translatePostBody(
   env: Record<string, unknown>,
   body: PortableTextBlock[] | undefined
