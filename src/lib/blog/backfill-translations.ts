@@ -3,10 +3,10 @@
 // is still effectively English, translates them through the native Workers AI
 // binding, and persists a proper Romanian sibling using the same slug.
 //
-// Before selecting candidates we also normalize safe legacy Sanity metadata
-// created by the historical seed script: missing language is inferred from
-// content and only known recovered public `post-*` documents are promoted to
-// published when they have a date and body.
+// Before selecting candidates we normalize safe legacy Sanity metadata created
+// by the historical seed script: missing language is inferred from content and
+// only known recovered public `post-*` documents are promoted to published when
+// they have a date and non-empty body.
 
 import { createClient, type SanityClient } from '@sanity/client';
 import { translatePostFields, translatePostBody, type PortableTextBlock } from './translate';
@@ -28,7 +28,7 @@ interface BlogPostBase {
 
 interface EnPostCandidate extends BlogPostBase {
   title: string;
-  description: string;
+  description?: string;
   metaDescription?: string;
   keywords?: string[];
   tags?: string[];
@@ -200,7 +200,7 @@ export async function backfillBlogTranslations(
     // eslint-disable-next-line no-await-in-loop
     const fields = await translatePostFields(env, {
       title: post.title,
-      description: post.description,
+      description: post.description ?? '',
       metaDescription: post.metaDescription,
       keywords: post.keywords,
       tags: post.tags,
@@ -221,8 +221,7 @@ export async function backfillBlogTranslations(
       continue;
     }
 
-    const translatedDocument = {
-      _type: 'post' as const,
+    const translationFields = {
       title: fields.title,
       description: fields.description,
       metaDescription: fields.metaDescription,
@@ -241,13 +240,15 @@ export async function backfillBlogTranslations(
     try {
       const existing = roBySlug.get(post.slug);
       if (existing) {
+        // Do not try to patch Sanity system fields such as `_type` or `_id`.
         // eslint-disable-next-line no-await-in-loop
-        await client.patch(existing._id).set(translatedDocument).commit();
+        await client.patch(existing._id).set(translationFields).commit();
+        roBySlug.set(post.slug, { _id: existing._id, slug: post.slug, body: translationFields.body });
         repaired += 1;
       } else {
         // eslint-disable-next-line no-await-in-loop
-        const created = await client.create(translatedDocument);
-        roBySlug.set(post.slug, { _id: created._id, slug: post.slug, body: translatedDocument.body });
+        const created = await client.create({ _type: 'post', ...translationFields });
+        roBySlug.set(post.slug, { _id: created._id, slug: post.slug, body: translationFields.body });
         translated += 1;
       }
     } catch (error) {
