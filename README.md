@@ -13,7 +13,7 @@ The site is designed for cybersecurity recruiters, hiring managers, and potentia
 - Technical support and hosting infrastructure experience at ZebraByte
 - IT support experience at Intact Media Group
 - Practical cybersecurity labs and job simulations
-- BSc (Hons) Cyber Security at De Montfort University, expected July 2027
+- Focused on DFIR, security operations, security testing, and vulnerability research
 - Focused on practical cybersecurity work and selected technical collaborations
 
 ## Stack
