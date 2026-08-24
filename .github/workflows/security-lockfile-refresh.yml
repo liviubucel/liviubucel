@@ -1,0 +1,43 @@
+name: Temporary security lockfile refresh
+
+on:
+  push:
+    branches:
+      - security/public-repo-hardening-20260824
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-lockfiles:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+      - name: Refresh root lockfile
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Refresh Studio lockfile
+        run: pnpm install --ignore-workspace --lockfile-only --no-frozen-lockfile
+        working-directory: studio-liviubucel
+      - name: Commit lockfiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pnpm-lock.yaml studio-liviubucel/pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'security: refresh patched dependency lockfiles'
+          git push origin HEAD:security/public-repo-hardening-20260824
