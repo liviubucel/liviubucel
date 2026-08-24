@@ -6,15 +6,8 @@ import { issueToken } from '../../lib/cv-tokens';
 export const prerender = false;
 
 const EMAIL_PATTERN = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$/;
-const PHONE_PATTERN = /^[\d\s\-\+\(\)]{7,}$/;
-
-const MAX_LENGTH = {
-  fullname: 100,
-  email: 254,
-  phone: 20,
-  company: 100,
-} as const;
-
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 254;
 const MAX_REQUESTS_PER_DAY = 3;
 const TOKEN_EXPIRY_HOURS = 24;
 
@@ -120,10 +113,7 @@ const handleCvRequest: APIRoute = async ({ request }) => {
 
   const clientIp = getClientIp(request);
   if (!(await checkRateLimit(cfEnv.ROMANIA_MONITOR_DB, clientIp))) {
-    return Response.json(
-      { error: 'Too many requests. Please try again later.' },
-      { status: 429 },
-    );
+    return Response.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
@@ -135,8 +125,6 @@ const handleCvRequest: APIRoute = async ({ request }) => {
 
   const fullname = sanitize((body.fullname ?? '').toString());
   const email = sanitize((body.email ?? '').toString()).toLowerCase();
-  const phone = sanitize((body.phone ?? '').toString());
-  const company = sanitize((body.company ?? '').toString());
   const terms = Boolean(body.terms);
 
   if (!fullname || !email) {
@@ -147,21 +135,12 @@ const handleCvRequest: APIRoute = async ({ request }) => {
     return Response.json({ error: 'Please agree to the terms.' }, { status: 400 });
   }
 
-  if (
-    fullname.length > MAX_LENGTH.fullname ||
-    email.length > MAX_LENGTH.email ||
-    (phone && phone.length > MAX_LENGTH.phone) ||
-    (company && company.length > MAX_LENGTH.company)
-  ) {
+  if (fullname.length > MAX_NAME_LENGTH || email.length > MAX_EMAIL_LENGTH) {
     return Response.json({ error: 'One of the fields is too long.' }, { status: 400 });
   }
 
   if (!EMAIL_PATTERN.test(email)) {
     return Response.json({ error: 'Please enter a valid email address.' }, { status: 400 });
-  }
-
-  if (phone && !PHONE_PATTERN.test(phone)) {
-    return Response.json({ error: 'Please enter a valid phone number.' }, { status: 400 });
   }
 
   const expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
