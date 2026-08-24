@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
 import { env } from 'cloudflare:workers';
-import { registerToken } from '../../lib/cv-tokens';
+import { issueToken } from '../../lib/cv-tokens';
 
 export const prerender = false;
 
@@ -31,26 +31,47 @@ function sanitize(value: string): string {
   return value.replace(/[\x00-\x1f\x7f]/g, '').trim();
 }
 
-async function generateToken(): Promise<string> {
-  const timestamp = Date.now().toString();
-  const random = Math.random().toString(36).substring(2, 15);
-  const combined = `${timestamp}-${random}-${Date.now()}`;
-
-  const encoder = new TextEncoder();
-  const data = encoder.encode(combined);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-
-  return hashHex;
-}
-
 function getClientIp(request: Request): string {
   return (
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0] ||
     'unknown'
   ).trim();
+}
+
+function toHex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashRateLimitKey(ip: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(`cv-request-rate-limit:${ip}`),
+  );
+  return toHex(new Uint8Array(digest));
+}
+
+async function checkRateLimit(db: D1Database, ip: string): Promise<boolean> {
+  const now = Date.now();
+  const cutoff = now - 24 * 60 * 60 * 1000;
+  const ipHash = await hashRateLimitKey(ip);
+
+  await db.prepare('DELETE FROM cv_request_rate_limits WHERE requested_at < ?').bind(cutoff).run();
+
+  const result = await db
+    .prepare(
+      `INSERT INTO cv_request_rate_limits (ip_hash, requested_at)
+       SELECT ?, ?
+       WHERE (
+         SELECT COUNT(*)
+         FROM cv_request_rate_limits
+         WHERE ip_hash = ? AND requested_at >= ?
+       ) < ?`,
+    )
+    .bind(ipHash, now, ipHash, cutoff, MAX_REQUESTS_PER_DAY)
+    .run();
+
+  return (result.meta?.changes ?? 0) === 1;
 }
 
 interface CloudflareEnv {
@@ -64,55 +85,20 @@ interface CloudflareEnv {
       html: string;
     }) => Promise<void>;
   };
-  CV_TO_EMAIL?: string;
+  ROMANIA_MONITOR_DB?: D1Database;
   CV_FROM_EMAIL?: string;
   SITE_URL?: string;
-}
-
-interface CvRequest {
-  fullname: string;
-  email: string;
-  phone: string;
-  company: string;
-  token: string;
-  ipAddress: string;
-  requestedAt: number;
-  expiresAt: number;
-}
-
-interface RateLimitStore {
-  [ip: string]: Array<{ timestamp: number }>;
-}
-
-const rateLimitStore: RateLimitStore = {};
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const dayAgo = now - 24 * 60 * 60 * 1000;
-
-  if (!rateLimitStore[ip]) {
-    rateLimitStore[ip] = [];
-  }
-
-  rateLimitStore[ip] = rateLimitStore[ip].filter((req) => req.timestamp > dayAgo);
-
-  if (rateLimitStore[ip].length >= MAX_REQUESTS_PER_DAY) {
-    return false;
-  }
-
-  rateLimitStore[ip].push({ timestamp: now });
-  return true;
 }
 
 export const POST: APIRoute = async (context) => {
   try {
     return await handleCvRequest(context);
   } catch (error) {
-    console.error('[cv-request] Unhandled error', error);
+    console.error('[cv-request] Unhandled error');
     try {
       Sentry.captureException(error);
     } catch {
-      // ignore secondary Sentry failure
+      // Ignore secondary telemetry failure.
     }
     return Response.json(
       { error: 'Something went wrong. Please try again or contact directly.' },
@@ -122,17 +108,25 @@ export const POST: APIRoute = async (context) => {
 };
 
 const handleCvRequest: APIRoute = async ({ request }) => {
-  const clientIp = getClientIp(request);
+  const cfEnv = env as unknown as CloudflareEnv;
 
-  if (!checkRateLimit(clientIp)) {
+  if (!cfEnv.EMAIL || !cfEnv.ROMANIA_MONITOR_DB) {
+    console.error('[cv-request] Required service binding is not configured.');
     return Response.json(
-      { error: 'Too many requests. You can request a CV once per day. Please try again later.' },
+      { error: 'CV request service is temporarily unavailable. Please contact directly.' },
+      { status: 503 },
+    );
+  }
+
+  const clientIp = getClientIp(request);
+  if (!(await checkRateLimit(cfEnv.ROMANIA_MONITOR_DB, clientIp))) {
+    return Response.json(
+      { error: 'Too many requests. Please try again later.' },
       { status: 429 },
     );
   }
 
   let body: Record<string, unknown>;
-
   try {
     body = await request.json();
   } catch {
@@ -140,7 +134,7 @@ const handleCvRequest: APIRoute = async ({ request }) => {
   }
 
   const fullname = sanitize((body.fullname ?? '').toString());
-  const email = sanitize((body.email ?? '').toString());
+  const email = sanitize((body.email ?? '').toString()).toLowerCase();
   const phone = sanitize((body.phone ?? '').toString());
   const company = sanitize((body.company ?? '').toString());
   const terms = Boolean(body.terms);
@@ -170,35 +164,12 @@ const handleCvRequest: APIRoute = async ({ request }) => {
     return Response.json({ error: 'Please enter a valid phone number.' }, { status: 400 });
   }
 
-  const token = await generateToken();
-  const now = Date.now();
-  const expiresAt = now + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
+  const expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
+  const token = await issueToken(cfEnv.ROMANIA_MONITOR_DB, email, expiresAt);
 
-  const cvRequest: CvRequest = {
-    fullname,
-    email,
-    phone,
-    company,
-    token,
-    ipAddress: clientIp,
-    requestedAt: now,
-    expiresAt,
-  };
-
-  const cfEnv = env as unknown as CloudflareEnv;
-
-  if (!cfEnv?.EMAIL) {
-    console.error('[cv-request] EMAIL binding is not configured.');
-    return Response.json(
-      { error: 'CV request service is temporarily unavailable. Please contact directly.' },
-      { status: 503 },
-    );
-  }
-
-  const toEmail = cvRequest.email;
   const fromEmail = cfEnv.CV_FROM_EMAIL ?? 'noreply@liviubucel.com';
   const siteUrl = cfEnv.SITE_URL ?? 'https://www.liviubucel.com';
-  const downloadUrl = `${siteUrl}/api/cv/download?token=${token}`;
+  const downloadUrl = `${siteUrl}/api/cv/download?token=${encodeURIComponent(token)}`;
 
   const subject = 'Your CV is Ready for Download';
   const htmlContent = `
@@ -217,66 +188,37 @@ const handleCvRequest: APIRoute = async ({ request }) => {
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Your CV is Ready</h1>
-    </div>
-
+    <div class="header"><h1>Your CV is Ready</h1></div>
     <p>Hi ${escapeHtml(fullname)},</p>
-
-    <p>Thank you for requesting my CV. Your secure download link is ready and waiting for you.</p>
-
+    <p>Thank you for requesting my CV. Your secure download link is ready.</p>
     <p><a href="${downloadUrl}" class="button">Download CV</a></p>
-
     <div class="notice">
-      <strong>Security Notice:</strong> This link is unique to your request and expires in ${TOKEN_EXPIRY_HOURS} hours for security purposes. After expiration, you can request a new download link.
+      <strong>Security Notice:</strong> This link is unique, can be used once, and expires in ${TOKEN_EXPIRY_HOURS} hours.
     </div>
-
     <p>If you have any questions about my experience or background, feel free to reach out directly.</p>
-
     <div class="footer">
-      <p>This email was sent to you because you requested a CV from liviubucel.com. If this wasn't you, please disregard this email.</p>
+      <p>This email was sent because a CV was requested from liviubucel.com. If this wasn't you, please disregard it.</p>
       <p>Best regards,<br>Liviu Bucel</p>
     </div>
   </div>
 </body>
-</html>
-  `;
+</html>`;
 
-  const textContent = `
-Your CV is Ready
-
-Hi ${fullname},
-
-Thank you for requesting my CV. Your secure download link is ready:
-
-${downloadUrl}
-
-Security Notice: This link is unique to your request and expires in ${TOKEN_EXPIRY_HOURS} hours for security purposes. After expiration, you can request a new download link.
-
-If you have any questions about my experience or background, feel free to reach out directly.
-
-Best regards,
-Liviu Bucel
-
----
-This email was sent to you because you requested a CV from liviubucel.com. If this wasn't you, please disregard this email.
-  `;
+  const textContent = `Your CV is Ready\n\nHi ${fullname},\n\nYour secure CV download link is ready:\n\n${downloadUrl}\n\nThis one-use link expires in ${TOKEN_EXPIRY_HOURS} hours.\n\nBest regards,\nLiviu Bucel`;
 
   try {
-    registerToken(token, expiresAt, email);
-
     await cfEnv.EMAIL.send({
       from: fromEmail,
-      to: toEmail,
+      to: email,
       subject,
       text: textContent,
       html: htmlContent,
     });
 
-    console.log(`[cv-request] CV request processed for ${email} with token ${token.substring(0, 8)}...`);
+    console.log('[cv-request] CV request processed successfully.');
     return Response.json({ success: true });
   } catch (error) {
-    console.error('[cv-request] Email send error', error);
+    console.error('[cv-request] Email send failed.');
     Sentry.captureException(error);
     return Response.json(
       { error: 'Failed to send CV download link. Please try again.' },
