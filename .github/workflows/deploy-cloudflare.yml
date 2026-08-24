@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build, deploy and smoke test
+    name: Build, migrate, deploy and smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -49,6 +49,12 @@ jobs:
           SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
           SANITY_DATASET: production
           SITE_URL: https://www.liviubucel.com/
+
+      - name: Apply D1 migrations
+        run: pnpm exec wrangler d1 migrations apply ROMANIA_MONITOR_DB --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy Worker with Wrangler
         run: pnpm exec wrangler deploy
