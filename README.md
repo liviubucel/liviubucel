@@ -11,7 +11,6 @@
 <p align="center">
   <a href="https://www.liviubucel.com/">Portfolio</a> ·
   <a href="https://uk.linkedin.com/in/liviubucel">LinkedIn</a> ·
-  <a href="https://zebrabyte.ro/">ZebraByte</a> ·
   <a href="https://www.liviubucel.com/blog/">Security Writing</a> ·
   <a href="mailto:contact@liviubucel.com">Contact</a>
 </p>
