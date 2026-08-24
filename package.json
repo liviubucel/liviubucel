@@ -40,7 +40,7 @@
     "@sentry/cloudflare": "^10.67.0",
     "@types/sanitize-html": "^2.16.1",
     "astro": "^7.1.3",
-    "astro-icon": "^1.1.5",
+    "astro-icon": "^1.2.0",
     "astro-portabletext": "^0.13.0",
     "astro-robots-txt": "^1.0.0",
     "d3": "^7.9.0",
@@ -89,5 +89,23 @@
   "packageManager": "pnpm@10.33.0",
   "optionalDependencies": {
     "lightningcss-linux-x64-gnu": "1.32.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "undici@>=7.0.0 <7.29.0": "7.29.0",
+      "undici@>=8.0.0 <8.9.0": "8.9.0",
+      "fast-uri@<2.4.4": "2.4.4",
+      "fast-uri@>=3.0.0 <3.1.5": "3.1.5",
+      "fast-uri@>=4.0.0 <4.1.2": "4.1.2",
+      "brace-expansion@<1.1.18": "1.1.18",
+      "brace-expansion@>=2.0.0 <2.1.4": "2.1.4",
+      "brace-expansion@>=3.0.0 <3.0.6": "3.0.6",
+      "brace-expansion@>=4.0.0 <5.0.9": "5.0.9",
+      "js-yaml@>=3.0.0 <3.15.1": "3.15.1",
+      "js-yaml@>=4.0.0 <4.3.1": "4.3.1",
+      "nanoid@<3.3.18": "3.3.18",
+      "nanoid@>=4.0.0 <5.1.6": "5.1.6",
+      "tar@<=7.5.20": "7.5.21"
+    }
   }
 }
