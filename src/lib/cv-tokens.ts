@@ -16,16 +16,11 @@ function generateToken(): string {
   return toHex(bytes);
 }
 
-export async function issueToken(
-  db: D1Database,
-  email: string,
-  expiresAt: number,
-): Promise<string> {
+export async function issueToken(db: D1Database, expiresAt: number): Promise<string> {
   const token = generateToken();
   const tokenHash = await hashToken(token);
   const now = Date.now();
 
-  // Keep only the minimum data needed for an expiring, one-use download link.
   await db
     .prepare(
       `DELETE FROM cv_download_tokens
@@ -36,10 +31,10 @@ export async function issueToken(
 
   await db
     .prepare(
-      `INSERT INTO cv_download_tokens (token_hash, email, expires_at, consumed_at, created_at)
-       VALUES (?, ?, ?, NULL, ?)`,
+      `INSERT INTO cv_download_tokens (token_hash, expires_at, consumed_at, created_at)
+       VALUES (?, ?, NULL, ?)`,
     )
-    .bind(tokenHash, email, expiresAt, now)
+    .bind(tokenHash, expiresAt, now)
     .run();
 
   return token;
