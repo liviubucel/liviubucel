@@ -165,7 +165,7 @@ const handleCvRequest: APIRoute = async ({ request }) => {
   }
 
   const expiresAt = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000;
-  const token = await issueToken(cfEnv.ROMANIA_MONITOR_DB, email, expiresAt);
+  const token = await issueToken(cfEnv.ROMANIA_MONITOR_DB, expiresAt);
 
   const fromEmail = cfEnv.CV_FROM_EMAIL ?? 'noreply@liviubucel.com';
   const siteUrl = cfEnv.SITE_URL ?? 'https://www.liviubucel.com';
