@@ -8,12 +8,10 @@ import { getPageSeo } from '../../lib/sanity-queries';
 export const prerender = false;
 
 const lang: Language = 'ro';
-
 const seo = await getPageSeo('privacy-ro');
 const seoTitle = seo?.title || `Politica de confidențialitate — ${SITE.author.fullName}`;
-const seoDescription =
-  seo?.description || 'Cum colectează și folosește acest site datele tale, și drepturile tale conform GDPR.';
-const lastUpdated = 'iulie 2026';
+const seoDescription = seo?.description || 'Cum acest site colectează, minimizează, folosește și protejează datele cu caracter personal.';
+const lastUpdated = 'august 2026';
 ---
 
 <Layout description={seoDescription} title={seoTitle} lang={lang}>
@@ -27,139 +25,99 @@ const lastUpdated = 'iulie 2026';
   />
 
   <main class="min-h-screen text-white px-4 py-16 md:py-24 max-w-3xl mx-auto">
-    <a
-      class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg inline-block"
-      href="/ro/">← Înapoi</a
-    >
+    <a class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg inline-block" href="/ro/">← Înapoi</a>
 
     <h1 class="text-3xl md:text-4xl font-bold text-neutral-100 mb-2">Politica de confidențialitate</h1>
     <p class="text-sm text-neutral-500 mb-10">Ultima actualizare: {lastUpdated}</p>
 
     <div class="space-y-8 text-neutral-300 leading-relaxed text-sm md:text-base">
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">1. Cine sunt</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">1. Operator și domeniu de aplicare</h2>
         <p>
-          Acest site (liviubucel.com) este operat de {SITE.author.fullName}. Această politică explică ce date cu
-          caracter personal sunt colectate pe acest site, de ce, cum sunt folosite și ce drepturi ai asupra lor.
-          Se aplică tuturor paginilor de pe acest domeniu, inclusiv secțiunii Romania Cyber Monitor.
+          Acest site (liviubucel.com) este operat de {SITE.author.fullName}. Această informare explică datele cu
+          caracter personal prelucrate atunci când folosești funcțiile opționale ale site-ului și datele tehnice
+          limitate necesare pentru operarea și securizarea lui. Se aplică întregului domeniu, inclusiv Romania Cyber Monitor.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">2. Ce se colectează și de ce</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">2. Date prelucrate</h2>
+        <ul class="list-disc list-inside space-y-3">
+          <li><strong class="text-neutral-100">Formular de contact:</strong> numele, adresa de email și mesajul pe care alegi să îl trimiți, pentru ca solicitarea să poată fi citită și soluționată.</li>
+          <li><strong class="text-neutral-100">Newsletter:</strong> adresa de email și starea abonamentului. Este folosit double opt-in înainte de trimiterea newsletterului, iar fiecare email include o opțiune de dezabonare.</li>
+          <li><strong class="text-neutral-100">Solicitare CV:</strong> doar numele și adresa de email. Serviciul nu mai solicită număr de telefon sau numele companiei. Adresa de email este folosită pentru livrarea linkului și nu este stocată împreună cu token-ul de descărcare.</li>
+          <li><strong class="text-neutral-100">Securitate și diagnostic:</strong> furnizorii de infrastructură pot prelucra date tehnice precum adresa IP, informații despre browser/dispozitiv și metadate ale cererii. Pentru prevenirea abuzului asupra funcției CV, aplicația stochează doar un hash unidirecțional derivat din IP pentru o perioadă scurtă de rate limiting, nu adresa IP în clar.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">3. Scopul prelucrării</h2>
         <p class="mb-3">
-          Doar două lucruri de pe acest site cer date personale, iar ambele sunt complet opționale - nimic nu se
-          colectează doar prin navigare.
+          Datele sunt folosite numai pentru funcția pe care o soliciți, pentru operarea și securizarea site-ului și
+          pentru diagnosticarea erorilor. Temeiul avut în vedere pentru newsletter este consimțământul. Răspunsul
+          la solicitări directe, livrarea CV-ului cerut și prevenirea abuzului sunt tratate pe baza intereselor
+          legitime de a furniza și securiza aceste funcții, cu respectarea cerințelor aplicabile de echilibrare.
         </p>
+        <p>Datele personale nu sunt vândute, închiriate, folosite pentru publicitate comportamentală sau adăugate la liste de marketing fără legătură cu solicitarea ta.</p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">4. Securitatea și retenția linkurilor CV</h2>
         <ul class="list-disc list-inside space-y-2">
-          <li>
-            <strong class="text-neutral-100">Formularul de contact</strong> - numele, adresa de e-mail și mesajul
-            tău, ca să pot citi și răspunde. Trimis direct în inboxul meu; nimic nu este adăugat la vreo listă de
-            e-mail doar prin acest formular.
-          </li>
-          <li>
-            <strong class="text-neutral-100">Abonarea la newsletter</strong> - adresa ta de e-mail, ca să îți pot
-            trimite un e-mail când apare o revendicare de ransomware sau o breșă legată de România pe Romania
-            Cyber Monitor. Abonarea folosește double opt-in: primești mai întâi un e-mail de confirmare, iar
-            nimic nu îți este trimis până nu apeși pe linkul din acel e-mail. Fiecare e-mail cu actualizări
-            include un link de dezabonare cu un singur click.
-          </li>
+          <li>Token-urile de descărcare sunt generate folosind aleatoriu criptografic sigur.</li>
+          <li>Token-ul brut este trimis solicitantului; aplicația stochează doar hash-ul său SHA-256.</li>
+          <li>Fiecare token poate fi utilizat o singură dată și expiră după 24 de ore.</li>
+          <li>Rate limiting-ul folosește un hash unidirecțional derivat din IP și o fereastră de 24 de ore.</li>
+          <li>Înregistrările expirate de rate limiting și token sunt eliminate automat de aplicație în cadrul cererilor ulterioare.</li>
         </ul>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">3. Datele tale nu sunt niciodată vândute, partajate sau folosite pentru reclame</h2>
-        <p>
-          Acesta este un site personal, nu o afacere care colectează date pentru profit. Adresa ta de e-mail și
-          mesajul sunt folosite exclusiv în scopul pentru care le-ai furnizat - să îți răspund, sau să îți trimit
-          actualizările la care te-ai abonat. Nu sunt niciodată vândute, închiriate, partajate cu terți sau
-          folosite pentru publicitate, profilare sau orice scop pentru care nu ai cerut. Nu există urmărire
-          publicitară sau de marketing pe acest site.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">4. Temei legal și păstrarea datelor</h2>
-        <p class="mb-3">
-          Atât formularul de contact, cât și newsletter-ul procesează datele tale pe baza consimțământului tău
-          explicit (GDPR Art. 6(1)(a)), acordat prin bifarea casetei de consimțământ înainte de trimitere.
-        </p>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">5. Alte perioade de păstrare</h2>
         <ul class="list-disc list-inside space-y-2">
-          <li>Mesajele de contact sunt păstrate doar cât este necesar pentru a răspunde solicitării tale, apoi șterse.</li>
-          <li>
-            E-mailurile din newsletter sunt păstrate până te dezabonezi (link în fiecare e-mail) sau până când
-            abonamentul tău este eliminat manual la cerere.
-          </li>
+          <li>Mesajele de contact sunt păstrate doar cât este rezonabil necesar pentru soluționarea și urmărirea solicitării.</li>
+          <li>Datele abonaților la newsletter sunt păstrate până la dezabonare, eliminare la cerere sau până când există un alt motiv operațional valid pentru ștergere.</li>
+          <li>Jurnalele operaționale și de securitate sunt păstrate conform retenției configurate pentru serviciile de infrastructură și monitorizare a erorilor.</li>
         </ul>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">5. Unde sunt stocate și procesate datele</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">6. Furnizori și infrastructură</h2>
         <p>
-          Acest site rulează în întregime pe infrastructura Cloudflare (Workers, D1, Email Workers) - nu există
-          nicio platformă separată de marketing sau furnizor terț de liste de e-mail implicat. Monitorizarea
-          erorilor este oferită de Sentry, care poate înregistra automat diagnostice tehnice de bază (ex. tipul
-          browserului, locația aproximativă din adresa IP) strict pentru a ajuta la remedierea erorilor - nu
-          pentru a identifica sau profila vizitatori individuali. Nu sunt folosite cookie-uri publicitare sau
-          pixeli de urmărire terți nicăieri pe acest site.
+          Site-ul folosește infrastructura Cloudflare pentru hosting, Workers, baza de date și procesarea legată
+          de email. Sentry este folosit pentru monitorizarea erorilor și poate prelucra diagnostice tehnice necesare
+          investigării problemelor. Acești furnizori prelucrează date numai în măsura necesară furnizării serviciilor
+          tehnice relevante; site-ul nu integrează intenționat rețele de publicitate sau trackere de marketing terțe.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">6. Romania Cyber Monitor - disclaimer privind conținutul</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">7. Romania Cyber Monitor</h2>
         <p class="mb-3">
-          Romania Cyber Monitor publică rezumate automate ale unor surse publice de tip open-source de
-          informații despre amenințări (ex. liste de pe site-uri de leak ransomware, cataloage de breșe).
-          Această secțiune există pentru informarea publicului - pentru a ajuta organizațiile și persoanele din
-          România să rămână informate - nu pentru câștig comercial, senzaționalism sau pentru a acuza pe cineva.
+          Romania Cyber Monitor publică rezumate automate derivate din surse publice de threat intelligence.
+          Listările ransomware sunt tratate ca revendicări neconfirmate dacă materialul sursă nu justifică o
+          formulare mai puternică. Publicarea aici nu reprezintă dovadă independentă că organizația menționată a fost compromisă.
         </p>
-        <ul class="list-disc list-inside space-y-2">
-          <li>
-            <strong class="text-neutral-100">Intrările de tip ransomware sunt revendicări neconfirmate</strong>,
-            nu dovada unei breșe. Faptul că o revendicare apare aici nu înseamnă că organizația menționată a fost
-            efectiv compromisă și nu implică nicio judecată despre organizație.
-          </li>
-          <li>
-            Intrările reflectă doar ceea ce raportează sursele originale și sunt generate automat din acele date
-            - nu se deduce niciun vector de atac, impact financiar sau atribuire dincolo de materialul sursă.
-          </li>
-          <li>
-            Aceste rezumate automate nu înlocuiesc o evaluare de securitate reală, individualizată, a organizației
-            tale - reflectă doar ce a raportat o sursă publică. Dacă organizația ta este menționată aici și
-            consideri că o intrare este inexactă, sau vrei ajutor real pentru a-ți îmbunătăți postura de
-            securitate (hardening, răspuns la incidente, un audit propriu-zis), <a href="/ro/contact" class="text-primary-400 hover:underline">contactează-mă</a>
-            - exact asta fac.
-          </li>
-        </ul>
+        <p>Dacă o intrare despre organizația ta pare inexactă, folosește <a href="/ro/contact" class="text-primary-400 hover:underline">pagina de contact</a> pentru a solicita verificarea sau corectarea ei.</p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">7. Drepturile tale conform GDPR</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">8. Drepturile privind protecția datelor</h2>
         <p class="mb-3">
-          Dacă te afli în UE/SEE (sau ești acoperit de o lege similară altundeva), ai dreptul să:
+          În funcție de locul în care te afli și de legislația aplicabilă, poți avea drepturi precum accesul,
+          rectificarea, ștergerea, restricționarea, opoziția, portabilitatea și retragerea consimțământului acolo
+          unde consimțământul este temeiul prelucrării.
         </p>
-        <ul class="list-disc list-inside space-y-1">
-          <li>Accesezi datele personale deținute despre tine</li>
-          <li>Corectezi datele inexacte</li>
-          <li>Soliciți ștergerea ("dreptul de a fi uitat")</li>
-          <li>Retragi consimțământul oricând (ex. dezabonare)</li>
-          <li>Te opui sau restricționezi procesarea</li>
-          <li>Soliciți o copie a datelor tale într-un format portabil</li>
-          <li>Depui o plângere la autoritatea națională de protecție a datelor (în România: ANSPDCP, dataprotection.ro)</li>
-        </ul>
-        <p class="mt-3">
-          Pentru a-ți exercita oricare dintre aceste drepturi, scrie-mi la
-          <a href={`mailto:${SITE.links.email}`} class="text-primary-400 hover:underline">{SITE.links.email}</a>.
-          Voi răspunde în cel mult 30 de zile.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">8. Modificări ale acestei politici</h2>
         <p>
-          Dacă această politică se schimbă semnificativ, data "Ultima actualizare" de mai sus se va actualiza
-          corespunzător. Continuarea folosirii site-ului după o actualizare înseamnă că accepți politica revizuită.
+          Pentru o solicitare privind confidențialitatea, scrie la <a href={`mailto:${SITE.links.email}`} class="text-primary-400 hover:underline">{SITE.links.email}</a>.
+          Persoanele din Regatul Unit pot sesiza și Information Commissioner's Office, iar persoanele din alte
+          jurisdicții se pot adresa autorității de supraveghere aplicabile.
         </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">9. Modificări</h2>
+        <p>Orice modificare materială a acestei informări va fi reflectată prin actualizarea datei afișate mai sus.</p>
       </section>
     </div>
   </main>
