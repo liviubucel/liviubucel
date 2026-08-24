@@ -12,11 +12,7 @@ const seoTitle = seo?.title || "Relevant Experience — " + SITE.author.fullName
 const seoDescription = seo?.description || "Relevant technical support, infrastructure, and cybersecurity experience across ZebraByte, Intact Media Group, and practical security labs.";
 ---
 
-<Layout
-  title={seoTitle}
-  description={seoDescription}
-  lang={lang}
->
+<Layout title={seoTitle} description={seoDescription} lang={lang}>
   <Seo
     title={seoTitle}
     description={seoDescription}
@@ -93,7 +89,7 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
     <section class="mt-16 rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
       <h2 class="text-2xl font-bold text-neutral-100 mb-2">Download CV</h2>
       <p class="text-sm text-neutral-400 mb-6">
-        Request access to my CV. For security, download links are time-limited and verified using secure tokens.
+        Request access to my CV. Only your name and email are required. Each download link is single-use and expires after 24 hours.
       </p>
 
       <form id="cv-request-form" class="space-y-4 mb-6">
@@ -105,6 +101,8 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
               id="fullname"
               name="fullname"
               required
+              autocomplete="name"
+              maxlength="100"
               class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
               placeholder="Your full name"
             />
@@ -116,28 +114,10 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
               id="email"
               name="email"
               required
+              autocomplete="email"
+              maxlength="254"
               class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              placeholder="your.email@company.com"
-            />
-          </div>
-          <div>
-            <label for="phone" class="block text-sm font-medium text-neutral-300 mb-2">Phone</label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              placeholder="+1 (555) 123-4567"
-            />
-          </div>
-          <div>
-            <label for="company" class="block text-sm font-medium text-neutral-300 mb-2">Company / Organization</label>
-            <input
-              type="text"
-              id="company"
-              name="company"
-              class="w-full px-4 py-2 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-              placeholder="Your company name"
+              placeholder="your.email@example.com"
             />
           </div>
         </div>
@@ -151,7 +131,7 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
             class="mt-1 w-4 h-4 rounded bg-neutral-700 border border-neutral-600 text-primary-600 focus:ring-primary-500 cursor-pointer"
           />
           <label for="terms" class="text-sm text-neutral-400">
-            I agree that my information may be used to send me my CV securely. The link will expire in 24 hours.
+            I agree to the processing needed to deliver the requested CV, as described in the <a href="/privacy" class="text-primary-400 hover:underline">Privacy Policy</a>.
           </label>
         </div>
 
@@ -176,32 +156,17 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
       <div class="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700">
         <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Security notice</p>
         <ul class="space-y-2 text-sm text-neutral-400">
-          <li class="flex gap-2">
-            <span class="text-primary-400 flex-shrink-0">✓</span>
-            <span>Download links are secured with cryptographic tokens to prevent unauthorized access.</span>
-          </li>
-          <li class="flex gap-2">
-            <span class="text-primary-400 flex-shrink-0">✓</span>
-            <span>Each link expires 24 hours after generation to limit exposure window.</span>
-          </li>
-          <li class="flex gap-2">
-            <span class="text-primary-400 flex-shrink-0">✓</span>
-            <span>Your information is used only to deliver your CV and will not be shared.</span>
-          </li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Download tokens are cryptographically random and stored only as hashes.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Each download link can be used once and expires after 24 hours.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>The request flow stores no phone number, company name, or raw IP address.</span></li>
         </ul>
       </div>
     </section>
 
     <div class="mt-10 flex flex-wrap gap-3">
-      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/projects">
-        View projects
-      </a>
-      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/contact">
-        Contact me
-      </a>
-      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href={SITE.links.linkedin} target="_blank" rel="noopener noreferrer">
-        LinkedIn
-      </a>
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/projects">View projects</a>
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href="/contact">Contact me</a>
+      <a class="rounded-xl border border-neutral-600 bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-colors duration-150" href={SITE.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
     </div>
   </main>
 </Layout>
@@ -224,16 +189,14 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
       try {
         const response = await fetch('/api/cv-request', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
 
         const result = (await response.json()) as { error?: string };
 
         if (response.ok) {
-          messageDiv.textContent = 'Success! Check your email for your CV download link. Link expires in 24 hours.';
+          messageDiv.textContent = 'Success! Check your email for your one-use CV download link. It expires in 24 hours.';
           messageDiv.classList.remove('text-neutral-300');
           messageDiv.classList.add('text-green-300');
           form.reset();
@@ -242,7 +205,7 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
           messageDiv.classList.remove('text-neutral-300');
           messageDiv.classList.add('text-red-300');
         }
-      } catch (error) {
+      } catch {
         messageDiv.textContent = 'Error sending request. Please try again later.';
         messageDiv.classList.remove('text-neutral-300');
         messageDiv.classList.add('text-red-300');
