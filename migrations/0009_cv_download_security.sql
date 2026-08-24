@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS cv_download_tokens (
   token_hash TEXT PRIMARY KEY,
-  email TEXT NOT NULL,
   expires_at INTEGER NOT NULL,
   consumed_at INTEGER,
   created_at INTEGER NOT NULL
