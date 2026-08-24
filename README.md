@@ -1,58 +1,99 @@
-# Liviu Bucel — Personal Cybersecurity Portfolio
+<h1 align="center">Liviu Bucel</h1>
 
-Personal portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security work.
+<p align="center">
+  <strong>Cybersecurity · Security Engineering · Ethical Hacking · Digital Investigation</strong>
+</p>
 
-Production site: [liviubucel.com](https://liviubucel.com/)
+<p align="center">
+  I investigate how attacks work and build practical systems that reduce real-world security risk.
+</p>
 
-## Purpose
+<p align="center">
+  <a href="https://www.liviubucel.com/">Portfolio</a> ·
+  <a href="https://uk.linkedin.com/in/liviubucel">LinkedIn</a> ·
+  <a href="https://www.liviubucel.com/blog/">Security Writing</a> ·
+  <a href="mailto:contact@liviubucel.com">Contact</a>
+</p>
 
-The site is designed for cybersecurity recruiters, hiring managers, and potential technical collaborators. English is the default language, with Romanian content under `/ro/`.
+---
 
-## Relevant profile
+## Profile
 
-- Technical support and hosting infrastructure experience at ZebraByte
-- IT support experience at Intact Media Group
-- Practical cybersecurity labs and job simulations
-- Focused on DFIR, security operations, security testing, and vulnerability research
-- Focused on practical cybersecurity work and selected technical collaborations
+I'm a UK-based cybersecurity specialist focused on practical, evidence-led security work across **ethical hacking, digital forensics, vulnerability research, security operations, and security engineering**.
 
-## Stack
+I care about understanding systems deeply enough to explain both **how they fail** and **how to make them harder to break**. That can mean investigating an incident, validating a vulnerability, hardening an Internet-facing service, automating certificate infrastructure, or designing a security platform with clear trust boundaries.
 
-- Astro and TypeScript
-- UnoCSS
-- Motion
-- Sanity CMS
-- Cloudflare Workers
+This profile contains public projects and selected technical work. Production-sensitive systems, credentials, customer data, and operational security details stay private by design.
 
-## Main areas
+## Core focus
 
-- Professional profile and relevant experience
-- Cybersecurity projects
-- Technical writing
-- Contact and collaboration enquiries
-- English and Romanian routes
-- SEO and structured data
-- Security headers and privacy-conscious API caching
+- **Ethical hacking & security assessment** — understanding attack surfaces, validating security weaknesses, and turning findings into actionable remediation.
+- **Digital forensics & incident investigation** — evidence-led analysis of security events, attacker activity, and incident context.
+- **Threat intelligence** — defensive monitoring of exposed data, ransomware activity, dark-web sources, and external risk signals.
+- **Security engineering** — authentication boundaries, tenant isolation, abuse controls, auditability, secure APIs, and cloud-native security architecture.
+- **PKI, TLS & Internet infrastructure** — ACME automation, DNS validation, certificate issuance and renewal, and secure service delivery.
+- **Vulnerability research** — understanding exploitability, technical impact, and practical defensive mitigations.
 
-## Local development
+## Selected work
 
-```bash
-npm install
-npm run dev
-```
+### [ZebraByte Dark Web Intelligence](https://github.com/liviubucel/darkweb-scan)
 
-Create a local environment file from the project example and provide only the variables required for the feature you are testing. Never commit Sanity tokens or other credentials.
+A defensive dark-web monitoring and threat-intelligence platform designed for **exposure discovery, investigation, and continuous monitoring**.
 
-## Content integrity
+The public architecture uses **Cloudflare Workers, Workflows, Queues, D1, R2, Workers AI, Analytics Engine, rate limiting, and a constrained Tor collector**. The collector is deliberately separated from customer accounts, billing, persistent application data, and provider credentials, with retrieved Tor content treated as untrusted evidence.
 
-Public profile data is configured in `src/site-config.ts`. Dynamic projects, articles, profile settings, and verified certifications can be managed through Sanity.
+`Threat Intelligence` · `Cloudflare Workers` · `Tor` · `D1` · `R2` · `Workers AI` · `TypeScript`
 
-Only earned certifications with a credential URL should be published. Claims about qualifications, results, or professional experience must remain verifiable.
+### [SSL Certificate Generator](https://github.com/liviubucel/ssl-generator)
 
-## Deployment
+An ACME-based certificate automation system for issuing and managing TLS certificates through a web interface.
 
-The project targets Cloudflare Workers. Production configuration and secrets are managed outside the repository.
+It supports **Let's Encrypt and ZeroSSL, HTTP-01 and DNS-01 validation, wildcard certificates, certificate downloads, automated renewal, and renewal notifications**. The system combines a Cloudflare Worker with a restricted ACME backend and keeps service-to-service access authenticated.
 
-## Design credit
+[Live demo](https://ssl-gratis.zebrabyte.ro/) · [Source](https://github.com/liviubucel/ssl-generator)
 
-The bento-grid visual foundation is based on [Ladvace/astro-bento-portfolio](https://github.com/Ladvace/astro-bento-portfolio). The implementation has been adapted for Liviu Bucel's bilingual cybersecurity portfolio.
+`ACME` · `TLS/PKI` · `Cloudflare Workers` · `DNS` · `TypeScript` · `Automation`
+
+### [ACME SSL Engine](https://github.com/liviubucel/ssl-acme-engine)
+
+A lightweight, portable ACME automation project built around **ACME.sh, OpenSSL, Docker, and Railway**. It demonstrates certificate issuance and renewal workflows while documenting private-key handling, DNS credential security, and certificate lifecycle considerations.
+
+`ACME.sh` · `OpenSSL` · `Docker` · `Shell` · `PKI`
+
+## Engineering stack
+
+**Security & infrastructure**  
+`Cloudflare Workers` `D1` `R2` `Queues` `Workflows` `Workers AI` `Docker` `Tor` `ACME` `DNS` `HTTP` `TLS/PKI`
+
+**Development**  
+`TypeScript` `JavaScript` `Node.js` `Astro` `REST APIs` `SQL` `GitHub Actions`
+
+**Security disciplines**  
+`Ethical Hacking` `DFIR` `Threat Intelligence` `Vulnerability Research` `Security Operations` `Cloud Security` `API Security`
+
+## Security research & writing
+
+I publish technical notes, security analysis, and selected threat-intelligence updates at **[liviubucel.com/blog](https://www.liviubucel.com/blog/)**.
+
+Current public work includes monitoring and documenting Romania-linked ransomware and breach claims while clearly distinguishing **reported attacker claims from independently verified incidents**.
+
+## How I approach security
+
+- **Evidence over assumptions.** A claim should be testable, reproducible, or clearly labelled as unverified.
+- **Trust boundaries first.** Authentication, authorization, tenancy, secrets, and data ownership are architectural concerns, not afterthoughts.
+- **Least privilege by default.** Services and credentials should receive only the access they actually need.
+- **Untrusted input stays untrusted.** External data, scraped content, user input, and AI context require explicit validation and isolation.
+- **Security should survive production.** Controls need observability, failure handling, rate limits, audit trails, and maintainable operational paths.
+
+## Elsewhere
+
+- **Portfolio:** [liviubucel.com](https://www.liviubucel.com/)
+- **LinkedIn:** [linkedin.com/in/liviubucel](https://uk.linkedin.com/in/liviubucel)
+- **GitHub:** [github.com/liviubucel](https://github.com/liviubucel)
+- **Email:** [contact@liviubucel.com](mailto:contact@liviubucel.com)
+
+---
+
+<p align="center">
+  <strong>JUST DO IT, BUT DO IT WELL.</strong>
+</p>
