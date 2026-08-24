@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://www.liviubucel.com/">Portfolio</a> ·
   <a href="https://uk.linkedin.com/in/liviubucel">LinkedIn</a> ·
+  <a href="https://zebrabyte.ro/">ZebraByte</a> ·
   <a href="https://www.liviubucel.com/blog/">Security Writing</a> ·
   <a href="mailto:contact@liviubucel.com">Contact</a>
 </p>
@@ -22,6 +23,8 @@
 I'm a UK-based cybersecurity specialist focused on practical, evidence-led security work across **ethical hacking, digital forensics, vulnerability research, security operations, and security engineering**.
 
 I care about understanding systems deeply enough to explain both **how they fail** and **how to make them harder to break**. That can mean investigating an incident, validating a vulnerability, hardening an Internet-facing service, automating certificate infrastructure, or designing a security platform with clear trust boundaries.
+
+A significant part of my applied security engineering work is developed through **[ZebraByte](https://zebrabyte.ro/)**, where I work on cybersecurity and compliance systems spanning **threat intelligence, security tooling, cloud infrastructure, PKI/TLS automation, identity, and security-focused platform engineering**.
 
 This profile contains public projects and selected technical work. Production-sensitive systems, credentials, customer data, and operational security details stay private by design.
 
@@ -88,6 +91,7 @@ Current public work includes monitoring and documenting Romania-linked ransomwar
 ## Elsewhere
 
 - **Portfolio:** [liviubucel.com](https://www.liviubucel.com/)
+- **ZebraByte:** [zebrabyte.ro](https://zebrabyte.ro/)
 - **LinkedIn:** [linkedin.com/in/liviubucel](https://uk.linkedin.com/in/liviubucel)
 - **GitHub:** [github.com/liviubucel](https://github.com/liviubucel)
 - **Email:** [contact@liviubucel.com](mailto:contact@liviubucel.com)
