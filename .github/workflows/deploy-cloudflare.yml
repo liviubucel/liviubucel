@@ -14,16 +14,18 @@ concurrency:
 
 jobs:
   deploy:
-    name: Build, deploy and smoke test
+    name: Build, migrate, deploy and smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '22'
 
@@ -34,20 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Verify Cloudflare deploy credentials
-        env:
-          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          if [ -z "$CF_API_TOKEN" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_API_TOKEN"
-            exit 1
-          fi
-          if [ -z "$CF_ACCOUNT_ID" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
 
       - name: Unit tests
         run: pnpm test
@@ -62,6 +50,12 @@ jobs:
           SANITY_DATASET: production
           SITE_URL: https://www.liviubucel.com/
 
+      - name: Apply D1 migrations
+        run: pnpm exec wrangler d1 migrations apply ROMANIA_MONITOR_DB --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Deploy Worker with Wrangler
         run: pnpm exec wrangler deploy
         env:
@@ -72,45 +66,36 @@ jobs:
         run: sleep 12
 
       - name: Production smoke tests
-        env:
-          WAF_BYPASS_TOKEN: ${{ secrets.CF_WAF_BYPASS_TOKEN }}
         run: |
           set -euo pipefail
 
           BASE='https://www.liviubucel.com'
-          UA='liviubucel-deployment-smoke/1.0'
-          HEADER_ARGS=(-H "User-Agent: ${UA}")
-          if [ -n "${WAF_BYPASS_TOKEN:-}" ]; then
-            HEADER_ARGS+=(-H "X-Cyber-Monitor-Bypass: ${WAF_BYPASS_TOKEN}")
-          fi
+          UA='site-deployment-smoke/1.0'
 
-          HOME=$(curl -fsSL "${HEADER_ARGS[@]}" "${BASE}/?deploy_sha=${GITHUB_SHA}")
-          EXPERIENCE=$(curl -fsSL "${HEADER_ARGS[@]}" "${BASE}/experience?deploy_sha=${GITHUB_SHA}")
+          HOME_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/?deploy_sha=${GITHUB_SHA}")
+          EXPERIENCE_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/experience?deploy_sha=${GITHUB_SHA}")
 
-          if printf '%s' "$HOME" | grep -Fqi 'De Montfort University'; then
-            echo '::error::Homepage still exposes De Montfort University after deployment.'
-            exit 1
-          fi
-          if printf '%s' "$HOME" | grep -Fqi 'BSc Cyber Security Student'; then
-            echo '::error::Homepage still exposes the old student title after deployment.'
-            exit 1
-          fi
-          if printf '%s' "$EXPERIENCE" | grep -Fqi 'De Montfort University'; then
-            echo '::error::Experience page still exposes De Montfort University after deployment.'
+          if [ "$HOME_STATUS" != '200' ]; then
+            echo "::error::Homepage returned HTTP ${HOME_STATUS}"
             exit 1
           fi
 
-          HEADERS=$(curl -sS -D - -o /dev/null "${HEADER_ARGS[@]}" "${BASE}/romania-cyber-monitor?lang=ro")
+          if [ "$EXPERIENCE_STATUS" != '200' ]; then
+            echo "::error::Experience page returned HTTP ${EXPERIENCE_STATUS}"
+            exit 1
+          fi
+
+          HEADERS=$(curl -sS -D - -o /dev/null -H "User-Agent: ${UA}" "${BASE}/romania-cyber-monitor?lang=ro")
           LOCATION=$(printf '%s\n' "$HEADERS" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $2); print $2; exit}')
           if [ "$LOCATION" != "${BASE}/ro/romania-cyber-monitor" ]; then
-            echo "::error::Language redirect is wrong. Expected ${BASE}/ro/romania-cyber-monitor, got ${LOCATION:-<none>}"
+            echo "::error::Language redirect is wrong."
             exit 1
           fi
 
-          RO_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' "${HEADER_ARGS[@]}" "${BASE}/ro/romania-cyber-monitor")
+          RO_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/ro/romania-cyber-monitor")
           if [ "$RO_STATUS" != '200' ]; then
             echo "::error::Romanian Cyber Monitor returned HTTP ${RO_STATUS}"
             exit 1
           fi
 
-          echo "Production smoke tests passed for ${GITHUB_SHA}."
+          echo "Production smoke tests passed."

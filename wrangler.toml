@@ -25,8 +25,6 @@ CONTACT_TO_EMAIL="contact@liviubucel.com"
 CONTACT_FROM_EMAIL="noreply@liviubucel.com"
 NEWSLETTER_FROM_EMAIL="newsletter@liviubucel.com"
 
-# Romania Cyber Monitor - source feature flags (all default to disabled except
-# the two sources that require no API key: Ransomware.live and HIBP breach catalogue)
 SOURCE_RANSOMWARE_LIVE_ENABLED="true"
 SOURCE_HIBP_ENABLED="true"
 SOURCE_LEAKIX_ENABLED="false"
@@ -35,16 +33,6 @@ SOURCE_URLHAUS_ENABLED="false"
 SOURCE_MALWAREBAZAAR_ENABLED="false"
 SOURCE_MISP_ENABLED="false"
 SOURCE_ENISA_CIRAS_ENABLED="false"
-
-# CYBER_MONITOR_TRIGGER_TOKEN for /api/cyber-monitor/trigger-sync is set as
-# an encrypted secret (wrangler secret put CYBER_MONITOR_TRIGGER_TOKEN),
-# never declared here - see that file's header comment.
-
-# BLOG_TRANSLATE_TRIGGER_TOKEN for /api/blog/translate and
-# SANITY_API_WRITE_TOKEN (a Sanity Editor token with write access) are also
-# encrypted secrets (wrangler secret put BLOG_TRANSLATE_TRIGGER_TOKEN /
-# wrangler secret put SANITY_API_WRITE_TOKEN) - see
-# docs/blog-translate-webhook.md.
 
 [[send_email]]
 name = "EMAIL"
@@ -59,13 +47,10 @@ database_id = "5816fc15-7d65-41cf-adbf-54f42ae4aa5a"
 migrations_dir = "migrations"
 
 [triggers]
-# UTC schedules. The hourly :30 cron is the permanent bilingual blog repair
-# fallback. The Aug-07 19:40 cron is a bootstrap run for the existing backlog.
 crons = [
-  "40 19 7 8 *",   # bootstrap: run the repaired blog backfill shortly after deployment
-  "30 * * * *",    # hourly: normalize legacy blog metadata + repair missing EN -> RO counterparts
-  "0 */6 * * *",  # every 6 hours: ransomware.live, threatfox, urlhaus (when enabled)
-  "0 */12 * * *", # every 12 hours: hibp latest-breach check, malwarebazaar metadata
-  "0 3 * * *",    # once daily 03:00 UTC: hibp full catalogue, leakix, misp
-  "0 4 * * 1",    # weekly Monday 04:00 UTC: enisa ciras + weekly report generation
+  "30 * * * *",
+  "0 */6 * * *",
+  "0 */12 * * *",
+  "0 3 * * *",
+  "0 4 * * 1",
 ]

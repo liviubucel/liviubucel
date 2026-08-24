@@ -1,8 +1,12 @@
 # build output
 dist/
+build/
 
-# generated types
+# generated framework/tool state
 .astro/
+.sanity/
+studio-liviubucel/.sanity/
+.wrangler/
 
 # dependencies
 node_modules/
@@ -14,12 +18,18 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
 
-# environment variables
+# environment variables and local secrets
 .env
-.env.production
-.env.local
+.env.*
+!.env.example
 .dev.vars
+.dev.vars.*
+*.pem
+*.key
+*.p12
+*.pfx
 
 # local database
 .data/
@@ -27,10 +37,7 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
-# wrangler
-.wrangler/
-
-# dump files
+# dump/archive files
 *.zip
 *.sql
 !migrations/*.sql
