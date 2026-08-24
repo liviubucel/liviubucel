@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - security/public-repo-hardening-20260824
+  workflow_dispatch:
 
 permissions:
   contents: write
