@@ -8,12 +8,10 @@ import { getPageSeo } from '../lib/sanity-queries';
 export const prerender = false;
 
 const lang: Language = 'en';
-
 const seo = await getPageSeo('privacy');
 const seoTitle = seo?.title || `Privacy Policy — ${SITE.author.fullName}`;
-const seoDescription =
-  seo?.description || 'How this site collects, uses, and protects your data, and your rights under GDPR.';
-const lastUpdated = 'July 2026';
+const seoDescription = seo?.description || 'How this site collects, uses, minimises, and protects personal data.';
+const lastUpdated = 'August 2026';
 ---
 
 <Layout description={seoDescription} title={seoTitle} lang={lang}>
@@ -27,134 +25,102 @@ const lastUpdated = 'July 2026';
   />
 
   <main class="min-h-screen text-white px-4 py-16 md:py-24 max-w-3xl mx-auto">
-    <a
-      class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg inline-block"
-      href="/">← Back</a
-    >
+    <a class="text-white bg-neutral-900 hover:bg-neutral-800 px-4 py-2 mb-8 border-1 border-solid border-neutral-600 rounded-lg inline-block" href="/">← Back</a>
 
     <h1 class="text-3xl md:text-4xl font-bold text-neutral-100 mb-2">Privacy Policy</h1>
     <p class="text-sm text-neutral-500 mb-10">Last updated: {lastUpdated}</p>
 
     <div class="space-y-8 text-neutral-300 leading-relaxed text-sm md:text-base">
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">1. Who this is</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">1. Controller and scope</h2>
         <p>
-          This site (liviubucel.com) is operated by {SITE.author.fullName}. This policy explains what personal
-          data is collected on this site, why, how it's used, and what rights you have over it. It applies to
-          every page on this domain, including the Romania Cyber Monitor section.
+          This site (liviubucel.com) is operated by {SITE.author.fullName}. This notice explains the personal data
+          processed when you use optional site features and the limited technical data processed to operate and
+          secure the site. It applies across this domain, including Romania Cyber Monitor.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">2. What is collected, and why</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">2. Data processed</h2>
+        <ul class="list-disc list-inside space-y-3">
+          <li><strong class="text-neutral-100">Contact form:</strong> name, email address and the message you choose to send, so the enquiry can be read and answered.</li>
+          <li><strong class="text-neutral-100">Newsletter:</strong> email address and subscription status. Double opt-in is used before newsletter delivery, and every newsletter includes an unsubscribe mechanism.</li>
+          <li><strong class="text-neutral-100">CV request:</strong> name and email address only. The service no longer asks for a phone number or company name. The email is used to deliver the requested link and is not stored alongside the CV download token.</li>
+          <li><strong class="text-neutral-100">Security and diagnostics:</strong> infrastructure providers may process technical request data such as IP address, browser/device information and request metadata. For CV abuse prevention, the application stores only a one-way hash derived from the client IP for a short rate-limit window, not the raw IP address.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">3. Why the data is used</h2>
         <p class="mb-3">
-          Only two things on this site ask for your personal data, and both are entirely optional - nothing is
-          collected just by browsing.
+          Data is used only for the feature you request, for operating and securing the site, and for diagnosing
+          faults. The intended lawful basis for newsletter delivery is consent. Responding to direct enquiries,
+          delivering a requested CV and preventing abuse are handled on the basis of the legitimate interests in
+          providing and securing those requested site functions, subject to the applicable balancing requirements.
         </p>
+        <p>
+          Personal data is not sold, rented, used for behavioural advertising, or added to unrelated marketing lists.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">4. CV download security and retention</h2>
         <ul class="list-disc list-inside space-y-2">
-          <li>
-            <strong class="text-neutral-100">Contact form</strong> - your name, email address, and message, so I
-            can read and reply to you. Sent directly to my inbox; nothing is added to any mailing list from this
-            form alone.
-          </li>
-          <li>
-            <strong class="text-neutral-100">Newsletter subscription</strong> - your email address, so I can send
-            you an email when a new Romania-linked ransomware claim or breach is published on Romania Cyber
-            Monitor. Subscribing uses double opt-in: you'll get a confirmation email first, and nothing is sent
-            to you until you click the link in it. Every digest email includes a one-click unsubscribe link.
-          </li>
+          <li>CV download tokens are generated using cryptographically secure randomness.</li>
+          <li>The raw token is sent to the requester; the application stores only its SHA-256 hash.</li>
+          <li>Each token is single-use and expires after 24 hours.</li>
+          <li>Rate limiting uses a one-way IP-derived hash and a 24-hour request window.</li>
+          <li>Expired rate-limit and token records are automatically pruned by the application during subsequent requests.</li>
         </ul>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">3. Your data is never sold, shared, or used for ads</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">5. Other retention</h2>
+        <ul class="list-disc list-inside space-y-2">
+          <li>Contact messages are retained only as long as reasonably needed to handle and follow up the enquiry.</li>
+          <li>Newsletter subscriber data is retained until unsubscribe, removal on request, or another valid operational reason requires deletion.</li>
+          <li>Operational/security logs are retained according to the configured retention of the infrastructure and error-monitoring services.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">6. Processors and infrastructure</h2>
         <p>
-          This is a personal site, not a business collecting data for profit. Your email address and message are
-          used exclusively for the purpose you gave them for - replying to you, or sending the digest you signed
-          up for. They are never sold, rented, shared with third parties, or used for advertising, profiling, or
-          any purpose you didn't ask for. There is no advertising or marketing tracking on this site.
+          The site uses Cloudflare infrastructure for hosting, Workers, database and email-related processing.
+          Sentry is used for error monitoring and may process technical diagnostics needed to investigate faults.
+          These providers act only as needed to provide the relevant technical services; there is no third-party
+          advertising network or marketing tracker intentionally embedded by this site.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">4. Legal basis and retention</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">7. Romania Cyber Monitor</h2>
         <p class="mb-3">
-          Both the contact form and the newsletter process your data on the basis of your explicit consent
-          (GDPR Art. 6(1)(a)), given by checking the consent box before submitting.
+          Romania Cyber Monitor publishes automated summaries derived from public threat-intelligence sources.
+          Ransomware listings are treated as unconfirmed claims unless the source material supports stronger wording.
+          Publication here is not independent proof that a named organisation was compromised.
         </p>
-        <ul class="list-disc list-inside space-y-2">
-          <li>Contact messages are kept only as long as needed to handle your enquiry, then deleted.</li>
-          <li>
-            Newsletter emails are kept until you unsubscribe (link in every email) or your subscription is
-            manually removed on request.
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">5. Where data is stored and processed</h2>
         <p>
-          This site runs entirely on Cloudflare's infrastructure (Workers, D1, Email Workers) - there is no
-          separate marketing platform or third-party mailing list provider involved. Error monitoring is provided
-          by Sentry, which may automatically log basic technical diagnostics (e.g. browser type, approximate
-          location from IP address) purely to help fix bugs - never used to identify or profile individual
-          visitors. No advertising cookies or third-party tracking pixels are used anywhere on this site.
+          If an entry concerning your organisation appears inaccurate, use the <a href="/contact" class="text-primary-400 hover:underline">contact page</a> to request review or correction.
         </p>
       </section>
 
       <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">6. Romania Cyber Monitor - content disclaimer</h2>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">8. Your data-protection rights</h2>
         <p class="mb-3">
-          Romania Cyber Monitor publishes automated summaries of public, open-source threat-intelligence feeds
-          (e.g. ransomware leak-site listings, breach catalogues). This section exists for public-interest
-          awareness - to help Romanian organisations and individuals stay informed - not for commercial gain,
-          sensationalism, or to accuse anyone of wrongdoing.
+          Depending on where you are and which law applies, you may have rights including access, correction,
+          deletion, restriction, objection, portability and withdrawal of consent where consent is the lawful basis.
         </p>
-        <ul class="list-disc list-inside space-y-2">
-          <li>
-            <strong class="text-neutral-100">Ransomware entries are unconfirmed claims</strong>, not proof of a
-            breach. A claim being listed here does not mean the named organisation was actually compromised, nor
-            does it imply any judgment about the organisation.
-          </li>
-          <li>
-            Entries reflect only what upstream sources report and are generated automatically from that data -
-            no attack vector, financial impact, or attribution is inferred beyond the source material.
-          </li>
-          <li>
-            These automated summaries aren't a substitute for a proper, individualised security assessment of
-            your organisation - they only reflect what a public feed reported. If your organisation is named
-            here and you believe an entry is inaccurate, or you'd like actual help improving your security
-            posture (hardening, incident response, a proper audit), <a href="/contact" class="text-primary-400 hover:underline">get in touch</a>
-            - that hands-on work is exactly what I do.
-          </li>
-        </ul>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">7. Your rights under GDPR</h2>
-        <p class="mb-3">If you're in the EU/EEA (or covered by similar law elsewhere), you have the right to:</p>
-        <ul class="list-disc list-inside space-y-1">
-          <li>Access the personal data held about you</li>
-          <li>Correct inaccurate data</li>
-          <li>Request deletion ("right to be forgotten")</li>
-          <li>Withdraw consent at any time (e.g. unsubscribe)</li>
-          <li>Object to or restrict processing</li>
-          <li>Request a copy of your data in a portable format</li>
-          <li>Lodge a complaint with your national data protection authority (in Romania: ANSPDCP, dataprotection.ro)</li>
-        </ul>
-        <p class="mt-3">
-          To exercise any of these rights, email
-          <a href={`mailto:${SITE.links.email}`} class="text-primary-400 hover:underline">{SITE.links.email}</a>.
-          I'll respond within 30 days.
-        </p>
-      </section>
-
-      <section>
-        <h2 class="text-lg font-semibold text-neutral-100 mb-2">8. Changes to this policy</h2>
         <p>
-          If this policy changes materially, the "Last updated" date above will change accordingly. Continued
-          use of the site after an update means you accept the revised policy.
+          To make a privacy request, email <a href={`mailto:${SITE.links.email}`} class="text-primary-400 hover:underline">{SITE.links.email}</a>.
+          UK residents may also raise concerns with the Information Commissioner's Office; people elsewhere can
+          contact their applicable supervisory authority.
         </p>
+      </section>
+
+      <section>
+        <h2 class="text-lg font-semibold text-neutral-100 mb-2">9. Changes</h2>
+        <p>Material changes to this notice will be reflected by updating the date shown above.</p>
       </section>
     </div>
   </main>
