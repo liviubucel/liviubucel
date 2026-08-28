@@ -1,0 +1,9 @@
+# Default ownership
+* @liviubucel
+
+# Security-sensitive configuration and automation
+/.github/ @liviubucel
+/scripts/ @liviubucel
+/migrations/ @liviubucel
+/src/lib/ @liviubucel
+/studio-liviubucel/ @liviubucel
