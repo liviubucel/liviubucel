@@ -45,8 +45,9 @@ function languageRedirect(url: URL, language: SiteLanguage, persistManualChoice 
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = context.url;
+  const isLocalHost = LOCAL_HOSTS.has(url.hostname);
 
-  if (!LOCAL_HOSTS.has(url.hostname) && (url.hostname !== CANONICAL_HOST || url.protocol !== 'https:')) {
+  if (!isLocalHost && (url.hostname !== CANONICAL_HOST || url.protocol !== 'https:')) {
     const canonicalUrl = new URL(url);
     canonicalUrl.protocol = 'https:';
     canonicalUrl.hostname = CANONICAL_HOST;
@@ -79,7 +80,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
   const headers = new Headers(response.headers);
 
-  for (const [name, value] of Object.entries(getSecurityHeaders(context.url.pathname))) {
+  for (const [name, rawValue] of Object.entries(getSecurityHeaders(context.url.pathname))) {
+    // HSTS and upgrade-insecure-requests are production HTTPS controls. Sending
+    // them from an HTTP localhost preview can force browser tooling onto an HTTPS
+    // endpoint that does not exist, and it also makes local/CI behavior diverge
+    // from the intended isolated preview environment.
+    if (isLocalHost && name === 'Strict-Transport-Security') continue;
+
+    const value =
+      isLocalHost && name === 'Content-Security-Policy'
+        ? rawValue.replace(/;\s*upgrade-insecure-requests\b/, '')
+        : rawValue;
+
     headers.set(name, value);
   }
 
