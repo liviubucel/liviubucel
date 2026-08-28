@@ -1,0 +1,44 @@
+name: Repair Studio security lockfile
+
+on:
+  push:
+    branches: ['agent/security-cleanup-20260828']
+    paths:
+      - '.github/workflows/repair-studio-lockfile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/security-cleanup-20260828
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+      - name: Regenerate Studio lockfile safely
+        working-directory: studio-liviubucel
+        run: pnpm install --ignore-workspace --lockfile-only --no-frozen-lockfile --ignore-scripts
+      - name: Commit generated Studio lockfile
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add studio-liviubucel/pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo 'Studio lockfile already matches security configuration.'
+            exit 0
+          fi
+          git commit -m 'chore: regenerate patched Studio lockfile'
+          git push origin HEAD:agent/security-cleanup-20260828
