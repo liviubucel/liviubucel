@@ -7,50 +7,36 @@ import { stdin as input, stdout as output } from "node:process";
 const repoRoot = process.cwd();
 
 const defaults = {
-  site: { url: "https://gianmarcocavallo.com/" },
+  site: { url: "https://www.liviubucel.com/" },
   author: {
-    firstName: "Gianmarco",
-    lastName: "Cavallo",
-    fullName: "Gianmarco Cavallo",
-    shortName: "Gianmarco",
-    jobTitle: "Freelance Full Stack Developer",
-    twitterHandle: "gianmarcocavallo", // without "@"
+    firstName: "Liviu",
+    lastName: "Bucel",
+    fullName: "Liviu Bucel",
+    shortName: "Liviu",
+    jobTitle: "Cyber Security Specialist",
+    twitterHandle: "liviubucel", // without "@"
   },
   location: {
-    countryName: "Italy",
-    countryCode: "IT",
-    timezone: "Europe/Rome",
+    countryName: "United Kingdom",
+    countryCode: "GB",
+    timezone: "Europe/London",
   },
   links: {
-    github: "https://github.com/Ladvace",
-    linkedin: "https://www.linkedin.com/in/gianmarco-cavallo/",
-    medium: "https://ladvace.medium.com/",
-    discord: "https://discordapp.com/users/163300027618295808",
-    dribble: "https://dribbble.com/Ladvace_Jace",
-    email: "contact@gianmarcocavallo.com",
+    github: "https://github.com/liviubucel",
+    linkedin: "https://www.linkedin.com/in/liviubucel/",
+    medium: "",
+    discord: "",
+    dribble: "",
+    email: "contact@liviubucel.com",
   },
   cal: {
-    username: "ladvace",
+    username: "liviubucel",
     durationNamespace: "15min",
     origin: "https://cal.com",
   },
   visitedCountries: [
-    "France",
-    "China",
-    "Italy",
-    "Sri Lanka",
-    "Uzbekistan",
-    "Turkey",
-    "Greece",
-    "Malta",
-    "Hungary",
-    "Portugal",
-    "Morocco",
-    "Greece",
-    "Spain",
-    "Netherlands",
-    "Belgium",
-    "Spain",
+    "United Kingdom",
+    "Romania",
   ],
 };
 
@@ -177,4 +163,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-
