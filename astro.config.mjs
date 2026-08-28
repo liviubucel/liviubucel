@@ -110,7 +110,11 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   output: "server",
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    // Keep dev/preview isolated from deployed Cloudflare resources. Production
+    // deployment bindings are unaffected; only local/CI binding resolution is local.
+    remoteBindings: false,
+  }),
   vite: {
     assetsInclude: "**/*.riv",
     ssr: {
