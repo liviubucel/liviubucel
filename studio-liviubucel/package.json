@@ -2,7 +2,7 @@
   "name": "studio-liviubucel",
   "private": true,
   "version": "1.0.0",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.34.0",
   "main": "package.json",
   "license": "UNLICENSED",
   "scripts": {
@@ -31,6 +31,7 @@
   },
   "pnpm": {
     "overrides": {
+      "undici@>=6.0.0 <6.28.0": "6.28.0",
       "undici@>=7.0.0 <7.29.0": "7.29.0",
       "undici@>=8.0.0 <8.9.0": "8.9.0",
       "fast-uri@<2.4.4": "2.4.4",
