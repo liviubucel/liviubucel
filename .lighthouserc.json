@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "LIGHTHOUSE_CI=true pnpm astro dev --host 127.0.0.1 --port 4321",
+      "startServerCommand": "LIGHTHOUSE_CI=true pnpm astro preview --host 127.0.0.1 --port 4321",
       "startServerReadyPattern": "Local",
       "url": [
         "http://127.0.0.1:4321/",
