@@ -4,6 +4,13 @@
   "version": "1.0.0",
   "private": true,
   "description": "Bilingual cybersecurity portfolio for Liviu Bucel",
+  "author": "Liviu Bucel",
+  "homepage": "https://www.liviubucel.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liviubucel/liviubucel.git"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
