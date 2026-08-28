@@ -28,14 +28,25 @@ const DANGEROUS_PATTERNS = [
     pattern: /http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org\/2000\/svg)/g,
     name: 'unencrypted HTTP URL',
     severity: 'medium',
+    ignoreInTests: true,
   },
 ];
+
+function isTestFile(filePath) {
+  return /\.(?:test|spec)\.(?:ts|tsx|js|jsx)$/.test(filePath);
+}
 
 function scanFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const issues = [];
+  const testFile = isTestFile(filePath);
 
-  DANGEROUS_PATTERNS.forEach(({ pattern, name, severity }) => {
+  DANGEROUS_PATTERNS.forEach(({ pattern, name, severity, ignoreInTests = false }) => {
+    // Test fixtures intentionally exercise unsafe URLs. Ignore only the HTTP
+    // transport rule there; critical/high code-execution patterns are still
+    // scanned in tests and remain blocking.
+    if (testFile && ignoreInTests) return;
+
     const matches = content.match(pattern);
     if (matches) {
       issues.push({

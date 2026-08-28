@@ -17,10 +17,32 @@ const EN_POST = {
   body: [{ _type: 'block', children: [{ _type: 'span', text: 'Hello world' }] }],
 };
 
-function fakeClient(overrides: { fetch?: unknown; create?: unknown } = {}): SanityClient {
+const RO_POST = {
+  _id: 'post-ro-1',
+  slug: 'acme-breach',
+  body: [
+    {
+      _type: 'block',
+      children: [{ _type: 'span', text: 'Această vulnerabilitate afectează utilizatori și sisteme.' }],
+    },
+  ],
+};
+
+function defaultFetch(query: string) {
+  if (query.includes('!defined(language)') || query.includes('!defined(published)')) return [];
+  if (query.includes('language == "en"')) return [EN_POST];
+  if (query.includes('language == "ro"')) return [];
+  return [];
+}
+
+function fakeClient(overrides: { fetch?: unknown; create?: unknown; patch?: unknown } = {}): SanityClient {
+  const commit = vi.fn(async () => ({}));
+  const set = vi.fn(() => ({ commit }));
+
   return {
-    fetch: vi.fn(async (query: string) => (query.includes('language == "en"') ? [EN_POST] : [])),
-    create: vi.fn(async (doc: unknown) => doc),
+    fetch: vi.fn(async (query: string) => defaultFetch(query)),
+    create: vi.fn(async (doc: Record<string, unknown>) => ({ _id: 'post-ro-created', ...doc })),
+    patch: vi.fn(() => ({ set })),
     ...overrides,
   } as unknown as SanityClient;
 }
@@ -43,17 +65,38 @@ function aiEnv() {
 describe('backfillBlogTranslations', () => {
   it('returns an empty result when no Sanity write client is configured', async () => {
     const result = await backfillBlogTranslations({}, 10, null);
-    expect(result).toEqual({ candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] });
+    expect(result).toEqual({
+      normalized: 0,
+      candidates: 0,
+      translated: 0,
+      repaired: 0,
+      partial: [],
+      failed: 0,
+      failedSlugs: [],
+    });
   });
 
-  it('skips EN posts that already have a published RO counterpart', async () => {
+  it('skips EN posts that already have a valid published RO counterpart', async () => {
     const client = fakeClient({
-      fetch: vi.fn(async (query: string) => (query.includes('language == "en"') ? [EN_POST] : ['acme-breach'])),
+      fetch: vi.fn(async (query: string) => {
+        if (query.includes('!defined(language)') || query.includes('!defined(published)')) return [];
+        if (query.includes('language == "en"')) return [EN_POST];
+        if (query.includes('language == "ro"')) return [RO_POST];
+        return [];
+      }),
     });
 
     const result = await backfillBlogTranslations(aiEnv(), 10, client);
 
-    expect(result).toEqual({ candidates: 0, translated: 0, partial: [], failed: 0, failedSlugs: [] });
+    expect(result).toEqual({
+      normalized: 0,
+      candidates: 0,
+      translated: 0,
+      repaired: 0,
+      partial: [],
+      failed: 0,
+      failedSlugs: [],
+    });
     expect(client.create).not.toHaveBeenCalled();
   });
 
@@ -63,7 +106,15 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(env, 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 1, partial: [], failed: 0, failedSlugs: [] });
+    expect(result).toEqual({
+      normalized: 0,
+      candidates: 1,
+      translated: 1,
+      repaired: 0,
+      partial: [],
+      failed: 0,
+      failedSlugs: [],
+    });
     expect(client.create).toHaveBeenCalledTimes(1);
     expect(client.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -87,8 +138,10 @@ describe('backfillBlogTranslations', () => {
     const result = await backfillBlogTranslations(env, 10, client);
 
     expect(result).toEqual({
+      normalized: 0,
       candidates: 1,
       translated: 0,
+      repaired: 0,
       partial: [],
       failed: 1,
       failedSlugs: [{ slug: 'acme-breach', reason: 'fields_translation_failed' }],
@@ -96,7 +149,7 @@ describe('backfillBlogTranslations', () => {
     expect(client.create).not.toHaveBeenCalled();
   });
 
-  it('still publishes with the English body (as a partial success) when only body translation fails', async () => {
+  it('refuses to publish a mixed-language RO post when body translation fails', async () => {
     const client = fakeClient();
     let call = 0;
     const env = {
@@ -111,13 +164,16 @@ describe('backfillBlogTranslations', () => {
 
     const result = await backfillBlogTranslations(env, 10, client);
 
-    expect(result).toEqual({ candidates: 1, translated: 1, partial: ['acme-breach'], failed: 0, failedSlugs: [] });
-    expect(client.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Breșă Acme',
-        body: EN_POST.body, // fell back to the untranslated English body
-      })
-    );
+    expect(result).toEqual({
+      normalized: 0,
+      candidates: 1,
+      translated: 0,
+      repaired: 0,
+      partial: [],
+      failed: 1,
+      failedSlugs: [{ slug: 'acme-breach', reason: 'body_translation_failed' }],
+    });
+    expect(client.create).not.toHaveBeenCalled();
   });
 
   it('counts a post as failed when persisting to Sanity throws', async () => {
@@ -126,18 +182,44 @@ describe('backfillBlogTranslations', () => {
     const result = await backfillBlogTranslations(aiEnv(), 10, client);
 
     expect(result).toEqual({
+      normalized: 0,
       candidates: 1,
       translated: 0,
+      repaired: 0,
       partial: [],
       failed: 1,
       failedSlugs: [{ slug: 'acme-breach', reason: 'persist_failed' }],
     });
   });
 
+  it('skips malformed legacy metadata rows without crashing the backfill', async () => {
+    const client = fakeClient({
+      fetch: vi.fn(async (query: string) => {
+        if (query.includes('!defined(language)') || query.includes('!defined(published)')) {
+          return [{ title: 'Legacy row without id', published: undefined }];
+        }
+        if (query.includes('language == "en"')) return [];
+        if (query.includes('language == "ro"')) return [];
+        return [];
+      }),
+    });
+
+    const result = await backfillBlogTranslations(aiEnv(), 10, client);
+
+    expect(result.normalized).toBe(0);
+    expect(result.candidates).toBe(0);
+    expect(client.patch).not.toHaveBeenCalled();
+  });
+
   it('respects the limit parameter', async () => {
     const manyPosts = Array.from({ length: 5 }, (_, i) => ({ ...EN_POST, _id: `post-${i}`, slug: `post-${i}` }));
     const client = fakeClient({
-      fetch: vi.fn(async (query: string) => (query.includes('language == "en"') ? manyPosts : [])),
+      fetch: vi.fn(async (query: string) => {
+        if (query.includes('!defined(language)') || query.includes('!defined(published)')) return [];
+        if (query.includes('language == "en"')) return manyPosts;
+        if (query.includes('language == "ro"')) return [];
+        return [];
+      }),
     });
 
     const result = await backfillBlogTranslations(aiEnv(), 2, client);

@@ -113,6 +113,13 @@ async function normalizeLegacyBlogMetadata(client: SanityClient): Promise<number
 
   let normalized = 0;
   for (const post of posts) {
+    // Sanity documents should always carry `_id`, but defensive runtime checks
+    // prevent malformed legacy/mock data from crashing the entire backfill.
+    if (!post || typeof post._id !== 'string' || post._id.length === 0) {
+      console.warn('[blog] skipping malformed legacy post without a valid _id.');
+      continue;
+    }
+
     const patch: Record<string, unknown> = {};
 
     if (!post.language) {

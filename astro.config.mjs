@@ -14,6 +14,7 @@ import react from "@astrojs/react";
 const envSiteUrl = process.env.SITE_URL || "https://www.liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
 const siteNoTrailingSlash = site.endsWith("/") ? site.slice(0, -1) : site;
+const sentryEnabled = Boolean(process.env.PUBLIC_SENTRY_DSN);
 
 // https://astro.build/config
 export default defineConfig({
@@ -62,6 +63,11 @@ export default defineConfig({
   },
   integrations: [
     sentry({
+      // Do not inject Sentry's browser/server SDKs unless a runtime DSN is
+      // actually configured. Besides avoiding dead observability code, this
+      // prevents the known @sentry/astro + Cloudflare workerd Web Vitals crash
+      // from turning local/CI (and an unconfigured production build) into HTTP 500s.
+      enabled: sentryEnabled,
       project: "liviubucelcom",
       org: "zebrabyte",
       authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -110,7 +116,11 @@ export default defineConfig({
     remarkPlugins: [remarkReadingTime],
   },
   output: "server",
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    // Keep dev/preview isolated from deployed Cloudflare resources. Production
+    // deployment bindings are unaffected; only local/CI binding resolution is local.
+    remoteBindings: false,
+  }),
   vite: {
     assetsInclude: "**/*.riv",
     ssr: {
