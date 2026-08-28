@@ -189,8 +189,65 @@ jobs:
           SANITY_DATASET: production
           SITE_URL: https://www.liviubucel.com/
 
+      - name: Start and smoke-test local preview
+        run: |
+          set -euo pipefail
+
+          PREVIEW_LOG="${RUNNER_TEMP}/astro-preview.log"
+          PREVIEW_PID_FILE="${RUNNER_TEMP}/astro-preview.pid"
+
+          LIGHTHOUSE_CI=true pnpm astro preview --host 127.0.0.1 --port 4321 >"${PREVIEW_LOG}" 2>&1 &
+          echo "$!" >"${PREVIEW_PID_FILE}"
+
+          READY=0
+          for attempt in $(seq 1 30); do
+            if curl --silent --show-error --output /dev/null http://localhost:4321/; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" != '1' ]; then
+            echo "::error::Astro preview did not become reachable."
+            cat "${PREVIEW_LOG}"
+            exit 1
+          fi
+
+          echo '--- homepage response headers ---'
+          curl --silent --show-error --dump-header - --output /dev/null http://localhost:4321/
+          echo '--- Romanian homepage response headers ---'
+          curl --silent --show-error --dump-header - --output /dev/null http://localhost:4321/ro/
+
+          if ! curl --fail --silent --show-error --location --output /dev/null http://localhost:4321/; then
+            echo "::error::Local homepage smoke test failed."
+            cat "${PREVIEW_LOG}"
+            exit 1
+          fi
+
+          if ! curl --fail --silent --show-error --location --output /dev/null http://localhost:4321/ro/; then
+            echo "::error::Local Romanian homepage smoke test failed."
+            cat "${PREVIEW_LOG}"
+            exit 1
+          fi
+
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           configPath: './.lighthouserc.json'
           uploadArtifacts: false
+
+      - name: Stop local preview
+        if: always()
+        run: |
+          PREVIEW_PID_FILE="${RUNNER_TEMP}/astro-preview.pid"
+          PREVIEW_LOG="${RUNNER_TEMP}/astro-preview.log"
+
+          if [ -f "${PREVIEW_PID_FILE}" ]; then
+            kill "$(cat "${PREVIEW_PID_FILE}")" 2>/dev/null || true
+          fi
+
+          if [ "${{ job.status }}" != 'success' ] && [ -f "${PREVIEW_LOG}" ]; then
+            echo '--- Astro preview log ---'
+            cat "${PREVIEW_LOG}"
+          fi
