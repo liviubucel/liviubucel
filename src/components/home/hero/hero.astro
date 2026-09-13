@@ -1,5 +1,4 @@
 ---
-import AvailabilityBadge from '@/components/shared/availability-badge'
 import GreetingWord from '@/components/home/hero/greeting-word'
 import HeroCta from '@/components/home/hero/hero-cta'
 import IdCard from '@/components/ui/id-card'
@@ -13,10 +12,8 @@ import IdCard from '@/components/ui/id-card'
 
   <div class='grid min-h-[700px] items-center gap-8 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:px-10.5 lg:py-24'>
     <div class='relative z-20 max-w-2xl space-y-7'>
-      <AvailabilityBadge className='h-6.5 gap-1 rounded-full' />
-
       <div class='space-y-3'>
-        <p class='text-muted-foreground text-sm font-medium uppercase tracking-[0.18em]'>Cybersecurity portfolio</p>
+        <p class='text-muted-foreground text-sm font-medium uppercase tracking-[0.18em]'>Cybersecurity · DFIR · Ethical Hacking</p>
         <h1 class='text-[clamp(3.2rem,7vw,6rem)] font-semibold leading-[.92] tracking-[-0.055em]'>
           <span class='block text-muted-foreground/70 text-[.52em] font-medium tracking-[-0.035em]'>
             <GreetingWord client:load />
@@ -30,11 +27,11 @@ import IdCard from '@/components/ui/id-card'
       </p>
 
       <p class='text-muted-foreground max-w-xl text-base leading-relaxed sm:text-lg'>
-        Focused on DFIR, ethical hacking, threat research and infrastructure security — with projects that turn security data and operational problems into useful tools.
+        Focused on threat research, digital investigation and infrastructure security — with projects that turn security data and operational problems into useful tools.
       </p>
 
       <div class='flex flex-wrap gap-2'>
-        {['DFIR', 'Ethical hacking', 'Threat research', 'Security automation'].map(item => (
+        {['Threat analysis', 'Web security', 'Incident response', 'Security automation'].map(item => (
           <span class='bg-background/75 ring-border rounded-full px-3 py-1.5 text-xs font-medium shadow-sm ring-1 backdrop-blur'>{item}</span>
         ))}
       </div>
