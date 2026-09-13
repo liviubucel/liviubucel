@@ -1,0 +1,96 @@
+name: Validate IdCard WAF-neutral model
+
+on:
+  push:
+    branches:
+      - fix/idcard-waf-neutral-model-20260913
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+          pnpm install --frozen-lockfile
+      - name: Check, test, build
+        run: |
+          pnpm check
+          pnpm test
+          pnpm build
+        env:
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://www.liviubucel.com/
+      - name: Assert neutral model asset
+        run: |
+          set -euo pipefail
+          MODEL=$(find dist/client/_astro -type f -name 'card*.bin' -print -quit)
+          test -n "$MODEL" || { echo '::error::No hashed .bin card model found'; exit 1; }
+          echo "Model asset: $MODEL"
+          if grep -R -F '.glb' dist/client/_astro/id-card*.js; then
+            echo '::error::IdCard bundle still references .glb'
+            exit 1
+          fi
+      - name: Start production Worker locally
+        run: |
+          pnpm exec wrangler dev --config dist/server/wrangler.json --port 8787 > /tmp/wrangler.log 2>&1 &
+          for i in {1..50}; do
+            STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H 'Accept: text/html' http://127.0.0.1:8787/ || true)
+            if [ "$STATUS" = '200' ]; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/wrangler.log
+          exit 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Install Chromium
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.57.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium
+      - name: Validate GLB payload through .bin URL
+        run: |
+          cat > /tmp/pw/test.mjs <<'EOF'
+          import { chromium } from 'playwright'
+          const browser = await chromium.launch({ headless: true, args: ['--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist'] })
+          const page = await browser.newPage({ viewport: { width: 1728, height: 1000 } })
+          const failures = []
+          const models = []
+          page.on('pageerror', e => failures.push(e.stack || e.message))
+          page.on('requestfailed', r => failures.push(`${r.url()} :: ${r.failure()?.errorText}`))
+          page.on('response', r => { if (/card.*\.bin(?:\?|$)/i.test(r.url())) models.push({url:r.url(),status:r.status()}) })
+          const res = await page.goto('http://127.0.0.1:8787/', { waitUntil:'networkidle', timeout:90000 })
+          if (res?.status() !== 200) throw new Error(`home ${res?.status()}`)
+          await page.waitForTimeout(10000)
+          const state = await page.evaluate(() => {
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return {canvas:false, webgl:false, lost:null}
+            const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+            return {canvas:true, webgl:Boolean(gl), lost:gl ? gl.isContextLost() : null, width:canvas.width, height:canvas.height}
+          })
+          console.log('models=', JSON.stringify(models))
+          console.log('state=', JSON.stringify(state))
+          console.log('failures=', JSON.stringify(failures))
+          if (!models.some(x => x.status === 200)) throw new Error('neutral model did not return 200')
+          if (!state.canvas || !state.webgl || state.lost) throw new Error(`canvas unhealthy ${JSON.stringify(state)}`)
+          if (failures.some(x => /Could not load|card.*bin|TypeError/i.test(x))) throw new Error(failures.join('\n'))
+          await browser.close()
+          EOF
+          cd /tmp/pw && node test.mjs
+      - name: Logs
+        if: failure()
+        run: cat /tmp/wrangler.log || true
