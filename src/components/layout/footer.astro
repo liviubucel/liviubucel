@@ -1,23 +1,45 @@
 ---
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-const socials = [
-  { label: 'GitHub', src: '/images/footer/github-logo.webp', href: 'https://github.com/liviubucel' },
-  { label: 'Email', src: '/images/footer/gmail.webp', href: 'mailto:contact@liviubucel.com' },
-  { label: 'LinkedIn', src: '/images/footer/linkedin.webp', href: 'https://www.linkedin.com/in/liviubucel/' },
-  { label: 'X', src: '/images/footer/twitter.webp', href: 'https://x.com/liviubucel' }
-]
+import { GithubIcon, LinkedinIcon, MailIcon } from 'lucide-react'
+
 const year = new Date().getFullYear()
+const socials = [
+  { label: 'GitHub', href: 'https://github.com/liviubucel', icon: GithubIcon },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/liviubucel/', icon: LinkedinIcon },
+  { label: 'Email', href: 'mailto:contact@liviubucel.com', icon: MailIcon }
+]
 ---
 
 <footer class='lg:px-10.5'>
-  <div class='mx-auto max-w-4xl space-y-12 pb-12 lg:border-x xl:max-w-245'>
-    <div class='flex items-center gap-3'>
-      <Separator className='flex-1' />
-      <div class='flex items-center gap-3'>{socials.map(social => <a href={social.href} target={social.href.startsWith('http') ? '_blank' : undefined} rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined} aria-label={social.label}><Button variant='outline' size='icon' className='hover:bg-muted/5 min-w-10 rounded-md'><img src={social.src} alt='' width={16} height={16} /></Button></a>)}</div>
-      <Separator className='flex-1' />
+  <div class='mx-auto max-w-4xl border-t px-4 py-10 sm:px-6 lg:border-x lg:px-10 xl:max-w-245'>
+    <div class='grid gap-8 sm:grid-cols-[1fr_auto] sm:items-end'>
+      <div>
+        <p class='text-muted-foreground text-xs font-semibold uppercase tracking-[0.16em]'>Liviu Bucel</p>
+        <p class='mt-2 max-w-md text-lg font-medium'>Cybersecurity, DFIR, threat research and practical security engineering.</p>
+        <p class='text-muted-foreground mt-3 text-sm'>Built with Astro and deployed at the edge.</p>
+      </div>
+
+      <div class='flex items-center gap-2'>
+        {socials.map(({ label, href, icon: Icon }) => (
+          <a
+            href={href}
+            target={href.startsWith('http') ? '_blank' : undefined}
+            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            aria-label={label}
+            class='bg-background ring-border text-muted-foreground hover:text-foreground flex size-10 items-center justify-center rounded-full ring-1 transition-colors'
+          >
+            <Icon className='size-4' />
+          </a>
+        ))}
+      </div>
     </div>
-    <div class='mb-8 flex items-center justify-center gap-5 text-center max-lg:hidden xl:ml-8'><p class='text-muted-foreground'>Thank you for visiting</p><img src='/images/footer/tree-seal.webp' alt='' class='size-25' /><p class='text-muted-foreground'>Keep learning. Keep testing.</p></div>
-    <div class='-ml-5 space-y-1 text-center'><img src='/images/footer/signature.webp' alt='' class='mx-auto -mb-6 w-60' /><p class='text-xs'>@Liviu Bucel {year}</p></div>
+
+    <div class='text-muted-foreground mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-5 text-xs'>
+      <p>© {year} Liviu Bucel</p>
+      <div class='flex items-center gap-4'>
+        <a href='/privacy' class='hover:text-foreground transition-colors'>Privacy</a>
+        <a href='/blog' class='hover:text-foreground transition-colors'>Writing</a>
+        <a href='/romania-cyber-monitor' class='hover:text-foreground transition-colors'>Cyber Monitor</a>
+      </div>
+    </div>
   </div>
 </footer>
