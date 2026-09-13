@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -61,7 +62,35 @@ jobs:
           SANITY_DATASET: production
           SITE_URL: https://www.liviubucel.com/
 
+      - name: Detect D1 migration changes
+        id: d1_changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Manual deploy: D1 migrations are not applied automatically."
+            exit 0
+          fi
+
+          BEFORE='${{ github.event.before }}'
+          if [ -z "$BEFORE" ] || [[ "$BEFORE" =~ ^0+$ ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "No usable previous commit; D1 migration check will run."
+            exit 0
+          fi
+
+          if git diff --quiet "$BEFORE" "$GITHUB_SHA" -- migrations/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No D1 migration changes detected."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "D1 migration changes detected."
+          fi
+
       - name: Apply D1 migrations
+        if: steps.d1_changes.outputs.changed == 'true'
         run: pnpm exec wrangler d1 migrations apply ROMANIA_MONITOR_DB --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
