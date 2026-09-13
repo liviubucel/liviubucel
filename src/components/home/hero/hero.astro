@@ -5,26 +5,50 @@ import HeroCta from '@/components/home/hero/hero-cta'
 import IdCard from '@/components/ui/id-card'
 ---
 
-<section class='lg:relative'>
-  <div class='border-b pb-8 max-sm:pt-20 sm:py-16 lg:pt-32 lg:pb-24'>
-    <div class='px-4 sm:px-6 lg:px-10.5'>
-      <div class='space-y-6 lg:max-w-lg'>
-        <AvailabilityBadge className='h-6.5 gap-1 rounded-full' />
-        <h1 class='mb-2 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[64px] lg:font-bold'>
-          <GreetingWord client:load />I am Liviu 👋🏻
-        </h1>
-        <p class='text-muted-foreground text-xl font-medium sm:text-2xl lg:text-3xl'>Cybersecurity & DFIR</p>
-        <p class='mb-8 max-w-2xl text-base'>
-          I work across ethical hacking, digital investigation and practical security research, from understanding attack paths to analysing incidents and hardening systems.
-        </p>
-        <HeroCta />
-      </div>
-    </div>
+<section class='relative overflow-hidden border-b'>
+  <div class='pointer-events-none absolute inset-0 -z-10'>
+    <div class='absolute -top-32 left-[-12%] size-80 rounded-full bg-orange-500/8 blur-3xl'></div>
+    <div class='absolute right-[-8%] top-20 size-72 rounded-full bg-sky-500/6 blur-3xl'></div>
   </div>
 
-  <IdCard
-    client:only='react'
-    frontImage='/images/3d-card/profile.webp'
-    className='mx-auto mt-8 aspect-4/5 w-full max-w-80 max-lg:hidden lg:absolute lg:-top-31 lg:right-0 lg:left-0 lg:z-10 lg:mt-0 lg:aspect-auto lg:h-192 lg:max-w-none'
-  />
+  <div class='grid min-h-[700px] items-center gap-8 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:px-10.5 lg:py-24'>
+    <div class='relative z-20 max-w-2xl space-y-7'>
+      <AvailabilityBadge className='h-6.5 gap-1 rounded-full' />
+
+      <div class='space-y-3'>
+        <p class='text-muted-foreground text-sm font-medium uppercase tracking-[0.18em]'>Cybersecurity portfolio</p>
+        <h1 class='text-[clamp(3.2rem,7vw,6rem)] font-semibold leading-[.92] tracking-[-0.055em]'>
+          <span class='block text-muted-foreground/70 text-[.52em] font-medium tracking-[-0.035em]'>
+            <GreetingWord client:load />
+          </span>
+          <span class='block'>I&apos;m Liviu Bucel.</span>
+        </h1>
+      </div>
+
+      <p class='max-w-xl text-xl font-medium leading-snug sm:text-2xl'>
+        I investigate attacks, test systems and build practical security tooling.
+      </p>
+
+      <p class='text-muted-foreground max-w-xl text-base leading-relaxed sm:text-lg'>
+        Focused on DFIR, ethical hacking, threat research and infrastructure security — with projects that turn security data and operational problems into useful tools.
+      </p>
+
+      <div class='flex flex-wrap gap-2'>
+        {['DFIR', 'Ethical hacking', 'Threat research', 'Security automation'].map(item => (
+          <span class='bg-background/75 ring-border rounded-full px-3 py-1.5 text-xs font-medium shadow-sm ring-1 backdrop-blur'>{item}</span>
+        ))}
+      </div>
+
+      <HeroCta />
+    </div>
+
+    <div class='relative hidden min-h-[620px] lg:block'>
+      <div class='pointer-events-none absolute inset-x-16 bottom-10 h-24 rounded-[50%] bg-black/15 blur-3xl dark:bg-black/40'></div>
+      <IdCard
+        client:only='react'
+        frontImage='/images/3d-card/profile.webp'
+        className='absolute inset-0 h-full w-full'
+      />
+    </div>
+  </div>
 </section>
