@@ -5,7 +5,6 @@ import HeadSeo from '@/layouts/PortfolioHeadSeo.astro'
 import EdgeBlur from '@/components/layout/edge-blur.astro'
 import Footer from '@/components/layout/footer.astro'
 import NavDock from '@/components/layout/nav-dock'
-import CustomCursor from '@/components/layout/custom-cursor'
 import { Toaster } from '@/components/ui/sonner'
 
 interface Props {
@@ -62,6 +61,5 @@ const seoProps = Astro.props as Props
     <EdgeBlur />
     <Toaster client:load />
     <NavDock client:load pathname={Astro.url.pathname} />
-    <CustomCursor client:load />
   </body>
 </html>
