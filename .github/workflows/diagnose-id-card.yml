@@ -1,0 +1,144 @@
+name: Diagnose Zolt IdCard runtime
+
+on:
+  push:
+    branches:
+      - diagnose/id-card-runtime-20260913
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Cloudflare output
+        run: pnpm build
+        env:
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://www.liviubucel.com/
+      - name: Start Worker locally
+        run: |
+          pnpm exec wrangler dev --config dist/server/wrangler.json --port 8787 > /tmp/wrangler.log 2>&1 &
+          echo $! > /tmp/wrangler.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:8787/ >/dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/wrangler.log
+          exit 1
+      - name: Install Chromium diagnostic harness
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.57.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium
+      - name: Diagnose IdCard in Chromium
+        run: |
+          cat > /tmp/pw/diag.mjs <<'EOF'
+          import { chromium } from 'playwright'
+
+          const browser = await chromium.launch({ headless: true })
+          const page = await browser.newPage({ viewport: { width: 1728, height: 1000 } })
+          const events = []
+
+          page.on('console', msg => {
+            const line = `[console:${msg.type()}] ${msg.text()}`
+            events.push(line)
+            console.log(line)
+          })
+          page.on('pageerror', err => {
+            const line = `[pageerror] ${err.stack || err.message}`
+            events.push(line)
+            console.log(line)
+          })
+          page.on('requestfailed', req => {
+            const line = `[requestfailed] ${req.url()} :: ${req.failure()?.errorText}`
+            events.push(line)
+            console.log(line)
+          })
+          page.on('response', res => {
+            const u = res.url()
+            if (/id-card|rapier|\.wasm|\.glb|3d-card|profile\.webp|pin\.webp/i.test(u)) {
+              console.log(`[response] ${res.status()} ${res.headers()['content-type'] || ''} ${u}`)
+            }
+          })
+
+          const response = await page.goto('http://127.0.0.1:8787/', { waitUntil: 'networkidle', timeout: 90000 })
+          console.log(`[document] status=${response?.status()} url=${page.url()}`)
+          await page.waitForTimeout(12000)
+
+          const state = await page.evaluate(() => {
+            const section = document.querySelector('[data-hero-id-card]')
+            const canvas = section?.querySelector('canvas')
+            const fallback = document.getElementById('hero-id-card-fallback')
+            const island = section?.querySelector('astro-island')
+            let gl = null
+            let lost = null
+            let pixel = null
+            if (canvas) {
+              try {
+                gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+                lost = gl ? gl.isContextLost() : null
+                if (gl) {
+                  const p = new Uint8Array(4)
+                  gl.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p)
+                  pixel = Array.from(p)
+                }
+              } catch (error) {
+                gl = { error: String(error) }
+              }
+            }
+            return {
+              section: Boolean(section),
+              canvasCount: section?.querySelectorAll('canvas').length ?? 0,
+              canvasWidth: canvas?.width ?? null,
+              canvasHeight: canvas?.height ?? null,
+              canvasRect: canvas ? canvas.getBoundingClientRect().toJSON() : null,
+              webgl: Boolean(gl && !gl.error),
+              contextLost: lost,
+              centerPixel: pixel,
+              fallbackReady: fallback?.dataset.canvasReady ?? null,
+              fallbackDisplay: fallback ? getComputedStyle(fallback).display : null,
+              fallbackOpacity: fallback ? getComputedStyle(fallback).opacity : null,
+              islandHTML: island?.outerHTML?.slice(0, 1000) ?? null,
+              bodyText: document.body.innerText.slice(0, 500)
+            }
+          })
+          console.log('[state]', JSON.stringify(state, null, 2))
+
+          await page.screenshot({ path: '/tmp/id-card-diagnostic.png', fullPage: false })
+          await browser.close()
+
+          const hardErrors = events.filter(line => line.startsWith('[pageerror]') || line.startsWith('[requestfailed]'))
+          console.log(`[summary] hardErrors=${hardErrors.length}`)
+          EOF
+          cd /tmp/pw
+          node diag.mjs
+      - name: Show Worker log
+        if: always()
+        run: cat /tmp/wrangler.log || true
+      - name: Upload diagnostic screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: id-card-diagnostic
+          path: /tmp/id-card-diagnostic.png
+          if-no-files-found: ignore
