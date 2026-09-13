@@ -7,13 +7,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 type DetailsStepProps = { service: { title: string; price: string; duration: string } | undefined; date: Date | undefined; time: string | null; onSuccess: (name: string) => void }
+type ContactResponse = { success?: boolean; error?: string }
 const DetailsStep = ({ service, date, time, onSuccess }: DetailsStepProps) => {
   const [name, setName] = useState(''), [email, setEmail] = useState(''), [notes, setNotes] = useState(''), [sending, setSending] = useState(false)
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSending(true)
     try {
       const form = new FormData(); form.set('name', name); form.set('email', email); form.set('topic', 'General Question'); form.set('consent', 'on'); form.set('message', `Topic: ${service?.title ?? 'Cybersecurity'}\nPreferred time: ${date && time ? `${format(date, 'EEE, MMM d')} · ${time}` : 'Not specified'}\n\n${notes || 'No additional notes.'}`)
-      const response = await fetch('/api/contact', { method: 'POST', body: form }); const data = await response.json().catch(() => ({}))
+      const response = await fetch('/api/contact', { method: 'POST', body: form }); const data = (await response.json().catch(() => ({}))) as ContactResponse
       if (!response.ok) throw new Error(data.error || 'Unable to send message')
       toast.success("Message sent — I'll get back to you as soon as possible."); onSuccess(name); setName(''); setEmail(''); setNotes('')
     } catch (error) { toast.error(error instanceof Error ? error.message : 'Unable to send message') } finally { setSending(false) }
