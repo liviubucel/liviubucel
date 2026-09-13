@@ -1,0 +1,38 @@
+name: Apply IdCard WAF-neutral model URL
+
+on:
+  push:
+    branches:
+      - fix/idcard-waf-neutral-model-20260913
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/idcard-waf-neutral-model-20260913
+          fetch-depth: 0
+      - name: Point IdCard at neutral-extension model asset
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/components/ui/id-card.tsx')
+          text = path.read_text()
+          old = "new URL('../../assets/models/lanyard/card.glb', import.meta.url).href"
+          new = "new URL('../../assets/models/lanyard/card.bin', import.meta.url).href"
+          if old not in text:
+              raise SystemExit('Expected card.glb asset URL not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          rm .github/workflows/apply-idcard-bin-url.yml
+      - name: Commit fix
+        run: |
+          git config user.name 'Liviu Bucel'
+          git config user.email '109367578+liviubucel@users.noreply.github.com'
+          git add src/components/ui/id-card.tsx .github/workflows/apply-idcard-bin-url.yml
+          git commit -m 'fix: serve lanyard model with WAF-neutral extension'
+          git push origin HEAD:fix/idcard-waf-neutral-model-20260913
