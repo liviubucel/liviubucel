@@ -1,0 +1,55 @@
+name: Refresh secure lockfile
+
+on:
+  push:
+    branches: [fix/zolt-exact-1to1-20260913]
+    paths:
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/refresh-secure-lockfile.yml'
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.34.0'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${PNPM_VERSION} --activate
+      - name: Refresh lockfile
+        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Dependency audit
+        run: pnpm audit --audit-level moderate
+      - name: Type check
+        run: pnpm check
+      - name: Unit tests
+        run: pnpm test
+      - name: Production build
+        run: pnpm build
+        env:
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://www.liviubucel.com/
+      - name: Commit refreshed lockfile
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo 'Lockfile already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pnpm-lock.yaml
+          git commit -m 'chore: refresh lockfile after security overrides'
+          git push
