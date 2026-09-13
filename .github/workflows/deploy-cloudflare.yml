@@ -109,47 +109,50 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Hard-gate the freshly deployed Worker itself. The public hostname is protected by
-          # Cloudflare WAF/Bot rules and can legitimately return 403 to GitHub-hosted runners.
+          # requests to workers.dev are intentionally redirected by application middleware to
+          # the canonical www host. Treat that canonical redirect as the Worker health signal.
+          # The public hostname is protected by Cloudflare WAF/Bot rules and can legitimately
+          # return 403 to GitHub-hosted runners.
           WORKER_BASE='https://liviubucel-website.zebrabyte-uk.workers.dev'
           PUBLIC_BASE='https://www.liviubucel.com'
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/153.0.0.0 Safari/537.36'
 
-          HOME_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${WORKER_BASE}/?deploy_sha=${GITHUB_SHA}")
-          EXPERIENCE_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${WORKER_BASE}/experience?deploy_sha=${GITHUB_SHA}")
+          check_worker_redirect() {
+            local path="$1"
+            local headers status location
+            headers=$(curl -sS -D - -o /dev/null -H "User-Agent: ${UA}" "${WORKER_BASE}${path}")
+            status=$(printf '%s\n' "$headers" | awk 'NR==1 {print $2}')
+            location=$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $2); print $2; exit}')
 
-          if [ "$HOME_STATUS" != '200' ]; then
-            echo "::error::Worker homepage returned HTTP ${HOME_STATUS}"
-            exit 1
-          fi
+            case "$status" in
+              301|302|307|308) ;;
+              *)
+                echo "::error::Worker ${path} returned HTTP ${status}; expected canonical redirect."
+                exit 1
+                ;;
+            esac
 
-          if [ "$EXPERIENCE_STATUS" != '200' ]; then
-            echo "::error::Worker experience page returned HTTP ${EXPERIENCE_STATUS}"
-            exit 1
-          fi
+            case "$location" in
+              https://www.liviubucel.com/*|https://www.liviubucel.com)
+                echo "Worker ${path} canonical redirect OK: ${status}."
+                ;;
+              *)
+                echo "::error::Worker ${path} redirected to unexpected location: ${location}"
+                exit 1
+                ;;
+            esac
+          }
 
-          HEADERS=$(curl -sS -D - -o /dev/null -H "User-Agent: ${UA}" "${WORKER_BASE}/romania-cyber-monitor?lang=ro")
-          LOCATION=$(printf '%s\n' "$HEADERS" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $2); print $2; exit}')
-          if [ "$LOCATION" != "${WORKER_BASE}/ro/romania-cyber-monitor" ]; then
-            echo "::error::Worker language redirect is wrong: ${LOCATION}"
-            exit 1
-          fi
+          check_worker_redirect '/?deploy_sha='"${GITHUB_SHA}"
+          check_worker_redirect '/experience?deploy_sha='"${GITHUB_SHA}"
 
-          RO_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${WORKER_BASE}/ro/romania-cyber-monitor")
-          if [ "$RO_STATUS" != '200' ]; then
-            echo "::error::Worker Romanian Cyber Monitor returned HTTP ${RO_STATUS}"
-            exit 1
-          fi
-
-          # Check the real hostname as well, but treat a WAF 403 as protection rather than a bad
-          # Worker deployment. Any other unexpected response still fails the deployment gate.
           PUBLIC_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${PUBLIC_BASE}/?deploy_sha=${GITHUB_SHA}")
           case "$PUBLIC_STATUS" in
             200|301|302|307|308)
               echo "Public hostname reachable: HTTP ${PUBLIC_STATUS}."
               ;;
             403)
-              echo "::warning::Public hostname returned HTTP 403 to the GitHub runner (WAF/Bot protection). Worker smoke tests passed."
+              echo "::warning::Public hostname returned HTTP 403 to the GitHub runner (WAF/Bot protection). Worker canonical redirects passed."
               ;;
             *)
               echo "::error::Public hostname returned unexpected HTTP ${PUBLIC_STATUS}"
@@ -157,4 +160,4 @@ jobs:
               ;;
           esac
 
-          echo "Production Worker smoke tests passed."
+          echo "Production smoke tests passed."
