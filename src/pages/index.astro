@@ -5,9 +5,7 @@ import About from '@/components/home/about/about.astro'
 import FeaturedWorks from '@/components/shared/featured-works/featured-works.astro'
 import Experience from '@/components/home/experience/experience.astro'
 import Services from '@/components/shared/services/services'
-import Testimonials from '@/components/shared/testimonials/testimonials'
-import HireMe from '@/components/home/hire-me/hire-me.astro'
-import SelectService from '@/components/home/select-service/select-service.astro'
+import ContactCta from '@/components/home/contact-cta.astro'
 import type { CaseStudyMetadata } from '@/lib/case-studies'
 
 export const prerender = false
@@ -17,10 +15,10 @@ const caseStudies: CaseStudyMetadata[] = [
     slug: 'romania-cyber-monitor',
     href: '/romania-cyber-monitor',
     title: 'Romania Cyber Monitor',
-    description: 'A public cyber threat monitoring project that collects, normalises and presents Romania-linked ransomware, breach, malware and exposure data.',
+    description: 'A public cyber-threat monitoring project that collects, normalises and presents Romania-linked ransomware, breach, malware and exposure data.',
     organisation: 'Independent project',
     role: 'Threat research & engineering',
-    duration: 'Ongoing',
+    duration: 'Live security project',
     publishedAt: '2026-09-01',
     image: '/globe_preview.png',
     logo: '/illustrations/roman_shield.webp'
@@ -29,12 +27,11 @@ const caseStudies: CaseStudyMetadata[] = [
     slug: 'zebrabyte',
     href: '/projects',
     title: 'ZebraByte',
-    description: 'Security-focused infrastructure and platform work spanning hosting, DNS, TLS, edge security and operational hardening.',
+    description: 'Security-focused infrastructure and platform work spanning DNS, TLS, edge protection, hosting and operational hardening.',
     organisation: 'ZebraByte',
     role: 'Infrastructure & security',
-    duration: 'Ongoing',
+    duration: 'Security infrastructure',
     publishedAt: '2024-06-01',
-    image: '/preview.png',
     logo: '/illustrations/shield_logo.webp'
   },
   {
@@ -46,7 +43,6 @@ const caseStudies: CaseStudyMetadata[] = [
     role: 'ACME / PKI automation',
     duration: 'Security automation',
     publishedAt: '2024-01-01',
-    image: '/illustrations/shield_logo.webp',
     logo: '/illustrations/roman_shield.webp'
   }
 ]
@@ -72,10 +68,12 @@ const schema = {
 <PortfolioLayout title={pageTitle} description={pageDescription} keywords={pageKeywords} schema={schema}>
   <Hero />
   <About />
-  <FeaturedWorks caseStudies={caseStudies} />
+  <FeaturedWorks
+    caseStudies={caseStudies}
+    eyebrow='Selected security work'
+    title='Projects built around real security problems'
+  />
   <Experience />
-  <Services client:visible />
-  <Testimonials client:visible />
-  <HireMe />
-  <SelectService />
+  <Services />
+  <ContactCta />
 </PortfolioLayout>
