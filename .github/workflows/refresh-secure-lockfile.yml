@@ -29,8 +29,8 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@${PNPM_VERSION} --activate
-      - name: Refresh lockfile
-        run: pnpm install --lockfile-only --no-frozen-lockfile
+      - name: Install and refresh lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Dependency audit
         run: pnpm audit --audit-level moderate
       - name: Type check
