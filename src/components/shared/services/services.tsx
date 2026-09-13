@@ -1,73 +1,85 @@
-import { useEffect, useRef, useState } from 'react'
-import type { MouseEvent } from 'react'
-import { motion, useMotionValue, useSpring, useTransform } from 'motion/react'
-import { MinusIcon, PlusIcon } from 'lucide-react'
+import { BugIcon, NetworkIcon, RadarIcon, ScanSearchIcon, WorkflowIcon } from 'lucide-react'
 import Eyebrow from '@/components/shared/eyebrow/eyebrow'
-import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '@/components/ui/accordion'
 
-const SERVICES = [
-  { title: 'Digital Forensics & Incident Response', image: '/images/services/thumb-01.webp', duration: 'Investigation & response', tools: ['Wireshark', 'Windows', 'Linux'], description: 'Evidence-driven investigation, network analysis, incident-response fundamentals and clear technical documentation.' },
-  { title: 'Ethical Hacking & Web Security', image: '/images/services/thumb-02.webp', duration: 'Hands-on security testing', tools: ['Burp Suite', 'Nmap', 'Recon'], description: 'Practical testing focused on attack paths, exposed services, application behaviour and reproducible findings.' },
-  { title: 'Threat Research & Monitoring', image: '/images/services/thumb-03.webp', duration: 'Research & intelligence', tools: ['OSINT', 'Threat feeds', 'Automation'], description: 'Collecting, normalising and interpreting public threat intelligence with careful source attribution.' },
-  { title: 'Infrastructure & Web Security', image: '/images/services/thumb-04.webp', duration: 'Systems & hardening', tools: ['Cloudflare', 'DNS', 'TLS'], description: 'Security-focused infrastructure work spanning DNS, certificates, edge controls, hosting and web hardening.' },
-  { title: 'Security Automation', image: '/images/services/thumb-05.webp', duration: 'Scripts & workflows', tools: ['Python', 'PowerShell', 'APIs'], description: 'Small tools and automation that reduce repetitive security work and make technical processes more reliable.' }
+const FOCUS_AREAS = [
+  {
+    title: 'Digital Forensics & Incident Response',
+    description: 'Evidence-driven investigation, network analysis, incident-response fundamentals and clear technical documentation.',
+    tools: ['Wireshark', 'Windows', 'Linux'],
+    icon: ScanSearchIcon
+  },
+  {
+    title: 'Ethical Hacking & Web Security',
+    description: 'Practical testing focused on attack paths, exposed services, application behaviour and reproducible findings.',
+    tools: ['Burp Suite', 'Nmap', 'Recon'],
+    icon: BugIcon
+  },
+  {
+    title: 'Threat Research & Monitoring',
+    description: 'Collecting, normalising and interpreting public threat intelligence with careful source attribution.',
+    tools: ['OSINT', 'Threat feeds', 'Automation'],
+    icon: RadarIcon
+  },
+  {
+    title: 'Infrastructure & Web Security',
+    description: 'Security-focused infrastructure work spanning DNS, certificates, edge controls, hosting and web hardening.',
+    tools: ['Cloudflare', 'DNS', 'TLS'],
+    icon: NetworkIcon
+  },
+  {
+    title: 'Security Automation',
+    description: 'Small tools and automation that reduce repetitive security work and make technical processes more reliable.',
+    tools: ['Python', 'PowerShell', 'APIs'],
+    icon: WorkflowIcon
+  }
 ]
 
-const Services = () => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const [displayedIndex, setDisplayedIndex] = useState<number | null>(null)
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30, mass: 0.5 })
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30, mass: 0.5 })
-  const offsetX = useTransform(springX, value => `calc(${value}px - 50%)`)
-  const offsetY = useTransform(springY, value => `calc(${value}px - 50%)`)
-  const rawTilt = useMotionValue(-8)
-  const tilt = useSpring(rawTilt, { stiffness: 300, damping: 20 })
-
-  useEffect(() => { rawTilt.set(hoveredIndex !== null && hoveredIndex % 2 === 1 ? 8 : -8) }, [hoveredIndex, rawTilt])
-  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect()
-    mouseX.set(event.clientX - bounds.left)
-    mouseY.set(event.clientY - bounds.top)
-  }
-  const handleContainerMouseEnter = () => {
-    if (!containerRef.current) return
-    containerRef.current.style.setProperty('cursor', 'none', 'important')
-    containerRef.current.querySelectorAll('button').forEach(button => button.style.setProperty('cursor', 'none', 'important'))
-  }
-  const handleContainerMouseLeave = () => {
-    if (containerRef.current) {
-      containerRef.current.style.removeProperty('cursor')
-      containerRef.current.querySelectorAll('button').forEach(button => button.style.removeProperty('cursor'))
-    }
-    setHoveredIndex(null)
-  }
-
-  return (
-    <section id='services' className='border-b py-8 sm:py-16 lg:py-24'>
-      <div className='mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:space-y-16 lg:px-10.5'>
-        <div className='space-y-2'><Eyebrow>Security focus</Eyebrow><h2 className='text-2xl font-semibold md:text-3xl lg:text-4xl'>The areas I keep going deeper into</h2></div>
-        <div ref={containerRef} className='relative mx-auto' onMouseMove={handleMouseMove} onMouseEnter={handleContainerMouseEnter} onMouseLeave={handleContainerMouseLeave}>
-          <Accordion className='divide-y'>
-            {SERVICES.map((service, index) => (
-              <AccordionItem key={service.title} value={index} onMouseEnter={() => { setHoveredIndex(index); setDisplayedIndex(index) }}>
-                <AccordionTrigger className='text-primary items-center border-0 py-4 text-lg hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden sm:text-xl lg:text-[26px]'>
-                  <span>{index + 1}. {service.title}</span>
-                  <span className='bg-card relative flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full'><PlusIcon className='text-accent size-4 rotate-0 opacity-100 transition-all duration-300 group-aria-expanded/accordion-trigger:rotate-90 group-aria-expanded/accordion-trigger:opacity-0' /><MinusIcon className='text-accent absolute size-4 -rotate-90 opacity-0 transition-all duration-300 group-aria-expanded/accordion-trigger:rotate-0 group-aria-expanded/accordion-trigger:opacity-100' /></span>
-                </AccordionTrigger>
-                <AccordionContent><div className='mt-2 space-y-4'><p className='text-sm font-medium tracking-wide uppercase'>{service.duration}</p><p className='mb-1 flex flex-wrap items-center gap-3 text-sm font-medium tracking-wide uppercase'>{service.tools.map((tool, toolIndex) => <span key={tool} className='flex items-center gap-2'>{tool}{toolIndex < service.tools.length - 1 && <span className='text-accent'>✦</span>}</span>)}</p><p className='text-muted-foreground text-base'>{service.description}</p></div></AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-          <motion.div style={{ x: offsetX, y: offsetY, rotate: tilt, opacity: hoveredIndex === null ? 0 : 1 }} className='dark:bg-muted-foreground/50 pointer-events-none absolute top-0 left-0 z-10 hidden w-44 rounded-lg bg-white p-1 shadow-xl transition-opacity duration-200 sm:block'>
-            {displayedIndex !== null && <img src={SERVICES[displayedIndex].image} alt='' className='h-auto w-full rounded-lg object-cover' />}
-          </motion.div>
-        </div>
+const Services = () => (
+  <section id='services' className='border-b py-10 sm:py-16 lg:py-24'>
+    <div className='mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:space-y-12 lg:px-10.5'>
+      <div className='max-w-2xl space-y-3'>
+        <Eyebrow>Security focus</Eyebrow>
+        <h2 className='text-2xl font-semibold tracking-tight md:text-3xl lg:text-4xl'>The areas I keep going deeper into</h2>
+        <p className='text-muted-foreground text-base leading-relaxed sm:text-lg'>A practical mix of investigation, offensive testing, infrastructure security and automation — without stock imagery pretending to be the work.</p>
       </div>
-    </section>
-  )
-}
+
+      <div className='grid gap-4 md:grid-cols-2'>
+        {FOCUS_AREAS.map((area, index) => {
+          const Icon = area.icon
+          const wide = index === FOCUS_AREAS.length - 1
+
+          return (
+            <article
+              key={area.title}
+              className={`ring-border group relative overflow-hidden rounded-[24px] bg-card p-5 shadow-sm ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:p-6 ${wide ? 'md:col-span-2' : ''}`}
+            >
+              <div className='absolute -right-12 -top-12 size-36 rounded-full bg-orange-500/5 blur-3xl transition-opacity duration-300 group-hover:bg-orange-500/10' />
+
+              <div className={`relative z-10 ${wide ? 'md:grid md:grid-cols-[auto_1fr_auto] md:items-center md:gap-6' : ''}`}>
+                <div className='bg-background ring-border mb-5 flex size-11 items-center justify-center rounded-2xl ring-1 md:mb-0'>
+                  <Icon className='size-5 text-orange-500' strokeWidth={1.8} />
+                </div>
+
+                <div>
+                  <p className='text-muted-foreground text-xs font-semibold uppercase tracking-[0.14em]'>0{index + 1}</p>
+                  <h3 className='mt-1 text-xl font-semibold'>{area.title}</h3>
+                  <p className='text-muted-foreground mt-3 max-w-xl text-sm leading-relaxed sm:text-base'>{area.description}</p>
+                </div>
+
+                <div className={`mt-5 flex flex-wrap gap-2 ${wide ? 'md:mt-0 md:max-w-56 md:justify-end' : ''}`}>
+                  {area.tools.map(tool => (
+                    <span key={tool} className='bg-background ring-border rounded-full px-2.5 py-1.5 text-xs font-medium ring-1'>
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    </div>
+  </section>
+)
 
 export default Services
