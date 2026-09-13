@@ -27,22 +27,20 @@ jobs:
           corepack prepare pnpm@10.34.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build Cloudflare output
-        run: pnpm build
+      - name: Start Astro dev server
+        run: |
+          pnpm exec astro dev --host 127.0.0.1 --port 4321 > /tmp/astro.log 2>&1 &
+          echo $! > /tmp/astro.pid
+          for i in {1..60}; do
+            if curl -fsS -H 'Accept: text/html' http://127.0.0.1:4321/ >/dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/astro.log
+          exit 1
         env:
           SANITY_PROJECT_ID: 8atrdwjk
           SANITY_DATASET: production
-          SITE_URL: https://www.liviubucel.com/
-      - name: Start Worker locally
-        run: |
-          pnpm exec wrangler dev --config dist/server/wrangler.json --port 8787 > /tmp/wrangler.log 2>&1 &
-          echo $! > /tmp/wrangler.pid
-          for i in {1..40}; do
-            if curl -fsS http://127.0.0.1:8787/ >/dev/null 2>&1; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/wrangler.log
-          exit 1
+          SITE_URL: http://127.0.0.1:4321/
       - name: Install Chromium diagnostic harness
         run: |
           mkdir -p /tmp/pw
@@ -55,7 +53,10 @@ jobs:
           cat > /tmp/pw/diag.mjs <<'EOF'
           import { chromium } from 'playwright'
 
-          const browser = await chromium.launch({ headless: true })
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']
+          })
           const page = await browser.newPage({ viewport: { width: 1728, height: 1000 } })
           const events = []
 
@@ -81,7 +82,7 @@ jobs:
             }
           })
 
-          const response = await page.goto('http://127.0.0.1:8787/', { waitUntil: 'networkidle', timeout: 90000 })
+          const response = await page.goto('http://127.0.0.1:4321/', { waitUntil: 'networkidle', timeout: 90000 })
           console.log(`[document] status=${response?.status()} url=${page.url()}`)
           await page.waitForTimeout(12000)
 
@@ -93,10 +94,12 @@ jobs:
             let gl = null
             let lost = null
             let pixel = null
+            let renderer = null
             if (canvas) {
               try {
                 gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
                 lost = gl ? gl.isContextLost() : null
+                renderer = gl ? gl.getParameter(gl.RENDERER) : null
                 if (gl) {
                   const p = new Uint8Array(4)
                   gl.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p)
@@ -114,12 +117,12 @@ jobs:
               canvasRect: canvas ? canvas.getBoundingClientRect().toJSON() : null,
               webgl: Boolean(gl && !gl.error),
               contextLost: lost,
+              renderer,
               centerPixel: pixel,
               fallbackReady: fallback?.dataset.canvasReady ?? null,
               fallbackDisplay: fallback ? getComputedStyle(fallback).display : null,
               fallbackOpacity: fallback ? getComputedStyle(fallback).opacity : null,
-              islandHTML: island?.outerHTML?.slice(0, 1000) ?? null,
-              bodyText: document.body.innerText.slice(0, 500)
+              islandHTML: island?.outerHTML?.slice(0, 1400) ?? null
             }
           })
           console.log('[state]', JSON.stringify(state, null, 2))
@@ -132,9 +135,9 @@ jobs:
           EOF
           cd /tmp/pw
           node diag.mjs
-      - name: Show Worker log
+      - name: Show Astro log
         if: always()
-        run: cat /tmp/wrangler.log || true
+        run: cat /tmp/astro.log || true
       - name: Upload diagnostic screenshot
         if: always()
         uses: actions/upload-artifact@v4
