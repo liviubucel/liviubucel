@@ -14,7 +14,6 @@ const EXPERIENCES = [
   },
   {
     index: '02',
-    logo: '/logo-negru.png',
     company: 'Intact Media Group',
     role: 'IT Technician',
     period: 'Nov 2019 — Sep 2020',
