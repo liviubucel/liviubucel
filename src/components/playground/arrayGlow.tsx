@@ -1,3 +1,4 @@
+/** @jsxImportSource solid-js */
 import { onCleanup, onMount } from "solid-js";
 
 const getIndicesForHello = (): number[] => {

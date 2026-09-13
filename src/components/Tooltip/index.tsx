@@ -1,3 +1,4 @@
+/** @jsxImportSource solid-js */
 import { type JSX, Show, createSignal } from "solid-js";
 
 type Props = {

@@ -1,0 +1,46 @@
+---
+import { buttonVariants } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+
+const socials = [
+  { label: 'GitHub', href: 'https://github.com/liviubucel', src: '/images/footer/github-logo.webp' },
+  { label: 'Email', href: 'mailto:contact@liviubucel.com', src: '/images/footer/gmail.webp' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/liviubucel/', src: '/images/footer/linkedin.webp' },
+  { label: 'X', href: 'https://x.com/liviubucel', src: '/images/footer/twitter.webp' }
+]
+
+const year = new Date().getFullYear()
+---
+
+<footer class='lg:px-10.5'>
+  <div class='mx-auto max-w-4xl space-y-8 border-t px-4 py-10 sm:px-6 lg:border-x lg:px-10.5 xl:max-w-245'>
+    <div class='flex items-center gap-3'>
+      <Separator className='flex-1' />
+      <div class='flex items-center gap-2'>        {socials.map(social => (
+          <a
+            href={social.href}
+            target={social.href.startsWith('http') ? '_blank' : undefined}
+            rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            aria-label={social.label}
+            class={buttonVariants({ variant: 'outline', size: 'icon', className: 'min-w-10 rounded-md hover:bg-muted/20' })}
+          >
+            <img src={social.src} alt='' width='16' height='16' />
+          </a>
+        ))}
+      </div>
+      <Separator className='flex-1' />
+    </div>
+
+    <div class='flex flex-col items-center justify-between gap-3 text-center text-sm sm:flex-row sm:text-left'>
+      <p class='text-muted-foreground'>Cybersecurity · Ethical Hacking · Digital Investigation</p>
+      <p class='text-muted-foreground'>© {year} Liviu Bucel</p>
+    </div>
+
+    <div class='flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs'>
+      <a class='text-muted-foreground hover:text-foreground' href='/privacy'>Privacy</a>
+      <a class='text-muted-foreground hover:text-foreground' href='/blog'>Writing</a>
+      <a class='text-muted-foreground hover:text-foreground' href='/romania-cyber-monitor'>Romania Cyber Monitor</a>
+      <a class='text-muted-foreground hover:text-foreground' href='/ro/'>RO</a>
+    </div>
+  </div>
+</footer>

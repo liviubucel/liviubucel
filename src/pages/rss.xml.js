@@ -1,23 +1,18 @@
-import rss from "@astrojs/rss";
-import { getCollection } from "astro:content";
-import sanitizeHtml from 'sanitize-html';
-import MarkdownIt from 'markdown-it';
-import { SITE } from "../site-config";
-const parser = new MarkdownIt();
+import rss from '@astrojs/rss';
+import { SITE } from '../site-config';
+import { getPosts } from '../lib/sanity-queries';
 
 export async function GET(context) {
-  const blog = await getCollection("blog");
+  const posts = await getPosts('en');
+
   return rss({
     title: `${SITE.author.fullName}'s Blog`,
-    description: "my blog",
+    description: 'Cybersecurity research, practical security work, and technical notes by Liviu Bucel.',
     site: context.site,
-    items: blog.map((post) => ({
-      title: post.data.title,
-      pubDate: post.data.pubDate,
-      description: post.data.description,
-      content: sanitizeHtml(parser.render(post.body)),
-      // Compute RSS link from post `slug`
-      // This example assumes all posts are rendered as `/blog/[slug]` routes
+    items: posts.map((post) => ({
+      title: post.title,
+      pubDate: new Date(post.pubDate),
+      description: post.metaDescription || post.description || '',
       link: `/blog/${post.slug}/`,
     })),
   });

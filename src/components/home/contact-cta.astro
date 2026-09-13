@@ -1,0 +1,22 @@
+---
+import Eyebrow from '@/components/shared/eyebrow/eyebrow.astro'
+import { buttonVariants } from '@/components/ui/button'
+---
+
+<section id='connect' class='py-8 sm:py-16 lg:py-24'>
+  <div class='mx-auto max-w-7xl px-4 sm:px-6 lg:px-10.5'>
+    <div class='bg-card ring-border rounded-[28px] p-6 shadow-lg sm:p-10 lg:p-14'>
+      <Eyebrow text='Contact' />
+      <div class='mt-3 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end'>
+        <div>
+          <h2 class='max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>Have a security problem worth digging into?</h2>
+          <p class='text-muted-foreground mt-4 max-w-2xl text-base sm:text-lg'>I&apos;m interested in cybersecurity, DFIR, security testing, technical research, and roles where I can investigate real systems and real incidents.</p>
+        </div>
+        <div class='flex flex-wrap gap-3'>
+          <a href='/contact' class={buttonVariants({ className: 'h-11 rounded-full px-5' })}>Contact me</a>
+          <a href='/experience#cv' class={buttonVariants({ variant: 'outline', className: 'h-11 rounded-full px-5' })}>Request CV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

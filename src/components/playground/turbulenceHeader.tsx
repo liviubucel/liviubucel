@@ -1,3 +1,4 @@
+/** @jsxImportSource solid-js */
 import { createSignal, For } from "solid-js";
 
 const turbulenceHeader = () => {

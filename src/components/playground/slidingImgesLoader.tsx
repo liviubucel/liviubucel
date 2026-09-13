@@ -1,3 +1,4 @@
+/** @jsxImportSource solid-js */
 import { createEffect } from "solid-js";
 import {
   animate,

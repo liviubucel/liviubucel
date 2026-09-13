@@ -1,113 +1,50 @@
 ---
-import { DEFAULT_LANGUAGE, type Language } from '../lib/i18n';
-import Seo from '../components/Seo.astro';
-import Layout from "../layouts/Layout.astro";
-import Card from "../components/Card/index.astro";
-import IntroCard from "../components/IntroCard.astro";
-import ContactsCard from "../components/ContactsCard.astro";
-import DonateCard from "../components/DonateCard.astro";
-import TimeZone from "../components/TimeZoneCard.astro";
-import AboutMe from "../components/AboutMe.astro";
-import Now from "../components/Now.astro";
-import DesignWorksCard from "../components/DesignWorksCard.astro";
-import NewsletterSignup from "../components/NewsletterSignup.astro";
-import { SITE } from "../site-config";
-import { getPageSeo, getProfileSettings, getCertifications } from "../lib/sanity-queries";
+import PortfolioLayout from '@/layouts/PortfolioLayout.astro'
+import Hero from '@/components/home/hero/hero.astro'
+import About from '@/components/home/about/about.astro'
+import SelectedWork from '@/components/home/selected-work/selected-work.astro'
+import Experience from '@/components/home/experience/experience.astro'
+import SecurityFocus from '@/components/shared/services/services'
+import Research from '@/components/home/research/research.astro'
+import { SITE } from '@/site-config'
+import { getPageSeo } from '@/lib/sanity-queries'
 
-export const prerender = false;
+export const prerender = false
 
-const lang: Language = 'en';
-const isRO = false;
-const newsletterStatus = Astro.url.searchParams.get('newsletter');
-
-// Fetched once here and passed down to IntroCard/ContactsCard/Now, which
-// each need the profile (and ContactsCard the certifications too) - avoids
-// firing the same Sanity queries redundantly per page render.
-const [seo, profile, certifications] = await Promise.all([
-  getPageSeo("home"),
-  getProfileSettings(),
-  getCertifications(),
-]);
-const seoTitle = seo?.title || `${SITE.author.fullName} - ${SITE.author.jobTitle}`;
-const seoDescription = seo?.description || "Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, and practical security projects";
-const seoKeywords = seo?.keywords || ["cyber security", "digital forensics", "incident response", "penetration testing", "vulnerability assessment", "threat research"];
+const seo = await getPageSeo('home')
+const pageTitle = seo?.title || 'Liviu Bucel — Cybersecurity, Ethical Hacking & Digital Investigation'
+const pageDescription = seo?.description || 'Cybersecurity portfolio focused on ethical hacking, digital investigation, incident response, security testing, threat research, and practical security projects.'
+const pageKeywords = (seo?.keywords || ['cybersecurity', 'ethical hacking', 'digital forensics', 'DFIR', 'incident response', 'penetration testing', 'threat research']).join(', ')
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.author.fullName,
+  url: SITE.site.url,
+  jobTitle: SITE.author.jobTitle,
+  sameAs: [SITE.links.github, SITE.links.linkedin],
+  knowsAbout: ['Cybersecurity', 'Digital Forensics', 'Incident Response', 'Ethical Hacking', 'Penetration Testing', 'Threat Research']
+}
 ---
 
-<Layout
-  description={seoDescription}
-  title={seoTitle}
-  lang={lang}
->
-  <Seo
-    title={seoTitle}
-    description={seoDescription}
-    lang={lang}
-    type="profile"
-    keywords={seoKeywords}
-    ogImage={seo?.ogImage}
-    canonical={`${SITE.site.url}`}
-  />
+<PortfolioLayout title={pageTitle} description={pageDescription} keywords={pageKeywords} schema={schema}>
+  <Hero />
+  <About />
+  <SelectedWork />
+  <Experience />
+  <SecurityFocus client:visible />
+  <Research />
 
-  <main
-    class="text-white m-auto p-2 grid gap-2 max-w-6xl overflow-hidden relative w-full sm:p-4 sm:gap-2 md:grid-cols-2 md:gap-3 md:p-6 lg:h-[800px] lg:grid-rows-8 lg:grid-cols-4 lg:gap-4"
-  >
-    <IntroCard lang={lang} profile={profile} />
-    <AboutMe lang={lang} />
-    <ContactsCard lang={lang} profile={profile} certifications={certifications} />
-    <TimeZone lang={lang} />
-    <DesignWorksCard lang={lang} />
-    <Now lang={lang} profile={profile} />
-    <Card
-      href="/contact"
-      colSpan="md:col-span-1"
-      rowSpan="md:row-span-1"
-      title="Contact"
-    />
-    <Card
-      href="/blog"
-      colSpan="md:col-span-1"
-      rowSpan="md:row-span-1"
-      title="Blog"
-    />
-    <DonateCard lang={lang} />
-
-    <Card colSpan="md:col-span-1" rowSpan="md:row-span-1" padding="p-4 md:p-3">
-      <div class="flex flex-col h-full justify-center gap-1.5 md:gap-1">
-        <p class="text-xs md:text-[11px] leading-snug">
-          © 2025 · Crafted with ♥️ using <a
-            class="text-red-500"
-            href="https://astro.build/"
-            target="_blank">Astro</a
-          > by Me. · <a class="text-darkslate-200 hover:text-primary-400 underline" href="/privacy">Privacy Policy</a>
-        </p>
-        <div class="flex items-center gap-1.5">
-          <span aria-current="true" class="px-2 py-0.5 rounded-md border border-primary-500 text-primary-400 text-[10px] font-semibold">EN</span>
-          <a href="/ro/?lang=ro" class="px-2 py-0.5 rounded-md border border-darkslate-400 text-darkslate-300 hover:border-primary-500 hover:text-primary-400 transition-colors duration-150 text-[10px] font-semibold">RO</a>
+  <section class='py-8 sm:py-16 lg:py-24'>
+    <div class='px-4 sm:px-6 lg:px-10.5'>
+      <div class='rounded-3xl border bg-card p-6 text-center shadow-sm sm:p-10'>
+        <p class='text-accent text-xs font-semibold uppercase tracking-widest'>Contact</p>
+        <h2 class='mx-auto mt-3 max-w-2xl text-2xl font-semibold md:text-3xl lg:text-4xl'>Have a security problem worth investigating?</h2>
+        <p class='text-muted-foreground mx-auto mt-3 max-w-xl'>For professional opportunities, technical collaboration, research, or a security conversation, get in touch.</p>
+        <div class='mt-6 flex flex-wrap justify-center gap-3'>
+          <a href='/contact' class='bg-primary text-primary-foreground rounded-full px-5 py-2.5 text-sm font-semibold'>Contact me</a>
+          <a href='/experience#cv' class='rounded-full border bg-background px-5 py-2.5 text-sm font-semibold'>Request CV</a>
         </div>
       </div>
-    </Card>
-
-    <NewsletterSignup initialStatus={newsletterStatus} lang={lang} />
-  </main>
-</Layout>
-
-<script>
-  import { stagger, animate, type AnimationSequence } from "motion";
-  import { loaderAnimation } from "../lib/constants";
-  const cards = document.querySelectorAll(".card");
-
-  const sequence = [
-    loaderAnimation,
-    [
-      cards,
-      { y: ["40%", "0%"], opacity: [0, 1] },
-      {
-        type: "spring",
-        at: "-0.1",
-        delay: stagger(0.2),
-      },
-    ],
-  ] as AnimationSequence;
-
-  animate(sequence);
-</script>
+    </div>
+  </section>
+</PortfolioLayout>

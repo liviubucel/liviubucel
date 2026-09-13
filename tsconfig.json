@@ -1,9 +1,25 @@
 {
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "src/**/*", "*.ts", "*.mjs"],
-  "exclude": ["dist", "node_modules", "studio-liviubucel"],
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "*.ts",
+    "*.mjs"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "studio-liviubucel"
+  ],
   "compilerOptions": {
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js"
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "ignoreDeprecations": "6.0"
   }
 }

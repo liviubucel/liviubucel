@@ -10,6 +10,8 @@ import { remarkReadingTime } from "./src/lib/remark-reading-time.mjs";
 import svelte from "@astrojs/svelte";
 import sentry from "@sentry/astro";
 import react from "@astrojs/react";
+import mdx from "@astrojs/mdx";
+import tailwindcss from "@tailwindcss/vite";
 
 const envSiteUrl = process.env.SITE_URL || "https://www.liviubucel.com/";
 const site = envSiteUrl.endsWith("/") ? envSiteUrl : `${envSiteUrl}/`;
@@ -96,11 +98,25 @@ export default defineConfig({
         },
       ],
     }),
-    solidJs({ exclude: ["**/node_modules/@sanity/**"] }),
+    solidJs({
+      include: [
+        "**/src/components/Globe.tsx",
+        "**/src/components/Tooltip/**/*.tsx",
+        "**/src/components/playground/**/*.tsx",
+      ],
+      exclude: ["**/node_modules/@sanity/**"],
+    }),
     UnoCSS({ injectReset: true }),
     icon(),
     svelte(),
-    react({ include: ["**/node_modules/@sanity/**"] }),
+    react({
+      exclude: [
+        "**/src/components/Globe.tsx",
+        "**/src/components/Tooltip/**/*.tsx",
+        "**/src/components/playground/**/*.tsx",
+      ],
+    }),
+    mdx(),
     // db() integration commented out due to CommonJS/ESM incompatibility
     // Use alternative guestbook storage (e.g., external API)
     sanity({
@@ -122,11 +138,13 @@ export default defineConfig({
     remoteBindings: false,
   }),
   vite: {
+    plugins: [tailwindcss()],
     assetsInclude: "**/*.riv",
     ssr: {
       external: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
     },
     optimizeDeps: {
+      include: ["three", "@react-three/fiber", "@react-three/drei", "@react-three/rapier"],
       exclude: ["cross-fetch", "@libsql/hrana-client", "@libsql/client", "promise-limit"],
     },
   },

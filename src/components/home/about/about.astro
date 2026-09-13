@@ -1,0 +1,57 @@
+---
+import { Image } from 'astro:assets'
+import { Card, CardContent } from '@/components/ui/card'
+import Eyebrow from '@/components/shared/eyebrow/eyebrow.astro'
+import Memoji from '@/assets/me.webp'
+---
+
+<section id='about' class='border-b py-8 sm:py-16 lg:py-24'>
+  <div class='mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:space-y-16 lg:px-10.5'>
+    <div class='space-y-2'>
+      <Eyebrow text='About me' />
+      <h2 class='text-2xl font-semibold md:text-3xl lg:text-4xl'>Security work, systems thinking, practical investigation</h2>
+    </div>
+
+    <div class='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+      <Card className='ring-border min-h-72 rounded-[24px] bg-(--background-darker) shadow-none lg:row-span-2'>
+        <CardContent className='flex h-full flex-col justify-between gap-6'>
+          <div>
+            <p class='text-muted-foreground text-sm'>Profile</p>
+            <h3 class='mt-2 text-2xl font-semibold'>Liviu Bucel</h3>
+            <p class='text-muted-foreground mt-2 text-base'>Cybersecurity-focused technical professional based in the United Kingdom.</p>
+          </div>
+          <Image src={Memoji} alt='Liviu Bucel memoji' class='mx-auto max-h-56 w-auto grayscale' />
+        </CardContent>
+      </Card>
+
+      <Card className='ring-border rounded-[24px] shadow-none'>
+        <CardContent>
+          <p class='text-muted-foreground text-sm'>Current focus</p>
+          <h3 class='mt-2 text-xl font-semibold'>DFIR + Ethical Hacking</h3>
+          <p class='text-muted-foreground mt-3'>Incident investigation, reconnaissance, security testing, vulnerability analysis, and evidence-driven problem solving.</p>
+        </CardContent>
+      </Card>
+
+      <Card className='ring-border rounded-[24px] shadow-none'>
+        <CardContent>
+          <p class='text-muted-foreground text-sm'>Live project</p>
+          <h3 class='mt-2 text-xl font-semibold'>Romania Cyber Monitor</h3>
+          <p class='text-muted-foreground mt-3'>A public threat-intelligence view built around automated collection, normalization, and clearly labelled security reporting.</p>
+          <a class='text-accent mt-4 inline-flex font-medium' href='/romania-cyber-monitor'>Explore monitor →</a>
+        </CardContent>
+      </Card>
+
+      <Card className='ring-border rounded-[24px] shadow-none lg:col-span-2'>
+        <CardContent>
+          <p class='text-muted-foreground text-sm'>Toolbox</p>
+          <div class='mt-3 flex flex-wrap gap-2'>
+            {['Kali Linux', 'Burp Suite', 'Wireshark', 'Nmap', 'Python', 'PowerShell', 'Cloudflare', 'Linux', 'Windows'].map(tool => (
+              <span class='bg-(--background-darker) rounded-full px-3 py-1.5 text-sm font-medium'>{tool}</span>
+            ))}
+          </div>
+          <p class='text-muted-foreground mt-4'>I prefer hands-on work: reproduce the issue, collect evidence, understand the root cause, document it clearly, then harden the system.</p>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</section>

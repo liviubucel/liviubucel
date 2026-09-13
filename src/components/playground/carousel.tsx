@@ -1,3 +1,4 @@
+/** @jsxImportSource solid-js */
 import { createSignal, createEffect, onMount, onCleanup, For } from "solid-js";
 
 interface CarouselItem {
