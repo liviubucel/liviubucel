@@ -43,7 +43,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-const CARD_MODEL_URL = new URL('../../assets/models/lanyard/card.glb', import.meta.url).href
+const CARD_MODEL_URL = new URL('../../assets/models/lanyard/card.bin', import.meta.url).href
 
 // Real cylindrical radius for the rope's TubeGeometry, not a flat "line width" — a genuine tube
 // mesh catches light like a real cord, unlike a flat camera-facing ribbon.
