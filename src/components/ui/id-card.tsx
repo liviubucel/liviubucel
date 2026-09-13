@@ -18,7 +18,7 @@ import type { RefObject } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
-import { Environment, Lightformer, useGLTF, useTexture } from '@react-three/drei'
+import { useGLTF, useTexture } from '@react-three/drei'
 import { BallCollider, CuboidCollider, Physics, RigidBody, useRopeJoint, useSphericalJoint } from '@react-three/rapier'
 import type { RapierRigidBody, RigidBodyProps } from '@react-three/rapier'
 
@@ -50,7 +50,7 @@ const CARD_MODEL_URL = new URL('../../assets/models/lanyard/card.bin', import.me
 const ROPE_RADIUS = 0.1
 
 // Segment count for a smooth (non-faceted) rope cross-section.
-const ROPE_RADIAL_SEGMENTS = 24
+const ROPE_RADIAL_SEGMENTS = 16
 
 // Fraction of the rope's length (from the pin end) over which its radius tapers to a point,
 // instead of the pin end being an abrupt flat cut. See buildTaperedTubeGeometry below.
@@ -379,7 +379,7 @@ const Band = ({ frontImage, isMobile }: BandProps) => {
 
       rope.current.geometry = buildTaperedTubeGeometry(
         curve,
-        isMobile ? 16 : 32,
+        isMobile ? 12 : 24,
         ROPE_RADIUS,
         ROPE_RADIAL_SEGMENTS,
         ROPE_TAPER_FRACTION
@@ -464,39 +464,6 @@ const Band = ({ frontImage, isMobile }: BandProps) => {
   )
 }
 
-const StudioLighting = () => (
-  <Environment blur={0.75}>
-    <Lightformer
-      intensity={2}
-      color='white'
-      position={[0, -1, 5]}
-      rotation={[0, 0, Math.PI / 3]}
-      scale={[100, 0.1, 1]}
-    />
-    <Lightformer
-      intensity={3}
-      color='white'
-      position={[-1, -1, 1]}
-      rotation={[0, 0, Math.PI / 3]}
-      scale={[100, 0.1, 1]}
-    />
-    <Lightformer
-      intensity={3}
-      color='white'
-      position={[1, 1, 1]}
-      rotation={[0, 0, Math.PI / 3]}
-      scale={[100, 0.1, 1]}
-    />
-    <Lightformer
-      intensity={10}
-      color='white'
-      position={[-10, 0, 14]}
-      rotation={[0, Math.PI / 2, Math.PI / 3]}
-      scale={[100, 10, 1]}
-    />
-  </Environment>
-)
-
 // The rig (rope length, anchor height, card scale) was tuned to look right at this exact pixel
 // height and camera depth — treat this pair as the reference "1:1 zoom" calibration point.
 const REFERENCE_HEIGHT_PX = 520
@@ -531,41 +498,53 @@ type IdCardProps = {
 }
 
 const IdCard = ({ frontImage, className }: IdCardProps) => {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768)
+  const [isEnabled, setIsEnabled] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+  )
+  const [isVisible, setIsVisible] = useState(true)
 
-  // A ref (not state) so the server/client difference (no `document` during SSR) never touches
-  // the rendered output and can't cause a hydration mismatch.
+  // The hero hides the 3D composition below desktop width. Avoid creating a WebGL context,
+  // loading Rapier, and running physics for a canvas the visitor cannot see.
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const eventSourceRef = useRef<HTMLElement | null>(typeof document !== 'undefined' ? document.body : null)
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    const media = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setIsEnabled(media.matches)
 
-    window.addEventListener('resize', handleResize)
+    sync()
+    media.addEventListener('change', sync)
 
-    return () => window.removeEventListener('resize', handleResize)
+    return () => media.removeEventListener('change', sync)
   }, [])
 
-  // pointer-events-none so this wrapper (sized to cover the drag range, not just the resting
-  // card) never blocks clicks on page content it visually overlaps — drag/click on the card
-  // itself still works because Canvas's `eventSource` listens on document.body instead.
+  useEffect(() => {
+    if (!isEnabled || !containerRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { rootMargin: '160px 0px' }
+    )
+
+    observer.observe(containerRef.current)
+
+    return () => observer.disconnect()
+  }, [isEnabled])
+
+  if (!isEnabled) return null
+
   return (
-    <div className={cn('pointer-events-none drop-shadow-xl', className)}>
-      {/* Needed for smoothed edges on the rope's TubeGeometry facets (ROPE_RADIAL_SEGMENTS). */}
+    <div ref={containerRef} className={cn('pointer-events-none drop-shadow-xl', className)}>
       <Canvas
         eventSource={eventSourceRef as RefObject<HTMLElement>}
+        frameloop={isVisible ? 'always' : 'never'}
         camera={{ position: [0, 0, 20], fov: 20 }}
-        dpr={[1, isMobile ? 1.25 : 1.5]}
-        gl={{ alpha: true, antialias: true, powerPreference: 'default' }}
+        dpr={[1, 1.25]}
+        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         onCreated={state => {
           state.gl.setClearColor(new THREE.Color(0x000000), 0)
-
-          // Without this, a lost WebGL context never recovers — the canvas stays blank forever
-          // instead of the browser being allowed to restore it.
           state.gl.domElement.addEventListener('webglcontextlost', event => event.preventDefault())
 
-          // eventSource routes events through document.body (so this oversized, mostly-empty
-          // canvas doesn't block clicks on overlapped page content), so pointer NDC must be
-          // computed from the canvas's own bounding rect rather than r3f's default clientX/Y.
           state.setEvents({
             compute: (event, s) => {
               const rect = s.gl.domElement.getBoundingClientRect()
@@ -579,11 +558,12 @@ const IdCard = ({ frontImage, className }: IdCardProps) => {
         }}
       >
         <CameraAlign />
-        <ambientLight intensity={Math.PI} />
-        <Physics gravity={[0, -40, 0]} timeStep={isMobile ? 1 / 30 : 1 / 60}>
-          <Band frontImage={frontImage} isMobile={isMobile} />
+        <ambientLight intensity={1.8} />
+        <directionalLight position={[4, 6, 8]} intensity={2.2} />
+        <directionalLight position={[-4, 1, 5]} intensity={0.8} />
+        <Physics gravity={[0, -40, 0]} timeStep={1 / 60}>
+          <Band frontImage={frontImage} isMobile={false} />
         </Physics>
-        <StudioLighting />
       </Canvas>
     </div>
   )
