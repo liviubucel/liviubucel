@@ -18,7 +18,7 @@ export function getCSPHeader(pathname = ''): string {
     "default-src 'self'",
     isStudio
       ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-      : "script-src 'self' 'unsafe-inline'",
+      : "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     isStudio ? "img-src 'self' data: https: blob:" : "img-src 'self' data: https: blob:",
     "font-src 'self' data:",
