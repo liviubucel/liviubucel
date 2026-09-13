@@ -1,22 +1,14 @@
 import { useEffect, useState } from 'react'
 
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 
-const GREETINGS = [
-  'Hello', 'Salut', 'Bonjour', 'Hola', 'Ciao', 'Hallo', 'Olá', 'Hej', 'Hei', 'Halló',
-  'Cześć', 'Ahoj', 'Szia', 'Bună', 'Γεια σου', 'Merhaba', 'Привіт', 'Привет', 'Здраво',
-  'مرحبا', 'שלום', 'سلام', 'नमस्ते', 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ', '你好', 'こんにちは', '안녕하세요', 'สวัสดี',
-  'Xin chào', 'Halo', 'Kamusta', 'Jambo', 'Sawubona', 'Molo', 'Kia ora', 'Talofa', 'Aloha'
-]
-const INTERVAL_MS = 1700
+const GREETINGS = ['Hello', 'नमस्ते', '你好', 'Ciao']
+const INTERVAL_MS = 2200
 
 const GreetingWord = () => {
   const [index, setIndex] = useState(0)
-  const shouldReduceMotion = useReducedMotion()
 
   useEffect(() => {
-    if (shouldReduceMotion) return
-
     const timer = setInterval(() => {
       setIndex(prev => (prev + 1) % GREETINGS.length)
     }, INTERVAL_MS)
@@ -26,7 +18,6 @@ const GreetingWord = () => {
 
   return (
     <span className='mr-2 inline-grid overflow-hidden align-bottom'>
-      {/* Invisible sizers reserve space for the widest greeting so surrounding text doesn't shift */}
       {GREETINGS.map(word => (
         <span key={word} className='invisible col-start-1 row-start-1 whitespace-nowrap' aria-hidden='true'>
           {word}
