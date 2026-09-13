@@ -43,7 +43,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-const CARD_MODEL_URL = '/models/lanyard/card.glb'
+const CARD_MODEL_URL = new URL('../../assets/models/lanyard/card.glb', import.meta.url).href
 
 // Real cylindrical radius for the rope's TubeGeometry, not a flat "line width" — a genuine tube
 // mesh catches light like a real cord, unlike a flat camera-facing ribbon.
@@ -240,10 +240,16 @@ const Band = ({ frontImage, isMobile }: BandProps) => {
   const pinTexture = useTexture(PIN_IMAGE_URL)
 
   const cardMap = useMemo(() => {
-    const baseMap = materials.base.map as THREE.Texture
-    const baseImage = baseMap.image as HTMLImageElement
-    const width = baseImage.width
-    const height = baseImage.height
+    const baseMap = materials.base.map as THREE.Texture | null
+    const baseImage = baseMap?.image as HTMLImageElement | undefined
+    const frontImage = frontTexture.image as HTMLImageElement
+
+    // Some production GLB loaders expose the material without its optional base texture map.
+    // The card face itself is fully replaced below, so we can safely build the UV atlas on a
+    // neutral canvas instead of crashing while reading `baseMap.image`. Keep a square atlas to
+    // preserve the model's baked UV rectangles exactly.
+    const width = baseImage?.width || 2048
+    const height = baseImage?.height || 2048
 
     const canvas = document.createElement('canvas')
 
@@ -252,11 +258,16 @@ const Band = ({ frontImage, isMobile }: BandProps) => {
 
     const ctx = canvas.getContext('2d')
 
-    if (!ctx) return baseMap
+    if (!ctx) return baseMap ?? frontTexture
 
-    ctx.drawImage(baseImage, 0, 0, width, height)
+    if (baseImage?.width && baseImage?.height) {
+      ctx.drawImage(baseImage, 0, 0, width, height)
+    } else {
+      ctx.fillStyle = isDark ? '#171717' : '#f5f5f5'
+      ctx.fillRect(0, 0, width, height)
+    }
 
-    const image = frontTexture.image as HTMLImageElement
+    const image = frontImage
 
     for (const uvRect of [FRONT_UV_RECT, BACK_UV_RECT]) {
       const rx = uvRect.x * width
@@ -284,12 +295,14 @@ const Band = ({ frontImage, isMobile }: BandProps) => {
     const composite = new THREE.CanvasTexture(canvas)
 
     composite.colorSpace = THREE.SRGBColorSpace
-    composite.flipY = baseMap.flipY
+    // glTF UVs use flipY=false. Preserve the embedded map setting when present, otherwise
+    // explicitly use the glTF convention for the generated canvas texture.
+    composite.flipY = baseMap?.flipY ?? false
     composite.anisotropy = 16
     composite.needsUpdate = true
 
     return composite
-  }, [frontTexture, materials.base.map])
+  }, [frontTexture, materials.base.map, isDark])
 
   // card.glb's `card` mesh has a real gap in its triangulation at HOLE_PATCH_LOCAL_* (likely a
   // punched grommet hole baked into the source model). A flat plane can't reshape someone else's
