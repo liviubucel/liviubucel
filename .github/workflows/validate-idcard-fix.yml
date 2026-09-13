@@ -1,0 +1,142 @@
+name: Validate IdCard model fix
+
+on:
+  push:
+    branches:
+      - fix/idcard-model-asset-20260913
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Type check and tests
+        run: |
+          pnpm check
+          pnpm test
+      - name: Production build
+        run: pnpm build
+        env:
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://www.liviubucel.com/
+      - name: Assert GLB is bundled by Vite
+        run: |
+          set -euo pipefail
+          GLB=$(find dist/client/_astro -type f -name '*.glb' -print -quit)
+          if [ -z "$GLB" ]; then
+            echo '::error::No Vite-bundled GLB found under dist/client/_astro'
+            exit 1
+          fi
+          echo "Bundled model: $GLB"
+          if grep -R -F "/models/lanyard/card.glb" dist/client/_astro --include='*.js'; then
+            echo '::error::Old public model URL is still present in client bundle'
+            exit 1
+          fi
+      - name: Start production Worker locally
+        run: |
+          pnpm exec wrangler dev --config dist/server/wrangler.json --port 8787 > /tmp/wrangler.log 2>&1 &
+          echo $! > /tmp/wrangler.pid
+          for i in {1..50}; do
+            STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H 'Accept: text/html' http://127.0.0.1:8787/ || true)
+            if [ "$STATUS" = '200' ]; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/wrangler.log
+          exit 1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Install Chromium
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.57.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium
+      - name: Prove moving badge scene loads
+        run: |
+          cat > /tmp/pw/validate.mjs <<'EOF'
+          import { chromium } from 'playwright'
+
+          const browser = await chromium.launch({
+            headless: true,
+            args: ['--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']
+          })
+          const page = await browser.newPage({ viewport: { width: 1728, height: 1000 } })
+          const errors = []
+          const modelResponses = []
+
+          page.on('pageerror', error => errors.push(error.stack || error.message))
+          page.on('requestfailed', request => errors.push(`${request.url()} :: ${request.failure()?.errorText}`))
+          page.on('response', response => {
+            const url = response.url()
+            if (/\.glb(?:\?|$)/i.test(url)) modelResponses.push({ url, status: response.status() })
+          })
+
+          const response = await page.goto('http://127.0.0.1:8787/', { waitUntil: 'networkidle', timeout: 90000 })
+          if (response?.status() !== 200) throw new Error(`Homepage returned ${response?.status()}`)
+          await page.waitForTimeout(10000)
+
+          const state = await page.evaluate(() => {
+            const section = document.querySelector('[data-hero-id-card]')
+            const canvas = section?.querySelector('canvas')
+            let webgl = false
+            let lost = null
+            if (canvas) {
+              const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+              webgl = Boolean(gl)
+              lost = gl ? gl.isContextLost() : null
+            }
+            return {
+              section: Boolean(section),
+              canvas: Boolean(canvas),
+              width: canvas?.width ?? 0,
+              height: canvas?.height ?? 0,
+              webgl,
+              lost
+            }
+          })
+
+          console.log('modelResponses=', JSON.stringify(modelResponses))
+          console.log('state=', JSON.stringify(state))
+          console.log('errors=', JSON.stringify(errors))
+
+          const modelOk = modelResponses.some(item => item.status === 200 && item.url.includes('/_astro/'))
+          const modelErrors = errors.filter(error => /card\.glb|Could not load|403/i.test(error))
+          if (!modelOk) throw new Error('The hashed Vite GLB was not loaded successfully from /_astro/')
+          if (!state.canvas || !state.webgl || state.lost) throw new Error(`3D canvas is not healthy: ${JSON.stringify(state)}`)
+          if (modelErrors.length) throw new Error(`Model/runtime errors: ${modelErrors.join('\n')}`)
+
+          await page.screenshot({ path: '/tmp/id-card-fixed.png', fullPage: false })
+          await browser.close()
+          EOF
+          cd /tmp/pw
+          node validate.mjs
+      - name: Upload proof screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: id-card-fixed
+          path: /tmp/id-card-fixed.png
+          if-no-files-found: ignore
+      - name: Show Worker log on failure
+        if: failure()
+        run: cat /tmp/wrangler.log || true
