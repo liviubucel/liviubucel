@@ -1,7 +1,6 @@
 ---
-import { ArrowRightIcon } from 'lucide-react'
+import { ArrowUpRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { CaseStudyMetadata } from '@/lib/case-studies'
@@ -20,43 +19,97 @@ const external = href.startsWith('http')
 ---
 
 <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined} class='block h-full no-underline'>
-  <Card className={cn('group ring-border h-full gap-0 overflow-hidden rounded-[24px] p-0 shadow-lg transition-all duration-300', isHero && (imageSide === 'left' ? 'md:flex-row-reverse' : 'md:flex-row'))}>
-    <div class={cn('order-2 flex flex-col justify-between gap-3 p-4 sm:p-6', isHero ? 'sm:py-8 md:order-0' : '')}>
-      <div class='space-y-3'>
-        <h3 class='line-clamp-2 text-xl font-medium md:text-2xl lg:text-[26px]'>{caseStudy.title}</h3>
-        <div class='flex items-center gap-2.5'>
-          {caseStudy.duration && <Badge variant='outline' className='rounded-full border-(--background-darker) bg-(--background-darker)'>{caseStudy.duration}</Badge>}
-          {year && <Badge variant='outline' className='rounded-full border-(--background-darker) bg-(--background-darker)'>{year}</Badge>}
+  <Card className={cn('group ring-border h-full gap-0 overflow-hidden rounded-[26px] p-0 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl', isHero && (imageSide === 'left' ? 'md:flex-row-reverse' : 'md:flex-row'))}>
+    <div class={cn('order-2 flex flex-1 flex-col justify-between gap-5 p-5 sm:p-7', isHero ? 'md:order-0 md:w-1/2' : '')}>
+      <div class='space-y-4'>
+        <div class='flex flex-wrap items-center gap-2'>
+          {caseStudy.duration && <Badge variant='outline' className='rounded-full bg-background/70'>{caseStudy.duration}</Badge>}
+          {year && <Badge variant='outline' className='rounded-full bg-background/70'>{year}</Badge>}
         </div>
-        <p class='text-muted-foreground line-clamp-3 text-base'>{caseStudy.description}</p>
+        <h3 class='text-2xl font-semibold tracking-tight lg:text-[30px]'>{caseStudy.title}</h3>
+        <p class='text-muted-foreground max-w-xl text-base leading-relaxed'>{caseStudy.description}</p>
       </div>
-      <div class='flex items-center justify-between gap-2 border-t pt-3'>
-        {caseStudy.logo && (
-          <div class='flex items-center gap-3'>
-            <div class='bg-background flex items-center justify-center rounded-md'>
-              <img src={caseStudy.logo} alt={`${caseStudy.organisation} logo`} class='size-10.5 rounded-md object-cover' />
+
+      <div class='flex items-end justify-between gap-4 border-t pt-4'>
+        <div class='flex min-w-0 items-center gap-3'>
+          {caseStudy.logo && (
+            <div class='bg-background ring-border flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1'>
+              <img src={caseStudy.logo} alt='' class='size-full object-cover' loading='lazy' />
             </div>
-            <div class='text-base'>
-              <p class='text-foreground font-medium'>{caseStudy.organisation}</p>
-              {caseStudy.role && <p class='text-muted-foreground'>{caseStudy.role}</p>}
-            </div>
+          )}
+          <div class='min-w-0'>
+            <p class='truncate text-sm font-medium'>{caseStudy.organisation}</p>
+            {caseStudy.role && <p class='text-muted-foreground truncate text-xs'>{caseStudy.role}</p>}
           </div>
-        )}
-        <div class='bg-card dark:border-accent-foreground/10 flex size-11 items-center justify-center rounded-full border shadow-md'>
-          <Button size='icon' variant='outline' className='hover:bg-accent dark:hover:bg-accent bg-accent dark:bg-accent text-background hover:text-background dark:text-accent-foreground border-accent size-7 shrink-0 overflow-hidden rounded-full'>
-            <span class='relative block size-4'>
-              <ArrowRightIcon className='absolute inset-0 size-4 -rotate-45 transition-transform duration-400 ease-in-out group-hover:translate-x-5 group-hover:-translate-y-5' />
-              <ArrowRightIcon className='absolute inset-0 size-4 -translate-x-5 translate-y-5 -rotate-45 transition-transform duration-400 ease-in-out group-hover:translate-x-0 group-hover:translate-y-0' />
-            </span>
-            <span class='sr-only'>Open project: {caseStudy.title}</span>
-          </Button>
         </div>
+        <span class='bg-foreground text-background flex size-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:rotate-12'>
+          <ArrowUpRightIcon className='size-4' />
+        </span>
       </div>
     </div>
-    {caseStudy.image && (
-      <div class={cn('relative order-1 w-full overflow-hidden', isHero ? 'md:order-0 md:max-w-1/2' : '')}>
-        <img src={caseStudy.image} alt={caseStudy.title ?? ''} class={cn('w-full object-cover transition-all duration-300 group-hover:scale-105', isHero ? 'h-full max-h-81' : 'h-68')} />
-      </div>
-    )}
+
+    <div class={cn('relative order-1 min-h-64 overflow-hidden border-b bg-[#0b0f16] md:border-b-0', isHero ? 'md:order-0 md:min-h-[390px] md:w-1/2' : 'h-72')}>
+      {caseStudy.slug === 'romania-cyber-monitor' ? (
+        <>
+          {caseStudy.image && <img src={caseStudy.image} alt='Romania Cyber Monitor interface' class='absolute inset-0 h-full w-full object-cover opacity-75 transition-transform duration-700 group-hover:scale-[1.03]' loading='lazy' />}
+          <div class='absolute inset-0 bg-gradient-to-t from-[#080b11] via-[#080b11]/20 to-transparent'></div>
+          <div class='absolute inset-x-4 bottom-4 grid grid-cols-3 gap-2'>
+            {['Ransomware', 'Malware', 'Exposures'].map((label, index) => (
+              <div class='rounded-xl border border-white/10 bg-black/55 p-3 backdrop-blur-md'>
+                <p class='text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400'>{label}</p>
+                <div class='mt-2 flex items-end gap-1'>
+                  {[42, 66, 50, 82, 58, 74].map((height, barIndex) => (
+                    <span class={cn('w-full rounded-sm', index === 0 ? 'bg-orange-400/70' : index === 1 ? 'bg-sky-400/70' : 'bg-emerald-400/70')} style={`height:${Math.max(8, height - barIndex * 3)}%`}></span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : caseStudy.slug === 'zebrabyte' ? (
+        <div class='absolute inset-0 p-5 sm:p-7'>
+          <div class='absolute -right-20 -top-20 size-64 rounded-full bg-orange-500/20 blur-3xl'></div>
+          <div class='relative flex h-full flex-col justify-between'>
+            <div class='flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400'>
+              <span>Security infrastructure</span>
+              <span class='rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-emerald-300'>Protected</span>
+            </div>
+            <div class='grid grid-cols-2 gap-3'>
+              {[
+                ['EDGE', 'WAF · DDoS'],
+                ['DNS', 'DNSSEC · DMARC'],
+                ['TLS', 'ACME · HTTPS'],
+                ['OPS', 'Monitoring · hardening']
+              ].map(([title, copy]) => (
+                <div class='rounded-2xl border border-white/10 bg-white/[0.035] p-4 backdrop-blur'>
+                  <p class='text-xs font-semibold tracking-[0.15em] text-orange-300'>{title}</p>
+                  <p class='mt-2 text-sm text-slate-300'>{copy}</p>
+                  <div class='mt-4 h-1.5 overflow-hidden rounded-full bg-white/5'><div class='h-full w-3/4 rounded-full bg-gradient-to-r from-orange-400 to-amber-300'></div></div>
+                </div>
+              ))}
+            </div>
+            <div class='flex items-center gap-2 text-xs text-slate-500'><span class='size-1.5 rounded-full bg-emerald-400'></span> Edge controls · certificate automation · secure hosting</div>
+          </div>
+        </div>
+      ) : caseStudy.slug === 'ssl-certificate-generator' ? (
+        <div class='absolute inset-0 p-5 sm:p-7'>
+          <div class='mx-auto flex h-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#10151f] shadow-2xl'>
+            <div class='flex items-center gap-1.5 border-b border-white/10 px-4 py-3'><span class='size-2 rounded-full bg-red-400'></span><span class='size-2 rounded-full bg-amber-300'></span><span class='size-2 rounded-full bg-emerald-400'></span><span class='ml-2 font-mono text-[10px] text-slate-500'>acme-client</span></div>
+            <div class='flex flex-1 flex-col justify-center space-y-3 p-5 font-mono text-xs text-slate-300'>
+              <p><span class='text-sky-300'>$</span> request certificate example.com</p>
+              <p><span class='text-amber-300'>→</span> creating ACME order</p>
+              <p><span class='text-amber-300'>→</span> validating domain ownership</p>
+              <p><span class='text-emerald-300'>✓</span> challenge verified</p>
+              <p><span class='text-emerald-300'>✓</span> certificate issued</p>
+              <div class='mt-2 rounded-lg border border-emerald-400/15 bg-emerald-400/5 p-3 text-emerald-200'>TLS package ready for deployment</div>
+            </div>
+          </div>
+        </div>
+      ) : caseStudy.image ? (
+        <img src={caseStudy.image} alt={caseStudy.title ?? ''} class='absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]' loading='lazy' />
+      ) : (
+        <div class='absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(249,115,22,.18),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(56,189,248,.12),transparent_35%)]'></div>
+      )}
+    </div>
   </Card>
 </a>
