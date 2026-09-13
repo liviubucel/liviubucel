@@ -4,6 +4,7 @@ on:
   push:
     branches: [fix/zolt-exact-1to1-20260913]
     paths:
+      - 'package.json'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/refresh-secure-lockfile.yml'
 
