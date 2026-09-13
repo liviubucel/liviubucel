@@ -12,7 +12,7 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -21,26 +21,6 @@ jobs:
         with:
           node-version: '22'
           package-manager-cache: false
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.34.0 --activate
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Start Astro dev server
-        run: |
-          pnpm exec astro dev --host 127.0.0.1 --port 4321 > /tmp/astro.log 2>&1 &
-          echo $! > /tmp/astro.pid
-          for i in {1..60}; do
-            if curl -fsS -H 'Accept: text/html' http://127.0.0.1:4321/ >/dev/null 2>&1; then exit 0; fi
-            sleep 1
-          done
-          cat /tmp/astro.log
-          exit 1
-        env:
-          SANITY_PROJECT_ID: 8atrdwjk
-          SANITY_DATASET: production
-          SITE_URL: http://127.0.0.1:4321/
       - name: Install Chromium diagnostic harness
         run: |
           mkdir -p /tmp/pw
@@ -48,7 +28,7 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.57.0 >/dev/null 2>&1
           npx playwright install --with-deps chromium
-      - name: Diagnose IdCard in Chromium
+      - name: Diagnose live IdCard in Chromium
         run: |
           cat > /tmp/pw/diag.mjs <<'EOF'
           import { chromium } from 'playwright'
@@ -57,7 +37,11 @@ jobs:
             headless: true,
             args: ['--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']
           })
-          const page = await browser.newPage({ viewport: { width: 1728, height: 1000 } })
+          const context = await browser.newContext({
+            viewport: { width: 1728, height: 1000 },
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36'
+          })
+          const page = await context.newPage()
           const events = []
 
           page.on('console', msg => {
@@ -77,14 +61,16 @@ jobs:
           })
           page.on('response', res => {
             const u = res.url()
-            if (/id-card|rapier|\.wasm|\.glb|3d-card|profile\.webp|pin\.webp/i.test(u)) {
+            if (/id-card|rapier|\.wasm|\.glb|3d-card|profile\.webp|pin\.webp|_astro/i.test(u)) {
               console.log(`[response] ${res.status()} ${res.headers()['content-type'] || ''} ${u}`)
             }
           })
 
-          const response = await page.goto('http://127.0.0.1:4321/', { waitUntil: 'networkidle', timeout: 90000 })
+          const target = `https://www.liviubucel.com/?idcard_diag=${Date.now()}`
+          const response = await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 90000 })
           console.log(`[document] status=${response?.status()} url=${page.url()}`)
-          await page.waitForTimeout(12000)
+          console.log('[csp]', await response?.headerValue('content-security-policy'))
+          await page.waitForTimeout(15000)
 
           const state = await page.evaluate(() => {
             const section = document.querySelector('[data-hero-id-card]')
@@ -93,8 +79,8 @@ jobs:
             const island = section?.querySelector('astro-island')
             let gl = null
             let lost = null
-            let pixel = null
             let renderer = null
+            let centerPixel = null
             if (canvas) {
               try {
                 gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
@@ -103,13 +89,15 @@ jobs:
                 if (gl) {
                   const p = new Uint8Array(4)
                   gl.readPixels(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, p)
-                  pixel = Array.from(p)
+                  centerPixel = Array.from(p)
                 }
               } catch (error) {
                 gl = { error: String(error) }
               }
             }
             return {
+              title: document.title,
+              bodyLength: document.body.innerHTML.length,
               section: Boolean(section),
               canvasCount: section?.querySelectorAll('canvas').length ?? 0,
               canvasWidth: canvas?.width ?? null,
@@ -118,26 +106,22 @@ jobs:
               webgl: Boolean(gl && !gl.error),
               contextLost: lost,
               renderer,
-              centerPixel: pixel,
+              centerPixel,
               fallbackReady: fallback?.dataset.canvasReady ?? null,
               fallbackDisplay: fallback ? getComputedStyle(fallback).display : null,
               fallbackOpacity: fallback ? getComputedStyle(fallback).opacity : null,
-              islandHTML: island?.outerHTML?.slice(0, 1400) ?? null
+              islandHasError: island?.hasAttribute('ssr') === false && !canvas,
+              islandHTML: island?.outerHTML?.slice(0, 1800) ?? null
             }
           })
           console.log('[state]', JSON.stringify(state, null, 2))
+          console.log('[errors]', JSON.stringify(events.filter(line => /pageerror|requestfailed|error/i.test(line)), null, 2))
 
           await page.screenshot({ path: '/tmp/id-card-diagnostic.png', fullPage: false })
           await browser.close()
-
-          const hardErrors = events.filter(line => line.startsWith('[pageerror]') || line.startsWith('[requestfailed]'))
-          console.log(`[summary] hardErrors=${hardErrors.length}`)
           EOF
           cd /tmp/pw
           node diag.mjs
-      - name: Show Astro log
-        if: always()
-        run: cat /tmp/astro.log || true
       - name: Upload diagnostic screenshot
         if: always()
         uses: actions/upload-artifact@v4
