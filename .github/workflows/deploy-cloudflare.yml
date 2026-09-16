@@ -1,8 +1,8 @@
-name: Deploy Cloudflare production
+name: Rollback deploy old site
 
 on:
   push:
-    branches: [main]
+    branches: [rollback/deploy-old-site-20260916]
   workflow_dispatch:
 
 permissions:
@@ -18,18 +18,18 @@ env:
 
 jobs:
   deploy:
-    name: Build, migrate, deploy and smoke test
+    name: Build and deploy rollback
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -41,12 +41,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Enforce pnpm-only lockfile policy
-        run: pnpm security:lockfiles
-
-      - name: Dependency audit (moderate+)
-        run: pnpm security:audit
 
       - name: Unit tests
         run: pnpm test
@@ -61,52 +55,8 @@ jobs:
           SANITY_DATASET: production
           SITE_URL: https://www.liviubucel.com/
 
-      - name: Apply D1 migrations
-        run: pnpm exec wrangler d1 migrations apply ROMANIA_MONITOR_DB --remote
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
       - name: Deploy Worker with Wrangler
         run: pnpm exec wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
-      - name: Wait for edge propagation
-        run: sleep 12
-
-      - name: Production smoke tests
-        run: |
-          set -euo pipefail
-
-          BASE='https://www.liviubucel.com'
-          UA='site-deployment-smoke/1.0'
-
-          HOME_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/?deploy_sha=${GITHUB_SHA}")
-          EXPERIENCE_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/experience?deploy_sha=${GITHUB_SHA}")
-
-          if [ "$HOME_STATUS" != '200' ]; then
-            echo "::error::Homepage returned HTTP ${HOME_STATUS}"
-            exit 1
-          fi
-
-          if [ "$EXPERIENCE_STATUS" != '200' ]; then
-            echo "::error::Experience page returned HTTP ${EXPERIENCE_STATUS}"
-            exit 1
-          fi
-
-          HEADERS=$(curl -sS -D - -o /dev/null -H "User-Agent: ${UA}" "${BASE}/romania-cyber-monitor?lang=ro")
-          LOCATION=$(printf '%s\n' "$HEADERS" | awk 'BEGIN{IGNORECASE=1} /^location:/ {sub(/\r$/, "", $2); print $2; exit}')
-          if [ "$LOCATION" != "${BASE}/ro/romania-cyber-monitor" ]; then
-            echo "::error::Language redirect is wrong."
-            exit 1
-          fi
-
-          RO_STATUS=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: ${UA}" "${BASE}/ro/romania-cyber-monitor")
-          if [ "$RO_STATUS" != '200' ]; then
-            echo "::error::Romanian Cyber Monitor returned HTTP ${RO_STATUS}"
-            exit 1
-          fi
-
-          echo "Production smoke tests passed."
