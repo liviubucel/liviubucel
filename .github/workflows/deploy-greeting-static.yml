@@ -1,7 +1,8 @@
 name: Deploy static greeting fix
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
