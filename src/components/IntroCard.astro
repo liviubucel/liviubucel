@@ -59,7 +59,17 @@ const tryhackme = profile?.tryhackme;
     <div class="flex flex-col justify-between md:max-h-[300px] gap-4 min-w-0">
       <div class="flex flex-col h-full">
         <p class="text-sm font-light m-0 text-darkslate-300">{roleText}</p>
-        <h1 class="text-3xl sm:text-4xl font-bold m-0 mt-1">{heading}</h1>
+        <h1
+          class="text-3xl sm:text-4xl font-bold m-0 mt-1 flex flex-wrap items-baseline gap-x-2"
+          aria-label={`${isRO ? "Salut" : "Hello"}. ${heading}`}
+        >
+          <span
+            id="world-greeting"
+            class="inline-block text-primary-400 transition-opacity duration-200 whitespace-nowrap"
+            aria-hidden="true"
+          >Hello</span>
+          <span>{heading}</span>
+        </h1>
         <p class="m-0 font-light text-md mt-3">{summaryText}</p>
         <p class="text-sm font-bold mt-auto">{mottoText}</p>
       </div>
@@ -129,6 +139,19 @@ const tryhackme = profile?.tryhackme;
 <script>
   import { animate } from "motion";
 
+  const greetings = [
+    "Hello", "Salut", "Bonjour", "Hola", "Ciao", "Hallo", "Olá", "Hej",
+    "Hei", "Halló", "Cześć", "Ahoj", "Szia", "Bună", "Γεια", "Merhaba",
+    "Привіт", "Привет", "Здраво", "Bok", "Živjo", "Здравей", "Tere",
+    "Sveiki", "Labas", "مرحبا", "שלום", "سلام", "नमस्ते", "ਸਤ ਸ੍ਰੀ ਅਕਾਲ",
+    "নমস্কার", "வணக்கம்", "నమస్కారం", "ನಮಸ್ಕಾರ", "നമസ്കാരം", "你好",
+    "こんにちは", "안녕하세요", "สวัสดี", "Xin chào", "Halo", "Kamusta",
+    "Jambo", "Sawubona", "Molo", "Dumela", "Mhoro", "Moni", "Habari",
+    "Сәлем", "Салом", "Сайн уу", "Салам", "Բարև", "გამარჯობა",
+    "Përshëndetje", "Kaixo", "Ola", "Dia dhuit", "Helo", "Aloha",
+    "Kia ora", "Talofa", "Bula", "Mālō"
+  ];
+
   function updateMemojiImage() {
     const avatarImg = document.getElementById(
       "memoji-avatar"
@@ -164,14 +187,34 @@ const tryhackme = profile?.tryhackme;
     );
   }
 
+  function initWorldGreeting() {
+    const greeting = document.getElementById("world-greeting") as HTMLElement | null;
+    if (!greeting) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    let index = 0;
+    window.setInterval(() => {
+      greeting.style.opacity = "0";
+      window.setTimeout(() => {
+        index = (index + 1) % greetings.length;
+        greeting.textContent = greetings[index];
+        greeting.style.opacity = "1";
+      }, 200);
+    }, 1800);
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
       updateMemojiImage();
       initLevitatingAnimation();
+      initWorldGreeting();
     });
   } else {
     updateMemojiImage();
     initLevitatingAnimation();
+    initWorldGreeting();
   }
 
   const observer = new MutationObserver((mutations) => {
