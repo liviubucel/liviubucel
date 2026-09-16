@@ -59,22 +59,15 @@ const tryhackme = profile?.tryhackme;
     <div class="flex flex-col justify-between md:max-h-[300px] gap-4 min-w-0">
       <div class="flex flex-col h-full">
         <p class="text-sm font-light m-0 text-darkslate-300">{roleText}</p>
-        <h1
-          class="text-3xl sm:text-4xl font-bold m-0 mt-1 flex flex-wrap sm:flex-nowrap items-baseline gap-x-2"
-          aria-label={`${isRO ? "Salut" : "Hello"}, ${heading}`}
-        >
-          <span
-            class="w-full sm:w-[13rem] shrink-0 whitespace-nowrap text-primary-400"
+        <div class="mt-1" aria-label={`${isRO ? "Salut" : "Hello"}. ${heading}`}>
+          <div
+            class="text-2xl sm:text-3xl font-bold leading-none h-[1.15em] overflow-hidden text-primary-400"
             aria-hidden="true"
           >
-            <span
-              id="world-greeting"
-              class="inline-block transition-opacity duration-200"
-              dir="auto"
-            >Hello</span><span>,</span>
-          </span>
-          <span class="whitespace-nowrap">{heading}</span>
-        </h1>
+            <span id="world-greeting" class="inline-block whitespace-nowrap" dir="auto">Hello 👋</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-bold m-0 mt-1 whitespace-nowrap">{heading}</h1>
+        </div>
         <p class="m-0 font-light text-md mt-3">{summaryText}</p>
         <p class="text-sm font-bold mt-auto">{mottoText}</p>
       </div>
@@ -200,14 +193,24 @@ const tryhackme = profile?.tryhackme;
     if (reduceMotion) return;
 
     let index = 0;
-    window.setInterval(() => {
+    window.setInterval(async () => {
+      await animate(
+        greeting,
+        { y: ["0%", "-110%"], opacity: [1, 0] },
+        { duration: 0.42, ease: "easeInOut" }
+      ).finished;
+
+      index = (index + 1) % greetings.length;
+      greeting.textContent = `${greetings[index]} 👋`;
+      greeting.style.transform = "translateY(110%)";
       greeting.style.opacity = "0";
-      window.setTimeout(() => {
-        index = (index + 1) % greetings.length;
-        greeting.textContent = greetings[index];
-        greeting.style.opacity = "1";
-      }, 200);
-    }, 1800);
+
+      animate(
+        greeting,
+        { y: ["110%", "0%"], opacity: [0, 1] },
+        { duration: 0.42, ease: "easeInOut" }
+      );
+    }, 2200);
   }
 
   if (document.readyState === "loading") {
