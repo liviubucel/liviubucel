@@ -1,24 +1,16 @@
 ---
 import Card from "./Card/index.astro";
 import { Icon } from "astro-icon/components";
-import { SITE } from "../site-config";
-import { getProfileSettings, getCertifications, type ProfileSettings, type Certification } from "../lib/sanity-queries";
+import { getCertifications, type ProfileSettings, type Certification } from "../lib/sanity-queries";
 
 interface Props {
   lang?: "en" | "ro";
-  /** Pass these down from the page when already fetched there (e.g.
-   * alongside IntroCard/Now's own need for the profile) to avoid firing
-   * the same Sanity queries multiple times per page render. Each falls
-   * back to fetching independently so the component still works
-   * standalone. */
   profile?: ProfileSettings | null;
   certifications?: Certification[];
 }
 
-const { lang = "en", profile: profileProp, certifications: certificationsProp } = Astro.props;
+const { lang = "en", certifications: certificationsProp } = Astro.props;
 const isRO = lang === "ro";
-
-const profile = profileProp !== undefined ? profileProp : await getProfileSettings();
 
 let certs = certificationsProp !== undefined ? certificationsProp : await getCertifications();
 
@@ -30,80 +22,84 @@ if (!certs.length) {
   ] as any;
 }
 
+const statusLabel = (status?: string) => {
+  if (status === 'in-progress') return isRO ? 'În progres' : 'In progress';
+  if (status === 'planned') return isRO ? 'Planificat' : 'Planned';
+  return isRO ? 'Credential' : 'Credential';
+};
+
+const iconClass = "h-9 w-9 shrink-0";
 ---
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
   <div class="h-full flex flex-col">
-    <header class="flex items-center">
-      <h2 class="text-white text-xl font-bold">
-        {isRO ? "Hai să lucrăm împreună!" : "Let's start working together!"}
+    <header>
+      <h2 class="text-white text-xl font-bold m-0">
+        {isRO ? "Acreditări și certificări" : "Credentials & certifications"}
       </h2>
+      <p class="text-xs text-darkslate-300 mt-1 mb-0">
+        {isRO ? "Formare, apartenențe profesionale și certificări." : "Training, memberships and certifications."}
+      </p>
     </header>
-    <div class="flex flex-col mt-4 gap-1">
-      <h2 class="text-darkslate-300 text-xs uppercase tracking-wide">{isRO ? "Detalii de contact" : "Contact Details"}</h2>
-      <a
-        href={`mailto:${SITE.links.email}`}
-        class="text-sm hover:text-primary-400 transition-colors duration-150"
-      >
-        {SITE.links.email}
-      </a>
-      {profile?.phone && (
-        <a
-          href={`tel:${profile.phone.replace(/\s+/g, '')}`}
-          class="text-sm hover:text-primary-400 transition-colors duration-150"
-        >
-          {profile.phone}
-        </a>
-      )}
-      <p class="text-sm text-darkslate-300 mt-2">{SITE.location.countryName}</p>
-    </div>
 
-    <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-darkslate-700">
-      <h2 class="text-white text-base font-bold">{isRO ? "Certificări" : "Certifications"}</h2>
-      <div class="flex flex-wrap items-start gap-x-6 gap-y-5">
-        {certs.map((cert) => {
-          const Tag = cert.credentialUrl ? 'a' : 'div';
-          return (
-            <Tag
-              data-cert-badge
-              class="flex items-center justify-center text-neutral-200 hover:text-white hover:-translate-y-1 hover:scale-110 transition-all duration-300 ease-out shrink-0"
-              title={cert.name}
-              {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
-            >
-              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class="h-10 w-10" />}
-              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-16 w-16" />}
-              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-12 w-12" />}
-              {cert.iconType === 'isc2' && <Icon name="simple-icons:isc2" class="h-12 w-12" />}
-              {cert.iconType === 'fortinet' && <Icon name="simple-icons:fortinet" class="h-12 w-12" />}
-              {cert.iconType === 'paloaltonetworks' && <Icon name="simple-icons:paloaltonetworks" class="h-12 w-12" />}
-              {cert.iconType === 'microsoft' && <Icon name="simple-icons:microsoft" class="h-12 w-12" />}
-              {cert.iconType === 'googlecloud' && <Icon name="simple-icons:googlecloud" class="h-12 w-12" />}
-              {cert.iconType === 'ibm' && <Icon name="simple-icons:ibm" class="h-12 w-12" />}
-              {cert.iconType === 'redhat' && <Icon name="simple-icons:redhat" class="h-12 w-12" />}
-              {cert.iconType === 'vmware' && <Icon name="simple-icons:vmware" class="h-12 w-12" />}
-              {cert.iconType === 'junipernetworks' && <Icon name="simple-icons:junipernetworks" class="h-12 w-12" />}
-              {cert.iconType === 'splunk' && <Icon name="simple-icons:splunk" class="h-12 w-12" />}
-              {cert.iconType === 'sonicwall' && <Icon name="simple-icons:sonicwall" class="h-12 w-12" />}
-              {cert.iconType === 'kalilinux' && <Icon name="simple-icons:kalilinux" class="h-12 w-12" />}
-              {cert.iconType === 'linuxprofessionalinstitute' && <Icon name="simple-icons:linuxprofessionalinstitute" class="h-12 w-12" />}
-              {cert.iconType === 'hackthebox' && <Icon name="simple-icons:hackthebox" class="h-12 w-12" />}
-              {cert.iconType === 'tryhackme' && <Icon name="simple-icons:tryhackme" class="h-12 w-12" />}
-              {cert.iconType === 'hackerone' && <Icon name="simple-icons:hackerone" class="h-12 w-12" />}
-              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class="h-12 w-12" />}
-              {cert.iconType === 'network' && <Icon name="ri:router-line" class="h-12 w-12" />}
-              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class="h-12 w-12" />}
-              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class="h-12 w-12" />}
-              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class="h-12 w-12" />}
-              {cert.iconType === 'award' && <Icon name="ri:award-line" class="h-12 w-12" />}
+    <div class="flex flex-col mt-5 divide-y divide-darkslate-700/70">
+      {certs.map((cert) => {
+        const Tag = cert.credentialUrl ? 'a' : 'div';
+        return (
+          <Tag
+            data-cert-badge
+            class="group flex items-center gap-4 py-4 first:pt-2 last:pb-0 text-neutral-200 hover:text-white transition-colors duration-200"
+            title={cert.name}
+            {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            <div class="w-12 h-12 flex items-center justify-center shrink-0 text-neutral-200 group-hover:text-white transition-colors duration-200">
+              {cert.iconType === 'owasp' && <Icon name="simple-icons:owasp" class={iconClass} />}
+              {cert.iconType === 'comptia' && <Icon name="simple-icons:comptia" class="h-11 w-11" />}
+              {cert.iconType === 'cisco' && <Icon name="simple-icons:cisco" class="h-10 w-10" />}
+              {cert.iconType === 'isc2' && <Icon name="simple-icons:isc2" class={iconClass} />}
+              {cert.iconType === 'fortinet' && <Icon name="simple-icons:fortinet" class={iconClass} />}
+              {cert.iconType === 'paloaltonetworks' && <Icon name="simple-icons:paloaltonetworks" class={iconClass} />}
+              {cert.iconType === 'microsoft' && <Icon name="simple-icons:microsoft" class={iconClass} />}
+              {cert.iconType === 'googlecloud' && <Icon name="simple-icons:googlecloud" class={iconClass} />}
+              {cert.iconType === 'ibm' && <Icon name="simple-icons:ibm" class={iconClass} />}
+              {cert.iconType === 'redhat' && <Icon name="simple-icons:redhat" class={iconClass} />}
+              {cert.iconType === 'vmware' && <Icon name="simple-icons:vmware" class={iconClass} />}
+              {cert.iconType === 'junipernetworks' && <Icon name="simple-icons:junipernetworks" class={iconClass} />}
+              {cert.iconType === 'splunk' && <Icon name="simple-icons:splunk" class={iconClass} />}
+              {cert.iconType === 'sonicwall' && <Icon name="simple-icons:sonicwall" class={iconClass} />}
+              {cert.iconType === 'kalilinux' && <Icon name="simple-icons:kalilinux" class={iconClass} />}
+              {cert.iconType === 'linuxprofessionalinstitute' && <Icon name="simple-icons:linuxprofessionalinstitute" class={iconClass} />}
+              {cert.iconType === 'hackthebox' && <Icon name="simple-icons:hackthebox" class={iconClass} />}
+              {cert.iconType === 'tryhackme' && <Icon name="simple-icons:tryhackme" class={iconClass} />}
+              {cert.iconType === 'hackerone' && <Icon name="simple-icons:hackerone" class={iconClass} />}
+              {cert.iconType === 'shield' && <Icon name="ri:shield-check-line" class={iconClass} />}
+              {cert.iconType === 'network' && <Icon name="ri:router-line" class={iconClass} />}
+              {cert.iconType === 'bug' && <Icon name="ri:bug-line" class={iconClass} />}
+              {cert.iconType === 'terminal' && <Icon name="ri:terminal-box-line" class={iconClass} />}
+              {cert.iconType === 'lock' && <Icon name="ri:lock-2-line" class={iconClass} />}
+              {cert.iconType === 'award' && <Icon name="ri:award-line" class={iconClass} />}
               {![
                 'owasp','comptia','cisco','isc2','fortinet','paloaltonetworks','microsoft','googlecloud','ibm',
                 'redhat','vmware','junipernetworks','splunk','sonicwall','kalilinux','linuxprofessionalinstitute',
                 'hackthebox','tryhackme','hackerone','shield','network','bug','terminal','lock','award',
-              ].includes(cert.iconType) && <Icon name="ri:award-line" class="h-12 w-12" />}
-            </Tag>
-          );
-        })}
-      </div>
+              ].includes(cert.iconType) && <Icon name="ri:award-line" class={iconClass} />}
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-semibold leading-tight text-white truncate">{cert.name}</div>
+              <div class="text-xs text-darkslate-300 mt-1 flex items-center gap-2">
+                <span>{cert.issuer}</span>
+                <span aria-hidden="true">·</span>
+                <span>{statusLabel(cert.status)}</span>
+              </div>
+            </div>
+
+            {cert.credentialUrl && (
+              <Icon name="ri:arrow-right-up-line" class="h-4 w-4 text-darkslate-300 group-hover:text-white transition-colors duration-200" />
+            )}
+          </Tag>
+        );
+      })}
     </div>
   </div>
 </Card>
@@ -115,8 +111,8 @@ if (!certs.length) {
   if (badges.length) {
     animate(
       badges,
-      { opacity: [0, 1], y: [12, 0], scale: [0.85, 1] },
-      { delay: stagger(0.08, { startDelay: 0.4 }), duration: 0.5, ease: "easeOut" },
+      { opacity: [0, 1], y: [8, 0] },
+      { delay: stagger(0.06, { startDelay: 0.25 }), duration: 0.4, ease: "easeOut" },
     );
   }
 </script>
