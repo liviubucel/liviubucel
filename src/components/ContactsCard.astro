@@ -57,38 +57,61 @@ const iconName = (iconType: string) => {
 
 <Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
   <div class="h-full flex flex-col">
-    <h2 class="text-white text-xl font-bold m-0">
-      {isRO ? "Acreditări" : "Credentials"}
-    </h2>
+    <section>
+      <h2 class="text-white text-xl font-bold m-0">
+        {isRO ? "Acreditări" : "Credentials"}
+      </h2>
 
-    <div class="grid grid-cols-3 gap-x-5 gap-y-6 mt-6 items-center">
-      {certs.map((cert) => {
-        const Tag = cert.credentialUrl ? 'a' : 'div';
-        return (
-          <Tag
-            data-cert-badge
-            class="h-14 flex items-center justify-center text-neutral-200 hover:text-white hover:-translate-y-1 transition-all duration-200"
-            title={cert.name}
-            aria-label={cert.name}
-            {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
-          >
-            <Icon name={iconName(cert.iconType)} class="h-11 w-11 max-w-full" />
-          </Tag>
-        );
-      })}
-    </div>
+      <div class="grid grid-cols-3 gap-x-5 gap-y-5 mt-5 items-center">
+        {certs.map((cert) => {
+          const Tag = cert.credentialUrl ? 'a' : 'div';
+          return (
+            <Tag
+              data-card-logo
+              class="h-12 flex items-center justify-center text-neutral-200 hover:text-white hover:-translate-y-1 transition-all duration-200"
+              title={cert.name}
+              aria-label={cert.name}
+              {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              <Icon name={iconName(cert.iconType)} class="h-10 w-10 max-w-full" />
+            </Tag>
+          );
+        })}
+      </div>
+    </section>
+
+    <section class="mt-auto pt-5 border-t border-darkslate-700/70">
+      <h2 class="text-white text-xl font-bold m-0">
+        {isRO ? "Apariții media" : "Media appearances"}
+      </h2>
+
+      <div class="grid grid-cols-4 gap-4 mt-5 items-center text-neutral-300">
+        <div data-card-logo class="h-11 flex items-center justify-center" title={isRO ? "Televiziune" : "Television"} aria-label={isRO ? "Televiziune" : "Television"}>
+          <Icon name="ri:tv-2-line" class="h-9 w-9" />
+        </div>
+        <div data-card-logo class="h-11 flex items-center justify-center" title="Radio" aria-label="Radio">
+          <Icon name="ri:radio-2-line" class="h-9 w-9" />
+        </div>
+        <div data-card-logo class="h-11 flex items-center justify-center" title={isRO ? "Interviuri" : "Interviews"} aria-label={isRO ? "Interviuri" : "Interviews"}>
+          <Icon name="ri:mic-line" class="h-9 w-9" />
+        </div>
+        <div data-card-logo class="h-11 flex items-center justify-center" title={isRO ? "Presă" : "Press"} aria-label={isRO ? "Presă" : "Press"}>
+          <Icon name="ri:newspaper-line" class="h-9 w-9" />
+        </div>
+      </div>
+    </section>
   </div>
 </Card>
 
 <script>
   import { animate, stagger } from "motion";
 
-  const badges = document.querySelectorAll("[data-cert-badge]");
-  if (badges.length) {
+  const logos = document.querySelectorAll("[data-card-logo]");
+  if (logos.length) {
     animate(
-      badges,
+      logos,
       { opacity: [0, 1], y: [8, 0] },
-      { delay: stagger(0.06, { startDelay: 0.2 }), duration: 0.35, ease: "easeOut" },
+      { delay: stagger(0.05, { startDelay: 0.18 }), duration: 0.32, ease: "easeOut" },
     );
   }
 </script>
