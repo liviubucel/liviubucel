@@ -57,7 +57,6 @@ const iconName = (iconType: string) => {
 const media = [
   { name: 'PRO TV', src: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Pro_TV_logo_2025.svg' },
   { name: 'Digi24', src: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_Digi_24_%282023%29.svg' },
-  { name: 'B1 TV', src: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/B1_TV_logo.svg' },
   { name: 'Agro TV', src: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Logo_AgroTV_%282018%29.svg' },
 ];
 ---
@@ -90,7 +89,7 @@ const media = [
     <section class="mt-auto pt-5 border-t border-darkslate-700/70">
       <h2 class="text-white text-xl font-bold m-0">Media</h2>
 
-      <div class="grid grid-cols-2 gap-x-5 gap-y-5 mt-5 items-center">
+      <div class="grid grid-cols-3 gap-4 mt-5 items-center">
         {media.map((item) => (
           <div
             data-card-logo
@@ -103,7 +102,7 @@ const media = [
               alt={item.name}
               loading="lazy"
               decoding="async"
-              class="max-h-9 max-w-[86px] object-contain"
+              class="max-h-9 max-w-[78px] object-contain"
             />
           </div>
         ))}
