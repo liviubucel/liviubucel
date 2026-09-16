@@ -22,9 +22,6 @@ if (!certs.length) {
   ] as any;
 }
 
-const earnedCerts = certs.filter((cert) => cert.status === 'earned');
-const learningCerts = certs.filter((cert) => cert.status !== 'earned');
-
 const iconName = (iconType: string) => {
   const icons: Record<string, string> = {
     owasp: 'simple-icons:owasp',
@@ -58,55 +55,27 @@ const iconName = (iconType: string) => {
 };
 ---
 
-<Card colSpan="md:col-span-1" rowSpan="md:row-span-4">
-  <div class="h-full flex flex-col">
+<Card colSpan="md:col-span-1" rowSpan="md:row-span-2">
+  <div class="h-full flex flex-col justify-center">
     <h2 class="text-white text-xl font-bold m-0">
       {isRO ? "Acreditări" : "Credentials"}
     </h2>
 
-    {earnedCerts.length > 0 && (
-      <div class="grid grid-cols-3 gap-x-5 gap-y-6 mt-6 items-center">
-        {earnedCerts.map((cert) => {
-          const Tag = cert.credentialUrl ? 'a' : 'div';
-          return (
-            <Tag
-              data-cert-badge
-              class="h-14 flex items-center justify-center text-neutral-200 hover:text-white hover:-translate-y-1 transition-all duration-200"
-              title={cert.name}
-              aria-label={cert.name}
-              {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
-            >
-              <Icon name={iconName(cert.iconType)} class="h-11 w-11 max-w-full" />
-            </Tag>
-          );
-        })}
-      </div>
-    )}
-
-    {learningCerts.length > 0 && (
-      <section class="mt-7 pt-5 border-t border-darkslate-700/70">
-        <h3 class="text-xs uppercase tracking-[0.18em] text-darkslate-300 m-0">
-          {isRO ? "În curs" : "Learning"}
-        </h3>
-        <div class="grid grid-cols-3 gap-x-5 gap-y-6 mt-4 items-center">
-          {learningCerts.map((cert) => (
-            <div
-              data-cert-badge
-              class="h-14 flex items-center justify-center text-neutral-400 hover:text-neutral-200 hover:-translate-y-1 transition-all duration-200"
-              title={cert.name}
-              aria-label={cert.name}
-            >
-              <Icon name={iconName(cert.iconType)} class="h-11 w-11 max-w-full" />
-            </div>
-          ))}
-        </div>
-      </section>
-    )}
-
-    <div id="featured-in-slot" class="hidden mt-7 pt-5 border-t border-darkslate-700/70">
-      <h3 class="text-xs uppercase tracking-[0.18em] text-darkslate-300 m-0">
-        {isRO ? "Apariții media" : "Featured in"}
-      </h3>
+    <div class="grid grid-cols-3 gap-5 mt-5 items-center">
+      {certs.map((cert) => {
+        const Tag = cert.credentialUrl ? 'a' : 'div';
+        return (
+          <Tag
+            data-cert-badge
+            class="h-12 flex items-center justify-center text-neutral-200 hover:text-white hover:-translate-y-1 transition-all duration-200"
+            title={cert.name}
+            aria-label={cert.name}
+            {...(cert.credentialUrl ? { href: cert.credentialUrl, target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            <Icon name={iconName(cert.iconType)} class="h-10 w-10 max-w-full" />
+          </Tag>
+        );
+      })}
     </div>
   </div>
 </Card>
