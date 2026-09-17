@@ -1,0 +1,87 @@
+name: Switch Cyber Monitor public reads to Wix
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/switch-cyber-read-path-to-wix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/full-wix
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Switch public Cyber Monitor pages from D1 to Wix CMS
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const files = [
+            'src/pages/romania-cyber-monitor/index.astro',
+            'src/pages/romania-cyber-monitor/ransomware.astro',
+            'src/pages/romania-cyber-monitor/breaches.astro',
+            'src/pages/romania-cyber-monitor/exposures.astro',
+            'src/pages/romania-cyber-monitor/threat-infrastructure.astro',
+            'src/pages/romania-cyber-monitor/malware.astro',
+            'src/pages/romania-cyber-monitor/incidents/[slug].astro',
+            'src/pages/ro/romania-cyber-monitor/incidents/[slug].astro',
+            'src/pages/blog/index.astro',
+            'src/pages/ro/blog/index.astro',
+          ];
+
+          for (const file of files) {
+            let text = fs.readFileSync(file, 'utf8');
+            const before = text;
+            text = text.replace("import { env } from 'cloudflare:workers';\n", '');
+            text = text.replace(/\/public-data(['"])/g, '/public-data-wix$1');
+            text = text.replace(/\n\s*const db = env\.ROMANIA_MONITOR_DB;\n/g, '\n');
+            text = text.replace(/listPublicIncidents\(env\.ROMANIA_MONITOR_DB,\s*/g, 'listPublicIncidents(');
+            text = text.replace(/listPublicIncidents\(db,\s*/g, 'listPublicIncidents(');
+            text = text.replace(/countPublicIncidents\(db\)/g, 'countPublicIncidents()');
+            text = text.replace(/getPublicIncidentBySlug\(db,\s*/g, 'getPublicIncidentBySlug(');
+            text = text.replace(/listPublicExposures\(env\.ROMANIA_MONITOR_DB,\s*/g, 'listPublicExposures(');
+            text = text.replace(/listPublicIndicators\(env\.ROMANIA_MONITOR_DB,\s*/g, 'listPublicIndicators(');
+            text = text.replace(/listPublicMalwareMetadata\(env\.ROMANIA_MONITOR_DB,\s*/g, 'listPublicMalwareMetadata(');
+
+            if (text === before) {
+              throw new Error(`No expected D1 read-path changes were applied to ${file}`);
+            }
+            if (text.includes("from 'cloudflare:workers'") || text.includes('env.ROMANIA_MONITOR_DB')) {
+              throw new Error(`Cloudflare D1 dependency remains in switched page ${file}`);
+            }
+            fs.writeFileSync(file, text);
+          }
+          NODE
+
+      - name: Verify switched pages use Wix public data module
+        run: |
+          set -euo pipefail
+          grep -R "public-data-wix" src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog
+          if grep -R "ROMANIA_MONITOR_DB" src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog; then
+            echo 'D1 binding remains in a switched public page.'
+            exit 1
+          fi
+
+      - name: Commit read-path migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog
+          git commit -m 'feat(wix): serve Cyber Monitor public pages from Wix CMS'
+          git push origin HEAD:migration/full-wix
