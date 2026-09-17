@@ -1,16 +1,15 @@
 ---
-import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import Seo from '../../components/Seo.astro';
 import SectionNav from '../../components/CyberMonitor/SectionNav.astro';
-import { listPublicExposures } from '../../lib/cyber-monitor/public-data';
+import { listPublicExposures } from '../../lib/cyber-monitor/public-data-wix';
 import { SITE } from '../../site-config';
 
 export const prerender = false;
 
 let exposures: Awaited<ReturnType<typeof listPublicExposures>> = [];
 try {
-  exposures = await listPublicExposures(env.ROMANIA_MONITOR_DB, 50);
+  exposures = await listPublicExposures(50);
 } catch (error) {
   console.error('[romania-cyber-monitor/exposures] failed to load exposures:', error);
 }

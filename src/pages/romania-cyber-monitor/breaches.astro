@@ -1,17 +1,16 @@
 ---
-import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import Seo from '../../components/Seo.astro';
 import SectionNav from '../../components/CyberMonitor/SectionNav.astro';
 import IncidentCard from '../../components/CyberMonitor/IncidentCard.astro';
-import { listPublicIncidents } from '../../lib/cyber-monitor/public-data';
+import { listPublicIncidents } from '../../lib/cyber-monitor/public-data-wix';
 import { SITE } from '../../site-config';
 
 export const prerender = false;
 
 let incidents: Awaited<ReturnType<typeof listPublicIncidents>> = [];
 try {
-  incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { recordType: 'verified_breach', limit: 50 });
+  incidents = await listPublicIncidents({ recordType: 'verified_breach', limit: 50 });
 } catch (error) {
   console.error('[romania-cyber-monitor/breaches] failed to load incidents:', error);
 }

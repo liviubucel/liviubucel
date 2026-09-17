@@ -1,9 +1,8 @@
 ---
-import { env } from 'cloudflare:workers';
 import MarkdownIt from 'markdown-it';
 import sanitizeHtml from 'sanitize-html';
 import BasicLayout from '../../../layouts/BasicLayout.astro';
-import { getPublicIncidentBySlug } from '../../../lib/cyber-monitor/public-data';
+import { getPublicIncidentBySlug } from '../../../lib/cyber-monitor/public-data-wix';
 import { RECORD_TYPE_LABEL, VERIFICATION_STATUS_LABEL, formatIsoDate } from '../../../lib/cyber-monitor/labels';
 import { SITE } from '../../../site-config';
 
@@ -14,9 +13,7 @@ const { slug } = Astro.params;
 if (!slug) {
   return Astro.redirect('/romania-cyber-monitor');
 }
-
-const db = env.ROMANIA_MONITOR_DB;
-const incident = await getPublicIncidentBySlug(db, slug, 'en').catch((error) => {
+const incident = await getPublicIncidentBySlug(slug, 'en').catch((error) => {
   console.error('[romania-cyber-monitor] failed to load incident:', error);
   return null;
 });

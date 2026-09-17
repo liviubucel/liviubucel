@@ -1,16 +1,15 @@
 ---
-import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import Seo from '../../components/Seo.astro';
 import SectionNav from '../../components/CyberMonitor/SectionNav.astro';
-import { listPublicIndicators } from '../../lib/cyber-monitor/public-data';
+import { listPublicIndicators } from '../../lib/cyber-monitor/public-data-wix';
 import { SITE } from '../../site-config';
 
 export const prerender = false;
 
 let indicators: Awaited<ReturnType<typeof listPublicIndicators>> = [];
 try {
-  indicators = await listPublicIndicators(env.ROMANIA_MONITOR_DB, 50);
+  indicators = await listPublicIndicators(50);
 } catch (error) {
   console.error('[romania-cyber-monitor/threat-infrastructure] failed to load indicators:', error);
 }

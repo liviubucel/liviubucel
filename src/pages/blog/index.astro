@@ -1,12 +1,11 @@
 ---
-import { env } from 'cloudflare:workers';
 import { DEFAULT_LANGUAGE, type Language } from '../../lib/i18n';
 import Seo from '../../components/Seo.astro';
 import { getPosts, getPageSeo } from '../../lib/sanity-queries';
 import Layout from '../../layouts/Layout.astro';
 import PostRow from '../../components/Blog/PostRow.astro';
 import { SITE } from '../../site-config';
-import { listPublicIncidents } from '../../lib/cyber-monitor/public-data';
+import { listPublicIncidents } from '../../lib/cyber-monitor/public-data-wix';
 import { RECORD_TYPE_LABEL } from '../../lib/cyber-monitor/labels';
 
 export const prerender = false;
@@ -37,7 +36,7 @@ try {
 }
 
 try {
-  const incidents = await listPublicIncidents(env.ROMANIA_MONITOR_DB, { limit: 50 });
+  const incidents = await listPublicIncidents({ limit: 50 });
   const cyberMonitorPosts: Post[] = incidents.map((incident) => ({
     id: incident.slug,
     title: incident.articleTitle ?? incident.organisationDisplayName ?? 'Romania Cyber Monitor update',
