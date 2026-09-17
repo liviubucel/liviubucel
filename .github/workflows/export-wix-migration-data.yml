@@ -31,8 +31,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p migration-export
-          node <<'NODE'
-          const fs = require('node:fs');
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
 
           const projectId = '8atrdwjk';
           const dataset = 'production';
