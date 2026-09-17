@@ -25,7 +25,7 @@ jobs:
           corepack prepare pnpm@10.34.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Require visitor OAuth double-confirmation support
+      - name: Require full Wix double-opt-in email flow
         env:
           PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
         run: |
@@ -36,7 +36,8 @@ jobs:
             auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
           });
           const email = 'headless-consent-probe-final@example.com';
-          const response = await client.fetchWithAuth(
+
+          const consentResponse = await client.fetchWithAuth(
             'https://www.wixapis.com/marketing-consent/v1/marketing-consent/upsert',
             {
               method: 'POST',
@@ -56,19 +57,49 @@ jobs:
             }
           );
 
-          const text = await response.text();
-          if (!response.ok) {
-            throw new Error(`Marketing consent upsert failed: HTTP ${response.status} ${text}`);
+          const consentText = await consentResponse.text();
+          if (!consentResponse.ok) {
+            throw new Error(`Marketing consent upsert failed: HTTP ${consentResponse.status} ${consentText}`);
           }
-          const data = JSON.parse(text);
-          if (data.marketingConsent?.state !== 'PENDING') {
-            throw new Error(`Expected PENDING consent, got ${data.marketingConsent?.state}`);
+          const consentData = JSON.parse(consentText);
+          if (consentData.marketingConsent?.state !== 'PENDING') {
+            throw new Error(`Expected PENDING consent, got ${consentData.marketingConsent?.state}`);
           }
-          if (data.marketingConsent?.lastConfirmationActivity?.optInLevel !== 'DOUBLE_CONFIRMATION') {
-            throw new Error(`Expected DOUBLE_CONFIRMATION, got ${data.marketingConsent?.lastConfirmationActivity?.optInLevel}`);
+          if (consentData.marketingConsent?.lastConfirmationActivity?.optInLevel !== 'DOUBLE_CONFIRMATION') {
+            throw new Error(`Expected DOUBLE_CONFIRMATION, got ${consentData.marketingConsent?.lastConfirmationActivity?.optInLevel}`);
           }
-          if (!data.link?.url) {
+          const confirmationUrl = consentData.link?.url;
+          if (!confirmationUrl) {
             throw new Error('Wix did not return a confirmation link for pending double opt-in consent.');
           }
-          console.log('Headless OAuth supports PENDING + DOUBLE_CONFIRMATION and returns a confirmation link.');
+
+          const transmissionResponse = await client.fetchWithAuth(
+            'https://www.wixapis.com/email-transmissions/v1/email-transmissions/send',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                emailTransmission: {
+                  emailSubject: 'Confirm your Romania Cyber Monitor subscription',
+                  emailHtmlContent: `<p>This is a migration probe.</p><p><a href="${confirmationUrl.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">Confirm subscription</a></p>`,
+                  toRecipients: [{ emailAddress: email }],
+                  type: 'TRANSACTIONAL',
+                },
+                idempotencyKey: consentData.marketingConsent.id,
+              }),
+            }
+          );
+
+          const transmissionText = await transmissionResponse.text();
+          if (!transmissionResponse.ok) {
+            throw new Error(`Email transmission failed: HTTP ${transmissionResponse.status} ${transmissionText}`);
+          }
+          const transmissionData = JSON.parse(transmissionText);
+          if (transmissionData.emailTransmission?.status !== 'ACCEPTED') {
+            throw new Error(`Expected ACCEPTED email transmission, got ${transmissionData.emailTransmission?.status}`);
+          }
+
+          console.log(`CONSENT_ID=${consentData.marketingConsent.id}`);
+          console.log(`TRANSMISSION_ID=${transmissionData.emailTransmission.id}`);
+          console.log('Full Wix double-opt-in email flow accepted.');
           NODE
