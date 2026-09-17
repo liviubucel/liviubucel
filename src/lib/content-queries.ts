@@ -1,20 +1,26 @@
 import { wixPublicClient } from './wix/client';
+import { ricosToSafeHtml } from './wix/ricos';
 import type { Language } from './i18n';
 
 // Transitional content facade. Wix is now the source of truth for profile,
-// SEO, certifications and portfolio. Blog/guestbook types remain behind the
-// same facade until their renderer/write-path migrations are complete.
+// SEO, certifications, portfolio and published blog content. Guestbook data
+// remains behind the compatibility boundary until its write-path migration is
+// complete.
 export {
-  getPosts,
-  getPost,
   getCategories,
   getAuthors,
   getGuestbookEntries,
   submitGuestbookEntry,
 } from './sanity-queries';
-export type { Post, Author, Category } from './sanity-queries';
+export type { Author, Category } from './sanity-queries';
 
 type UnknownRecord = Record<string, unknown>;
+
+const EXCLUDED_WIX_BLOG_SLUGS = new Set([
+  'creative-portfolio-showcase-tips-for-artists',
+  'building-a-stunning-online-portfolio-best-practices',
+  'maximizing-your-portfolio-impact-design-and-content',
+]);
 
 function unwrapDataItem(item: unknown): UnknownRecord {
   if (!item || typeof item !== 'object') return {};
@@ -70,6 +76,37 @@ async function getAll(collectionId: string, limit = 1000): Promise<UnknownRecord
   return (result.items ?? []).map(unwrapDataItem);
 }
 
+export interface Post {
+  _id: string;
+  title: string;
+  slug: string;
+  language: Language;
+  description: string;
+  metaDescription?: string;
+  keywords?: string[];
+  pubDate: string;
+  updatedAt?: string;
+  featuredImage?: {
+    asset: {
+      _id: string;
+      url: string;
+    };
+  };
+  category?: {
+    title: string;
+    slug: string;
+  };
+  tags?: string[];
+  author?: {
+    name: string;
+    email?: string;
+  };
+  body?: unknown[];
+  bodyHtml?: string;
+  minutesToRead?: number;
+  published: boolean;
+}
+
 export interface Project {
   _id: string;
   title: string;
@@ -121,6 +158,144 @@ export interface PageSeo {
   description?: string;
   keywords?: string[];
   ogImage?: string;
+}
+
+function seoDescription(seoData: unknown): string | undefined {
+  const seo = seoData && typeof seoData === 'object' ? (seoData as UnknownRecord) : {};
+  const tags = Array.isArray(seo.tags) ? seo.tags : [];
+  for (const tagValue of tags) {
+    const tag = tagValue && typeof tagValue === 'object' ? (tagValue as UnknownRecord) : {};
+    const props = tag.props && typeof tag.props === 'object' ? (tag.props as UnknownRecord) : {};
+    if (tag.type === 'meta' && props.name === 'description') {
+      return asString(props.content);
+    }
+  }
+  return undefined;
+}
+
+function seoKeywords(seoData: unknown): string[] | undefined {
+  const seo = seoData && typeof seoData === 'object' ? (seoData as UnknownRecord) : {};
+  const settings = seo.settings && typeof seo.settings === 'object' ? (seo.settings as UnknownRecord) : {};
+  const keywords = Array.isArray(settings.keywords) ? settings.keywords : [];
+  const values = keywords
+    .map((keyword) => {
+      if (typeof keyword === 'string') return keyword;
+      if (keyword && typeof keyword === 'object') {
+        const row = keyword as UnknownRecord;
+        return asString(row.term) ?? asString(row.keyword);
+      }
+      return undefined;
+    })
+    .filter((value): value is string => Boolean(value));
+  return values.length ? values : undefined;
+}
+
+function estimateMinutes(contentText: string | undefined): number {
+  if (!contentText) return 1;
+  const words = contentText.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
+function mapWixBlogPost(value: unknown, fallbackLang: Language = 'en'): Post {
+  const row = value && typeof value === 'object' ? (value as UnknownRecord) : {};
+  const slug = asString(row.slug) ?? '';
+  const id = asString(row.id) ?? '';
+  const languageValue = asString(row.language);
+  const language: Language = languageValue === 'ro' ? 'ro' : languageValue === 'en' ? 'en' : fallbackLang;
+  const excerpt = asString(row.excerpt) ?? asString(row.contentText) ?? '';
+  const heroImage = row.heroImage && typeof row.heroImage === 'object' ? (row.heroImage as UnknownRecord) : {};
+  const heroImageUrl = asString(heroImage.url);
+  const contentText = asString(row.contentText);
+
+  return {
+    _id: id,
+    title: asString(row.title) ?? '',
+    slug,
+    language,
+    description: excerpt,
+    metaDescription: seoDescription(row.seoData) ?? excerpt,
+    keywords: seoKeywords(row.seoData),
+    pubDate: asDateString(row.firstPublishedDate) ?? new Date(0).toISOString(),
+    updatedAt: asDateString(row.lastPublishedDate),
+    featuredImage: heroImageUrl
+      ? {
+          asset: {
+            _id: asString(heroImage.id) ?? id,
+            url: heroImageUrl,
+          },
+        }
+      : undefined,
+    body: row.richContent && typeof row.richContent === 'object'
+      ? (Array.isArray((row.richContent as UnknownRecord).nodes) ? ((row.richContent as UnknownRecord).nodes as unknown[]) : [])
+      : [],
+    bodyHtml: ricosToSafeHtml(row.richContent),
+    minutesToRead: asNumber(row.minutesToRead) ?? estimateMinutes(contentText),
+    published: true,
+  };
+}
+
+async function readWixBlogResponse(response: Response): Promise<UnknownRecord> {
+  if (!response.ok) {
+    throw new Error(`Wix Blog request failed with HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  return data && typeof data === 'object' ? (data as UnknownRecord) : {};
+}
+
+export async function getPosts(lang?: Language): Promise<Post[]> {
+  try {
+    const query: UnknownRecord = {
+      cursorPaging: { limit: 100 },
+    };
+    if (lang) query.filter = { language: { $eq: lang } };
+
+    const response = await wixPublicClient.fetchWithAuth('https://www.wixapis.com/v3/posts/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fieldsets: ['CONTENT_TEXT', 'SEO', 'URL'],
+        query,
+      }),
+    });
+    const data = await readWixBlogResponse(response);
+    const posts = Array.isArray(data.posts) ? data.posts : [];
+    return posts
+      .map((post) => mapWixBlogPost(post, lang ?? 'en'))
+      .filter((post) => post.slug && !EXCLUDED_WIX_BLOG_SLUGS.has(post.slug))
+      .sort((a, b) => b.pubDate.localeCompare(a.pubDate));
+  } catch (error) {
+    console.error('Failed to fetch posts from Wix Blog:', error);
+    return [];
+  }
+}
+
+export async function getPost(slug: string, lang?: Language): Promise<Post | null> {
+  if (!slug || EXCLUDED_WIX_BLOG_SLUGS.has(slug)) return null;
+
+  try {
+    const params = new URLSearchParams();
+    for (const fieldset of ['RICH_CONTENT', 'CONTENT_TEXT', 'SEO', 'URL']) {
+      params.append('fieldsets', fieldset);
+    }
+    if (lang) params.set('language', lang);
+
+    const response = await wixPublicClient.fetchWithAuth(
+      `https://www.wixapis.com/v3/posts/slugs/${encodeURIComponent(slug)}?${params.toString()}`,
+      { method: 'GET' }
+    );
+    if (response.status === 404) return null;
+    const data = await readWixBlogResponse(response);
+    if (!data.post) return null;
+
+    const post = mapWixBlogPost(data.post, lang ?? 'en');
+    if (lang && post.language !== lang) return null;
+    return post;
+  } catch (error) {
+    console.error(`Failed to fetch Wix Blog post ${slug}:`, error);
+    return null;
+  }
 }
 
 function mapPortfolioProject(row: UnknownRecord, lang: Language): Project {
