@@ -1,0 +1,66 @@
+name: Validate Wix CMS public read path
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/validate-wix-public-read-path.yml'
+      - 'src/lib/wix/**'
+      - 'src/lib/cyber-monitor/public-data-wix.ts'
+      - 'src/pages/romania-cyber-monitor/**'
+      - 'src/pages/ro/romania-cyber-monitor/**'
+      - 'src/pages/blog/**'
+      - 'src/pages/ro/blog/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Astro type check
+        run: pnpm check
+        env:
+          PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://liviubucel-zebrabyte-0a09.wix-site-host.com/
+
+      - name: Production build
+        run: pnpm build
+        env:
+          PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://liviubucel-zebrabyte-0a09.wix-site-host.com/
+
+      - name: Assert public pages no longer bind D1
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R "ROMANIA_MONITOR_DB" src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog; then
+            echo 'Public Cyber Monitor pages still reference D1.'
+            exit 1
+          fi
+          grep -R "public-data-wix" src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog >/dev/null
+          test -f dist/server/entry.mjs
+          test -d dist/client
