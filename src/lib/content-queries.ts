@@ -1,21 +1,18 @@
 import { wixPublicClient } from './wix/client';
 import type { Language } from './i18n';
 
-// Transitional content facade. Public profile/SEO/certification data now comes
-// from Wix CMS, while content types that have not yet completed their frontend
-// renderer migration continue to use Sanity behind this single compatibility
-// boundary. Consumers no longer need to know which backend owns a content type.
+// Transitional content facade. Wix is now the source of truth for profile,
+// SEO, certifications and portfolio. Blog/guestbook types remain behind the
+// same facade until their renderer/write-path migrations are complete.
 export {
   getPosts,
   getPost,
-  getProjects,
-  getProject,
   getCategories,
   getAuthors,
   getGuestbookEntries,
   submitGuestbookEntry,
 } from './sanity-queries';
-export type { Post, Project, Author, Category } from './sanity-queries';
+export type { Post, Author, Category } from './sanity-queries';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -37,6 +34,16 @@ function asNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
+function asDateString(value: unknown): string | undefined {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string' && value.trim()) return value;
+  if (value && typeof value === 'object') {
+    const raw = (value as UnknownRecord).$date;
+    if (typeof raw === 'string' && raw.trim()) return raw;
+  }
+  return undefined;
+}
+
 function mediaUrl(value: unknown): string | undefined {
   if (typeof value === 'string' && value.trim()) return value;
   if (value && typeof value === 'object') {
@@ -46,14 +53,44 @@ function mediaUrl(value: unknown): string | undefined {
   return undefined;
 }
 
+function portfolioImageUrl(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const imageInfo = (value as UnknownRecord).imageInfo;
+  if (imageInfo && typeof imageInfo === 'object') {
+    const url = (imageInfo as UnknownRecord).url;
+    if (typeof url === 'string' && url.trim()) return url;
+  }
+  // Wix app collections may expose imageInfo as a wix:image URI. The public
+  // card intentionally omits the image rather than guessing a CDN transform.
+  return undefined;
+}
+
 async function getAll(collectionId: string, limit = 1000): Promise<UnknownRecord[]> {
   const result = await wixPublicClient.items.query(collectionId).limit(limit).find();
   return (result.items ?? []).map(unwrapDataItem);
 }
 
-async function getOne(collectionId: string): Promise<UnknownRecord | null> {
-  const rows = await getAll(collectionId, 1);
-  return rows[0] ?? null;
+export interface Project {
+  _id: string;
+  title: string;
+  slug: string;
+  language: Language;
+  description: string;
+  metaDescription?: string;
+  featuredImage?: {
+    asset: {
+      _id: string;
+      url: string;
+    };
+  };
+  tags?: string[];
+  body?: unknown[];
+  links?: {
+    demo?: string;
+    github?: string;
+  };
+  featured: boolean;
+  pubDate?: string;
 }
 
 export interface Certification {
@@ -84,6 +121,70 @@ export interface PageSeo {
   description?: string;
   keywords?: string[];
   ogImage?: string;
+}
+
+function mapPortfolioProject(row: UnknownRecord, lang: Language): Project {
+  const details = Array.isArray(row.details)
+    ? row.details.filter((detail): detail is UnknownRecord => Boolean(detail) && typeof detail === 'object')
+    : [];
+
+  const tagDetail = details.find((detail) => {
+    const label = asString(detail.label)?.toLowerCase();
+    return label === 'technologies' || label === 'focus' || label === 'tags';
+  });
+  const tags = (asString(tagDetail?.text) ?? '')
+    .split(/[·,]/)
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
+  const links: Project['links'] = {};
+  for (const detail of details) {
+    const label = asString(detail.label)?.toLowerCase();
+    const link = detail.link && typeof detail.link === 'object' ? (detail.link as UnknownRecord) : null;
+    const url = asString(link?.url);
+    if (!url || !label) continue;
+    if (label === 'github') links.github = url;
+    if (label === 'demo' || label === 'website' || label === 'site') links.demo = url;
+  }
+
+  const imageUrl = portfolioImageUrl(row.coverImage);
+  return {
+    _id: asString(row._id) ?? '',
+    title: asString(row.title) ?? '',
+    slug: asString(row.slug) ?? '',
+    language: lang,
+    description: asString(row.description) ?? '',
+    featuredImage: imageUrl
+      ? {
+          asset: {
+            _id: asString(row._id) ?? '',
+            url: imageUrl,
+          },
+        }
+      : undefined,
+    tags,
+    links,
+    featured: false,
+    pubDate: asDateString(row._createdDate),
+  };
+}
+
+export async function getProjects(lang: Language = 'en'): Promise<Project[]> {
+  try {
+    const rows = await getAll('Portfolio/Projects', 100);
+    return rows
+      .filter((row) => row.hidden !== true)
+      .map((row) => mapPortfolioProject(row, lang))
+      .sort((a, b) => (b.pubDate ?? '').localeCompare(a.pubDate ?? ''));
+  } catch (error) {
+    console.error('Failed to fetch projects from Wix Portfolio:', error);
+    return [];
+  }
+}
+
+export async function getProject(slug: string, lang: Language = 'en'): Promise<Project | null> {
+  const projects = await getProjects(lang);
+  return projects.find((project) => project.slug === slug) ?? null;
 }
 
 export async function getCertifications(): Promise<Certification[]> {
