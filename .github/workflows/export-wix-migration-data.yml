@@ -83,6 +83,8 @@ jobs:
           NODE
 
       - name: Export public Cyber Monitor tables from D1
+        id: d1_export
+        continue-on-error: true
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -99,17 +101,9 @@ jobs:
           if (!accountId || !apiToken) throw new Error('Cloudflare export credentials are unavailable.');
 
           const tables = [
-            'sources',
-            'organisations',
-            'organisation_aliases',
-            'organisation_domains',
-            'romanian_asns',
-            'incidents',
-            'incident_sources',
-            'exposures',
-            'indicators',
-            'malware_metadata',
-            'aggregate_statistics'
+            'sources', 'organisations', 'organisation_aliases', 'organisation_domains',
+            'romanian_asns', 'incidents', 'incident_sources', 'exposures', 'indicators',
+            'malware_metadata', 'aggregate_statistics'
           ];
 
           const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
@@ -127,19 +121,21 @@ jobs:
               throw new Error(`D1 export failed for ${table}: HTTP ${response.status}; ${JSON.stringify(payload.errors ?? [])}`);
             }
             fs.writeFileSync(`migration-export/d1/${table}.json`, JSON.stringify(payload, null, 2));
-            console.log(`Exported ${table}.`);
           }
           NODE
 
       - name: Record export manifest
+        if: always()
         shell: bash
         run: |
-          cat > migration-export/MANIFEST.txt <<'EOF'
+          cat > migration-export/MANIFEST.txt <<EOF
           Wix migration export for liviubucel.com.
 
           Included:
           - Public/editorial Sanity content needed for Blog, Portfolio, profile, certifications, and page SEO.
-          - Public Cyber Monitor D1 tables.
+          - Public Cyber Monitor D1 tables when Cloudflare credentials permit read access.
+
+          D1 step outcome: ${{ steps.d1_export.outcome }}
 
           Explicitly excluded:
           - newsletter_subscribers
@@ -150,6 +146,7 @@ jobs:
           EOF
 
       - name: Upload migration export
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: wix-migration-export
