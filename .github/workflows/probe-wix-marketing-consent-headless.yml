@@ -25,7 +25,7 @@ jobs:
           corepack prepare pnpm@10.34.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Probe visitor OAuth marketing consent upsert
+      - name: Require visitor OAuth double-confirmation support
         env:
           PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
         run: |
@@ -35,7 +35,7 @@ jobs:
           const client = createClient({
             auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
           });
-          const email = `headless-consent-probe-${Date.now()}@example.com`;
+          const email = 'headless-consent-probe-final@example.com';
           const response = await client.fetchWithAuth(
             'https://www.wixapis.com/marketing-consent/v1/marketing-consent/upsert',
             {
@@ -57,14 +57,18 @@ jobs:
           );
 
           const text = await response.text();
-          console.log(`HTTP_STATUS=${response.status}`);
-          console.log(`PROBE_EMAIL=${email}`);
-          if (response.ok) {
-            const data = JSON.parse(text);
-            console.log(`CONSENT_ID=${data.marketingConsent?.id ?? ''}`);
-            console.log(`CONSENT_STATE=${data.marketingConsent?.state ?? ''}`);
-            console.log(`HAS_CONFIRM_LINK=${Boolean(data.link?.url)}`);
-          } else {
-            console.log(`ERROR_BODY=${text}`);
+          if (!response.ok) {
+            throw new Error(`Marketing consent upsert failed: HTTP ${response.status} ${text}`);
           }
+          const data = JSON.parse(text);
+          if (data.marketingConsent?.state !== 'PENDING') {
+            throw new Error(`Expected PENDING consent, got ${data.marketingConsent?.state}`);
+          }
+          if (data.marketingConsent?.lastConfirmationActivity?.optInLevel !== 'DOUBLE_CONFIRMATION') {
+            throw new Error(`Expected DOUBLE_CONFIRMATION, got ${data.marketingConsent?.lastConfirmationActivity?.optInLevel}`);
+          }
+          if (!data.link?.url) {
+            throw new Error('Wix did not return a confirmation link for pending double opt-in consent.');
+          }
+          console.log('Headless OAuth supports PENDING + DOUBLE_CONFIRMATION and returns a confirmation link.');
           NODE
