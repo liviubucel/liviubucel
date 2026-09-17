@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import * as Sentry from '@sentry/astro';
 import { env } from 'cloudflare:workers';
 import { isTokenValid, consumeToken } from '../../../lib/cv-tokens';
-import { getProfileSettings } from '../../../lib/sanity-queries';
+import { getProfileSettings } from '../../../lib/content-queries';
 
 export const prerender = false;
 
