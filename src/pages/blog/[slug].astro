@@ -2,7 +2,6 @@
 import type { Language } from '../../lib/i18n';
 import { getPost } from '../../lib/content-queries';
 import LayoutBlogPost from '../../layouts/LayoutBlogPost.astro';
-import { PortableText } from 'astro-portabletext';
 import { SITE } from '../../site-config';
 
 const { slug } = Astro.params;
@@ -19,19 +18,7 @@ if (!post) {
 }
 
 const pubDate = post.pubDate ? new Date(post.pubDate) : new Date();
-
-function estimateReadingTime(body: any[]): string {
-  if (!body || body.length === 0) return '1 min read';
-  const text = body
-    .filter((b) => b._type === 'block')
-    .map((b) => b.children?.map((c: any) => c.text).join('') ?? '')
-    .join(' ');
-  const words = text.trim().split(/\s+/).length;
-  const mins = Math.max(1, Math.ceil(words / 200));
-  return `${mins} min read`;
-}
-
-const minutesRead = estimateReadingTime(post.body ?? []);
+const minutesRead = `${post.minutesToRead ?? 1} min read`;
 const canonical = `${SITE.site.url}blog/${slug}`;
 ---
 
@@ -45,9 +32,49 @@ const canonical = `${SITE.site.url}blog/${slug}`;
   keywords={post.keywords}
   ogImage={post.featuredImage?.asset?.url}
 >
-  {post.body && post.body.length > 0 ? (
-    <PortableText value={post.body} />
+  {post.bodyHtml ? (
+    <article class="wix-blog-body" set:html={post.bodyHtml} />
   ) : (
     <p class="text-neutral-400">No content available.</p>
   )}
 </LayoutBlogPost>
+
+<style>
+  .wix-blog-body :global(p) {
+    margin: 0 0 1rem;
+    line-height: 1.75;
+  }
+
+  .wix-blog-body :global(h1),
+  .wix-blog-body :global(h2),
+  .wix-blog-body :global(h3),
+  .wix-blog-body :global(h4),
+  .wix-blog-body :global(h5),
+  .wix-blog-body :global(h6) {
+    margin: 1.75rem 0 0.75rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .wix-blog-body :global(h1) { font-size: 2rem; }
+  .wix-blog-body :global(h2) { font-size: 1.5rem; }
+  .wix-blog-body :global(h3) { font-size: 1.25rem; }
+
+  .wix-blog-body :global(ul),
+  .wix-blog-body :global(ol) {
+    margin: 0 0 1rem 1.5rem;
+  }
+
+  .wix-blog-body :global(ul) { list-style: disc; }
+  .wix-blog-body :global(ol) { list-style: decimal; }
+
+  .wix-blog-body :global(a) {
+    text-decoration: underline;
+  }
+
+  .wix-blog-body :global(blockquote) {
+    margin: 1.25rem 0;
+    padding-left: 1rem;
+    border-left: 3px solid currentColor;
+  }
+</style>
