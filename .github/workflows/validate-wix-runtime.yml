@@ -1,0 +1,96 @@
+name: Validate Wix migration runtime
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - 'src/backend/**'
+      - '.github/workflows/validate-wix-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Wix backend and public source schemas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Parse Wix backend JavaScript
+        run: node --check src/backend/romaniaCyberMonitor.js
+
+      - name: Validate jobs.config
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const config = JSON.parse(fs.readFileSync('src/backend/jobs.config', 'utf8'));
+          const code = fs.readFileSync('src/backend/romaniaCyberMonitor.js', 'utf8');
+          if (!Array.isArray(config.jobs) || config.jobs.length !== 4) {
+            throw new Error(`Expected 4 Wix jobs, found ${config.jobs?.length ?? 0}`);
+          }
+          for (const job of config.jobs) {
+            if (job.functionLocation !== '/romaniaCyberMonitor.js') {
+              throw new Error(`Unexpected functionLocation: ${job.functionLocation}`);
+            }
+            if (!job.functionName || !code.includes(`export async function ${job.functionName}(`)) {
+              throw new Error(`Missing exported Wix job function: ${job.functionName}`);
+            }
+            if (!job.executionConfig?.cronExpression) {
+              throw new Error(`Missing cronExpression for ${job.functionName}`);
+            }
+          }
+          console.log('Wix jobs.config matches exported backend functions.');
+          NODE
+
+      - name: Shadow-check enabled public source schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const checks = [
+            {
+              id: 'ransomware_live',
+              url: 'https://api.ransomware.live/v2/countryvictims/RO',
+              headers: { 'User-Agent': 'RomaniaCyberMonitor/1.0 (+https://www.liviubucel.com/romania-cyber-monitor)' },
+              validate(rows) {
+                if (!Array.isArray(rows)) throw new Error('not_an_array');
+                if (rows.length > 0 && typeof rows[0] !== 'object') throw new Error('first_record_not_object');
+              },
+            },
+            {
+              id: 'hibp',
+              url: 'https://haveibeenpwned.com/api/v3/breaches',
+              headers: { 'User-Agent': 'RomaniaCyberMonitor/1.0 (+https://www.liviubucel.com/romania-cyber-monitor; contact@liviubucel.com)' },
+              validate(rows) {
+                if (!Array.isArray(rows)) throw new Error('not_an_array');
+                if (rows.length > 0) {
+                  const row = rows[0];
+                  for (const key of ['Name', 'Title', 'BreachDate', 'AddedDate', 'ModifiedDate']) {
+                    if (typeof row?.[key] !== 'string') throw new Error(`missing_${key}`);
+                  }
+                }
+              },
+            },
+          ];
+
+          for (const check of checks) {
+            const response = await fetch(check.url, { headers: check.headers, signal: AbortSignal.timeout(25000) });
+            if (!response.ok) throw new Error(`${check.id}: HTTP ${response.status}`);
+            const rows = await response.json();
+            check.validate(rows);
+            console.log(`${check.id}: schema OK (${rows.length} records)`);
+          }
+          NODE
