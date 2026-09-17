@@ -74,9 +74,7 @@ jobs:
 
           const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
           const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error(`Sanity export failed: ${response.status} ${response.statusText}`);
-          }
+          if (!response.ok) throw new Error(`Sanity export failed: ${response.status} ${response.statusText}`);
           const payload = await response.json();
           fs.writeFileSync('migration-export/sanity-public.json', JSON.stringify(payload.result, null, 2));
           console.log('Sanity public content exported.');
@@ -88,17 +86,43 @@ jobs:
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
           mkdir -p migration-export/d1
           node --input-type=module <<'NODE'
           import fs from 'node:fs';
 
-          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
           const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-          const databaseId = '5816fc15-7d65-41cf-adbf-54f42ae4aa5a';
-          if (!accountId || !apiToken) throw new Error('Cloudflare export credentials are unavailable.');
+          if (!apiToken) throw new Error('Cloudflare API token is unavailable.');
+
+          const headers = {
+            Authorization: `Bearer ${apiToken}`,
+            'Content-Type': 'application/json'
+          };
+
+          const accountsResponse = await fetch('https://api.cloudflare.com/client/v4/accounts?per_page=50', { headers });
+          const accountsPayload = await accountsResponse.json();
+          if (!accountsResponse.ok || accountsPayload.success === false) {
+            throw new Error(`Unable to enumerate Cloudflare accounts: HTTP ${accountsResponse.status}; ${JSON.stringify(accountsPayload.errors ?? [])}`);
+          }
+
+          const accounts = accountsPayload.result ?? [];
+          let selected = null;
+          for (const account of accounts) {
+            const listUrl = `https://api.cloudflare.com/client/v4/accounts/${account.id}/d1/database?name=${encodeURIComponent('romania-cyber-monitor')}&per_page=100`;
+            const dbResponse = await fetch(listUrl, { headers });
+            const dbPayload = await dbResponse.json();
+            if (!dbResponse.ok || dbPayload.success === false) continue;
+            const database = (dbPayload.result ?? []).find(db => db.name === 'romania-cyber-monitor');
+            if (database) {
+              selected = { accountId: account.id, databaseId: database.uuid ?? database.id, databaseName: database.name };
+              break;
+            }
+          }
+
+          if (!selected?.accountId || !selected?.databaseId) {
+            throw new Error('Could not find romania-cyber-monitor in any Cloudflare account accessible to this API token.');
+          }
 
           const tables = [
             'sources', 'organisations', 'organisation_aliases', 'organisation_domains',
@@ -106,22 +130,25 @@ jobs:
             'malware_metadata', 'aggregate_statistics'
           ];
 
-          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
+          const counts = {};
+          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${selected.accountId}/d1/database/${selected.databaseId}/query`;
           for (const table of tables) {
             const response = await fetch(endpoint, {
               method: 'POST',
-              headers: {
-                Authorization: `Bearer ${apiToken}`,
-                'Content-Type': 'application/json'
-              },
+              headers,
               body: JSON.stringify({ sql: `SELECT * FROM ${table};` })
             });
             const payload = await response.json();
             if (!response.ok || payload.success === false) {
               throw new Error(`D1 export failed for ${table}: HTTP ${response.status}; ${JSON.stringify(payload.errors ?? [])}`);
             }
-            fs.writeFileSync(`migration-export/d1/${table}.json`, JSON.stringify(payload, null, 2));
+            const rows = Array.isArray(payload.result) ? (payload.result[0]?.results ?? []) : [];
+            counts[table] = rows.length;
+            fs.writeFileSync(`migration-export/d1/${table}.json`, JSON.stringify(rows, null, 2));
           }
+
+          fs.writeFileSync('migration-export/d1-summary.json', JSON.stringify({ databaseName: selected.databaseName, counts }, null, 2));
+          console.log('D1 public data export completed.');
           NODE
 
       - name: Record export manifest
@@ -133,7 +160,7 @@ jobs:
 
           Included:
           - Public/editorial Sanity content needed for Blog, Portfolio, profile, certifications, and page SEO.
-          - Public Cyber Monitor D1 tables when Cloudflare credentials permit read access.
+          - Public Cyber Monitor D1 tables when Cloudflare token permissions permit read access.
 
           D1 step outcome: ${{ steps.d1_export.outcome }}
 
