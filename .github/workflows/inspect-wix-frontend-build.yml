@@ -1,0 +1,58 @@
+name: Inspect Wix frontend build
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'src/**'
+      - '.github/workflows/inspect-wix-frontend-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: Build Astro Cloudflare output
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Astro for Cloudflare Workers runtime
+        run: pnpm build
+        env:
+          SANITY_PROJECT_ID: 8atrdwjk
+          SANITY_DATASET: production
+          SITE_URL: https://liviubucel-zebrabyte-0a09.wix-site-host.com/
+
+      - name: Inspect deploy output
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '--- dist top-level ---'
+          find dist -maxdepth 2 -type f -printf '%p\t%s bytes\n' | sort | head -n 250
+          echo '--- directories ---'
+          find dist -maxdepth 2 -type d -print | sort
+          echo '--- Cloudflare worker candidates ---'
+          find dist -type f \( -name '*worker*' -o -name 'entry.mjs' -o -name 'index.js' -o -name '_worker.js' \) -print | sort
+          test -d dist || { echo 'dist directory missing'; exit 1; }
