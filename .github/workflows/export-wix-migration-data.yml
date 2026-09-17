@@ -1,0 +1,147 @@
+name: Export Wix migration data
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/export-wix-migration-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: Export public migration data
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Export public Sanity content
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p migration-export
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const projectId = '8atrdwjk';
+          const dataset = 'production';
+          const apiVersion = '2025-02-20';
+          const query = `{
+            "posts": *[_type == "post"] | order(pubDate desc) {
+              _id, title, "slug": slug.current, language, description, metaDescription,
+              keywords, pubDate, updatedAt, tags, body, published,
+              "featuredImageUrl": featuredImage.asset->url,
+              "category": category->{title, "slug": slug.current},
+              "author": author->{name, email}
+            },
+            "projects": *[_type == "project"] | order(pubDate desc) {
+              _id, title, "slug": slug.current, language, description, metaDescription,
+              tags, body, links, featured, pubDate,
+              "featuredImageUrl": featuredImage.asset->url
+            },
+            "authors": *[_type == "author"] {
+              _id, name, "slug": slug.current, bio, "imageUrl": image.asset->url
+            },
+            "categories": *[_type == "category"] {
+              _id, title, "slug": slug.current, description
+            },
+            "certifications": *[_type == "certification"] | order(order asc, _createdAt asc) {
+              _id, name, issuer, status, iconType, order, credentialUrl
+            },
+            "profileSettings": *[_type == "profileSettings"][0] {
+              _id, isCurrentlyEmployed, "cvUrl": cvFile.asset->url, phone,
+              github, linkedin, twitter, youtube, tryhackme, openToWorkMessage
+            },
+            "settings": *[_type == "settings"][0] {
+              title, description, "ogImageUrl": ogImage.asset->url,
+              "authorName": author->name
+            },
+            "pageSeo": *[_type == "pageSeo"] {
+              _id, pageId, title, description, keywords, "ogImageUrl": ogImage.asset->url
+            }
+          }`;
+
+          const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Sanity export failed: ${response.status} ${response.statusText}`);
+          }
+          const payload = await response.json();
+          fs.writeFileSync('migration-export/sanity-public.json', JSON.stringify(payload.result, null, 2));
+          console.log('Sanity public content exported.');
+          NODE
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Export public Cyber Monitor tables from D1
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p migration-export/d1
+
+          export_table() {
+            local table="$1"
+            pnpm exec wrangler d1 execute ROMANIA_MONITOR_DB --remote \
+              --command="SELECT * FROM ${table};" --json \
+              > "migration-export/d1/${table}.json"
+          }
+
+          export_table sources
+          export_table organisations
+          export_table organisation_aliases
+          export_table organisation_domains
+          export_table romanian_asns
+          export_table incidents
+          export_table incident_sources
+          export_table exposures
+          export_table indicators
+          export_table malware_metadata
+          export_table aggregate_statistics
+
+          echo 'Public Cyber Monitor tables exported.'
+
+      - name: Record export manifest
+        shell: bash
+        run: |
+          cat > migration-export/MANIFEST.txt <<'EOF'
+          Wix migration export for liviubucel.com.
+
+          Included:
+          - Public/editorial Sanity content needed for Blog, Portfolio, profile, certifications, and page SEO.
+          - Public Cyber Monitor D1 tables.
+
+          Explicitly excluded:
+          - newsletter_subscribers
+          - cv_download_tokens
+          - cv_request_rate_limits
+          - guestbook entries (may contain visitor email addresses)
+          - sync/audit/lock operational tables
+          EOF
+
+      - name: Upload migration export
+        uses: actions/upload-artifact@v4
+        with:
+          name: wix-migration-export
+          path: migration-export/
+          if-no-files-found: error
+          retention-days: 1
