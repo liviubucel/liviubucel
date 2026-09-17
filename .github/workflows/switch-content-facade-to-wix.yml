@@ -1,0 +1,84 @@
+name: Switch frontend content queries to Wix facade
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/switch-content-facade-to-wix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/full-wix
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Route frontend imports through content compatibility facade
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+
+          const skip = new Set([
+            path.normalize('src/lib/sanity-queries.ts'),
+            path.normalize('src/lib/content-queries.ts'),
+          ]);
+          const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.astro', '.svelte']);
+          let changed = 0;
+
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) {
+                walk(full);
+                continue;
+              }
+              if (!extensions.has(path.extname(entry.name)) || skip.has(path.normalize(full))) continue;
+              const before = fs.readFileSync(full, 'utf8');
+              const after = before.replace(/sanity-queries/g, 'content-queries');
+              if (after !== before) {
+                fs.writeFileSync(full, after);
+                changed += 1;
+              }
+            }
+          }
+
+          walk('src');
+          if (changed === 0) throw new Error('No frontend sanity-queries imports were switched.');
+          console.log(`Updated ${changed} frontend files to use content-queries.`);
+          NODE
+
+      - name: Ensure direct Sanity query imports remain only behind facade
+        shell: bash
+        run: |
+          set -euo pipefail
+          matches="$(grep -R -n "sanity-queries" src --include='*.ts' --include='*.tsx' --include='*.js' --include='*.astro' || true)"
+          echo "$matches"
+          unexpected="$(echo "$matches" | grep -v 'src/lib/content-queries.ts' | grep -v 'src/lib/sanity-queries.ts' || true)"
+          if [ -n "$unexpected" ]; then
+            echo 'Unexpected direct Sanity query imports remain:'
+            echo "$unexpected"
+            exit 1
+          fi
+
+      - name: Commit facade migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src
+          git commit -m 'feat(wix): route public content through Wix compatibility facade'
+          git push origin HEAD:migration/full-wix
