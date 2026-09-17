@@ -37,6 +37,51 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Smoke test Wix Headless OAuth and Blog API
+        shell: bash
+        env:
+          PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
+        run: |
+          node --input-type=module <<'NODE'
+          import { createClient, OAuthStrategy } from '@wix/sdk';
+
+          const client = createClient({
+            auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
+          });
+
+          const response = await client.fetchWithAuth('https://www.wixapis.com/v3/posts/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fieldsets: ['CONTENT_TEXT', 'RICH_CONTENT'],
+              query: { cursorPaging: { limit: 100 } },
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Wix Blog OAuth smoke test failed: HTTP ${response.status} ${await response.text()}`);
+          }
+
+          const data = await response.json();
+          const excluded = new Set([
+            'creative-portfolio-showcase-tips-for-artists',
+            'building-a-stunning-online-portfolio-best-practices',
+            'maximizing-your-portfolio-impact-design-and-content',
+          ]);
+          const posts = (data.posts ?? []).filter((post) => !excluded.has(post.slug));
+          const en = posts.filter((post) => post.language === 'en');
+          const ro = posts.filter((post) => post.language === 'ro');
+
+          if (posts.length !== 8 || en.length !== 2 || ro.length !== 6) {
+            throw new Error(`Unexpected Wix Blog corpus: total=${posts.length}, en=${en.length}, ro=${ro.length}`);
+          }
+          if (posts.some((post) => !post.richContent?.nodes?.length)) {
+            throw new Error('At least one migrated Wix Blog post has no Ricos content.');
+          }
+
+          console.log(`Wix Blog OAuth OK: ${posts.length} intended posts (${en.length} EN, ${ro.length} RO).`);
+          NODE
+
       - name: Astro type check
         run: pnpm check
         env:
@@ -69,6 +114,13 @@ jobs:
             echo "$direct_sanity"
             exit 1
           fi
+
+          if grep -R "PortableText" src/pages/blog src/pages/ro/blog; then
+            echo 'Blog detail pages still depend on Sanity Portable Text.'
+            exit 1
+          fi
+          grep -q "fetchWithAuth('https://www.wixapis.com/v3/posts/query'" src/lib/content-queries.ts
+          grep -q "v3/posts/slugs" src/lib/content-queries.ts
 
           test -f dist/server/entry.mjs
           test -d dist/client
