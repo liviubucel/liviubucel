@@ -1,0 +1,46 @@
+name: Add Wix SDK dependencies
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/add-wix-sdk-deps.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migration/full-wix
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+
+      - name: Add pinned Wix Headless SDK dependencies
+        run: pnpm add @wix/sdk@1.21.16 @wix/data@1.0.521
+
+      - name: Commit package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package.json pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo 'Dependencies already up to date.'
+            exit 0
+          fi
+          git commit -m 'chore(wix): add headless SDK dependencies [skip ci]'
+          git push origin HEAD:migration/full-wix
