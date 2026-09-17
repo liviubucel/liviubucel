@@ -7,11 +7,11 @@ on:
     paths:
       - '.github/workflows/validate-wix-public-read-path.yml'
       - 'src/lib/wix/**'
+      - 'src/lib/content-queries.ts'
       - 'src/lib/cyber-monitor/public-data-wix.ts'
-      - 'src/pages/romania-cyber-monitor/**'
-      - 'src/pages/ro/romania-cyber-monitor/**'
-      - 'src/pages/blog/**'
-      - 'src/pages/ro/blog/**'
+      - 'src/components/**'
+      - 'src/layouts/**'
+      - 'src/pages/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
 
@@ -53,7 +53,7 @@ jobs:
           SANITY_DATASET: production
           SITE_URL: https://liviubucel-zebrabyte-0a09.wix-site-host.com/
 
-      - name: Assert public pages no longer bind D1
+      - name: Assert Wix migration boundaries
         shell: bash
         run: |
           set -euo pipefail
@@ -62,5 +62,13 @@ jobs:
             exit 1
           fi
           grep -R "public-data-wix" src/pages/romania-cyber-monitor src/pages/ro/romania-cyber-monitor src/pages/blog src/pages/ro/blog >/dev/null
+
+          direct_sanity="$(grep -R -n "sanity-queries" src --include='*.ts' --include='*.tsx' --include='*.js' --include='*.astro' | grep -v 'src/lib/content-queries.ts' | grep -v 'src/lib/sanity-queries.ts' || true)"
+          if [ -n "$direct_sanity" ]; then
+            echo 'Frontend bypasses the Wix content facade:'
+            echo "$direct_sanity"
+            exit 1
+          fi
+
           test -f dist/server/entry.mjs
           test -d dist/client
