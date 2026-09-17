@@ -15,7 +15,7 @@ jobs:
   export:
     name: Export public migration data
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -82,14 +82,6 @@ jobs:
           console.log('Sanity public content exported.');
           NODE
 
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.34.0 --activate
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Export public Cyber Monitor tables from D1
         shell: bash
         env:
@@ -98,27 +90,46 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p migration-export/d1
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
 
-          export_table() {
-            local table="$1"
-            pnpm exec wrangler d1 execute ROMANIA_MONITOR_DB --remote \
-              --command="SELECT * FROM ${table};" --json \
-              > "migration-export/d1/${table}.json"
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+          const databaseId = '5816fc15-7d65-41cf-adbf-54f42ae4aa5a';
+          if (!accountId || !apiToken) throw new Error('Cloudflare export credentials are unavailable.');
+
+          const tables = [
+            'sources',
+            'organisations',
+            'organisation_aliases',
+            'organisation_domains',
+            'romanian_asns',
+            'incidents',
+            'incident_sources',
+            'exposures',
+            'indicators',
+            'malware_metadata',
+            'aggregate_statistics'
+          ];
+
+          const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/query`;
+          for (const table of tables) {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${apiToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ sql: `SELECT * FROM ${table};` })
+            });
+            const payload = await response.json();
+            if (!response.ok || payload.success === false) {
+              throw new Error(`D1 export failed for ${table}: HTTP ${response.status}; ${JSON.stringify(payload.errors ?? [])}`);
+            }
+            fs.writeFileSync(`migration-export/d1/${table}.json`, JSON.stringify(payload, null, 2));
+            console.log(`Exported ${table}.`);
           }
-
-          export_table sources
-          export_table organisations
-          export_table organisation_aliases
-          export_table organisation_domains
-          export_table romanian_asns
-          export_table incidents
-          export_table incident_sources
-          export_table exposures
-          export_table indicators
-          export_table malware_metadata
-          export_table aggregate_statistics
-
-          echo 'Public Cyber Monitor tables exported.'
+          NODE
 
       - name: Record export manifest
         shell: bash
