@@ -1,0 +1,70 @@
+name: Probe Wix Marketing Consent Headless
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - '.github/workflows/probe-wix-marketing-consent-headless.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Probe visitor OAuth marketing consent upsert
+        env:
+          PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
+        run: |
+          node --input-type=module <<'NODE'
+          import { createClient, OAuthStrategy } from '@wix/sdk';
+
+          const client = createClient({
+            auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
+          });
+          const email = `headless-consent-probe-${Date.now()}@example.com`;
+          const response = await client.fetchWithAuth(
+            'https://www.wixapis.com/marketing-consent/v1/marketing-consent/upsert',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                marketingConsent: {
+                  details: { type: 'EMAIL', email },
+                  state: 'PENDING',
+                  lastConfirmationActivity: {
+                    source: 'FORM',
+                    description: 'Headless Wix migration permission probe.',
+                    updatedDate: new Date().toISOString(),
+                    optInLevel: 'DOUBLE_CONFIRMATION',
+                  },
+                },
+              }),
+            }
+          );
+
+          const text = await response.text();
+          console.log(`HTTP_STATUS=${response.status}`);
+          console.log(`PROBE_EMAIL=${email}`);
+          if (response.ok) {
+            const data = JSON.parse(text);
+            console.log(`CONSENT_ID=${data.marketingConsent?.id ?? ''}`);
+            console.log(`CONSENT_STATE=${data.marketingConsent?.state ?? ''}`);
+            console.log(`HAS_CONFIRM_LINK=${Boolean(data.link?.url)}`);
+          } else {
+            console.log(`ERROR_BODY=${text}`);
+          }
+          NODE
