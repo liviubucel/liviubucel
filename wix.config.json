@@ -1,0 +1,8 @@
+{
+  "siteId": "a6445237-56e0-4f67-9469-31e8e807c3b3",
+  "appId": "fa19f377-c994-45c3-935b-235f41858d0f",
+  "outputDirectory": {
+    "client": "./dist/client",
+    "server": "./dist/server"
+  }
+}
