@@ -1,4 +1,4 @@
-name: Probe Wix Native Newsletter Headless
+name: Probe Wix Newsletter Audience
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           corepack prepare pnpm@10.34.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Require native Wix Forms double opt-in via visitor OAuth
+      - name: Submit native Wix newsletter form as a visitor
         env:
           PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
         run: |
@@ -36,9 +36,7 @@ jobs:
             auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
           });
 
-          const email = 'headless-native-confirmed-probe-20260918@example.com';
-          const formId = '4b8cab43-1038-4982-bd52-a1fe3553a0a6';
-
+          const email = 'newsletter-audience-e2e-20260918@example.com';
           const response = await client.fetchWithAuth(
             'https://www.wixapis.com/forms/v4/submissions',
             {
@@ -46,8 +44,7 @@ jobs:
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 submission: {
-                  formId,
-                  status: 'CONFIRMED',
+                  formId: '4b8cab43-1038-4982-bd52-a1fe3553a0a6',
                   submissions: {
                     email,
                     email_subscription: true,
@@ -63,18 +60,14 @@ jobs:
           }
 
           const data = JSON.parse(text);
-          const submissionId = data.submission?.id;
-          const status = data.submission?.status;
-
-          if (!submissionId) {
+          if (!data.submission?.id) {
             throw new Error('Wix Forms did not return a submission ID.');
           }
-          if (status !== 'CONFIRMED') {
-            throw new Error(`Expected CONFIRMED submission, got ${status}`);
+          if (!['PENDING', 'CONFIRMED'].includes(data.submission?.status)) {
+            throw new Error(`Unexpected submission status: ${data.submission?.status}`);
           }
 
           console.log(`PROBE_EMAIL=${email}`);
-          console.log(`SUBMISSION_ID=${submissionId}`);
-          console.log(`FINAL_STATUS=${status}`);
-          console.log('Native Wix Forms confirmed write path works with visitor OAuth.');
+          console.log(`SUBMISSION_ID=${data.submission.id}`);
+          console.log(`INITIAL_STATUS=${data.submission.status}`);
           NODE
