@@ -36,10 +36,10 @@ jobs:
             auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
           });
 
-          const email = 'headless-native-form-probe-20260918@example.com';
+          const email = 'headless-native-confirmed-probe-20260918@example.com';
           const formId = '4b8cab43-1038-4982-bd52-a1fe3553a0a6';
 
-          const createResponse = await client.fetchWithAuth(
+          const response = await client.fetchWithAuth(
             'https://www.wixapis.com/forms/v4/submissions',
             {
               method: 'POST',
@@ -47,6 +47,7 @@ jobs:
               body: JSON.stringify({
                 submission: {
                   formId,
+                  status: 'CONFIRMED',
                   submissions: {
                     email,
                     email_subscription: true,
@@ -56,38 +57,18 @@ jobs:
             }
           );
 
-          const createText = await createResponse.text();
-          if (!createResponse.ok) {
-            throw new Error(`Create submission failed: HTTP ${createResponse.status} ${createText}`);
+          const text = await response.text();
+          if (!response.ok) {
+            throw new Error(`Create submission failed: HTTP ${response.status} ${text}`);
           }
 
-          const createData = JSON.parse(createText);
-          const submissionId = createData.submission?.id;
-          let status = createData.submission?.status;
+          const data = JSON.parse(text);
+          const submissionId = data.submission?.id;
+          const status = data.submission?.status;
 
           if (!submissionId) {
             throw new Error('Wix Forms did not return a submission ID.');
           }
-
-          if (status === 'PENDING') {
-            const confirmResponse = await client.fetchWithAuth(
-              `https://www.wixapis.com/forms/v4/submissions/${submissionId}/confirm`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: '{}',
-              }
-            );
-
-            const confirmText = await confirmResponse.text();
-            if (!confirmResponse.ok) {
-              throw new Error(`Confirm submission failed: HTTP ${confirmResponse.status} ${confirmText}`);
-            }
-
-            const confirmData = JSON.parse(confirmText);
-            status = confirmData.submission?.status;
-          }
-
           if (status !== 'CONFIRMED') {
             throw new Error(`Expected CONFIRMED submission, got ${status}`);
           }
@@ -95,5 +76,5 @@ jobs:
           console.log(`PROBE_EMAIL=${email}`);
           console.log(`SUBMISSION_ID=${submissionId}`);
           console.log(`FINAL_STATUS=${status}`);
-          console.log('Native Wix Forms newsletter write path works with visitor OAuth.');
+          console.log('Native Wix Forms confirmed write path works with visitor OAuth.');
           NODE
