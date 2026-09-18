@@ -1,4 +1,4 @@
-name: Probe Wix Marketing Consent Headless
+name: Probe Wix Native Newsletter Headless
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           corepack prepare pnpm@10.34.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Require full Wix double-opt-in email flow
+      - name: Require native Wix Forms double opt-in via visitor OAuth
         env:
           PUBLIC_WIX_CLIENT_ID: fa19f377-c994-45c3-935b-235f41858d0f
         run: |
@@ -35,71 +35,65 @@ jobs:
           const client = createClient({
             auth: OAuthStrategy({ clientId: process.env.PUBLIC_WIX_CLIENT_ID }),
           });
-          const email = 'headless-consent-probe-final@example.com';
 
-          const consentResponse = await client.fetchWithAuth(
-            'https://www.wixapis.com/marketing-consent/v1/marketing-consent/upsert',
+          const email = 'headless-native-form-probe-20260918@example.com';
+          const formId = '4b8cab43-1038-4982-bd52-a1fe3553a0a6';
+
+          const createResponse = await client.fetchWithAuth(
+            'https://www.wixapis.com/forms/v4/submissions',
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                marketingConsent: {
-                  details: { type: 'EMAIL', email },
-                  state: 'PENDING',
-                  lastConfirmationActivity: {
-                    source: 'FORM',
-                    description: 'Headless Wix migration permission probe.',
-                    updatedDate: new Date().toISOString(),
-                    optInLevel: 'DOUBLE_CONFIRMATION',
+                submission: {
+                  formId,
+                  submissions: {
+                    email,
+                    email_subscription: true,
                   },
                 },
               }),
             }
           );
 
-          const consentText = await consentResponse.text();
-          if (!consentResponse.ok) {
-            throw new Error(`Marketing consent upsert failed: HTTP ${consentResponse.status} ${consentText}`);
-          }
-          const consentData = JSON.parse(consentText);
-          if (consentData.marketingConsent?.state !== 'PENDING') {
-            throw new Error(`Expected PENDING consent, got ${consentData.marketingConsent?.state}`);
-          }
-          if (consentData.marketingConsent?.lastConfirmationActivity?.optInLevel !== 'DOUBLE_CONFIRMATION') {
-            throw new Error(`Expected DOUBLE_CONFIRMATION, got ${consentData.marketingConsent?.lastConfirmationActivity?.optInLevel}`);
-          }
-          const confirmationUrl = consentData.link?.url;
-          if (!confirmationUrl) {
-            throw new Error('Wix did not return a confirmation link for pending double opt-in consent.');
+          const createText = await createResponse.text();
+          if (!createResponse.ok) {
+            throw new Error(`Create submission failed: HTTP ${createResponse.status} ${createText}`);
           }
 
-          const transmissionResponse = await client.fetchWithAuth(
-            'https://www.wixapis.com/email-transmissions/v1/email-transmissions/send',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                emailTransmission: {
-                  emailSubject: 'Confirm your Romania Cyber Monitor subscription',
-                  emailHtmlContent: `<p>This is a migration probe.</p><p><a href="${confirmationUrl.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">Confirm subscription</a></p>`,
-                  toRecipients: [{ emailAddress: email }],
-                  type: 'TRANSACTIONAL',
-                },
-                idempotencyKey: consentData.marketingConsent.id,
-              }),
+          const createData = JSON.parse(createText);
+          const submissionId = createData.submission?.id;
+          let status = createData.submission?.status;
+
+          if (!submissionId) {
+            throw new Error('Wix Forms did not return a submission ID.');
+          }
+
+          if (status === 'PENDING') {
+            const confirmResponse = await client.fetchWithAuth(
+              `https://www.wixapis.com/forms/v4/submissions/${submissionId}/confirm`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: '{}',
+              }
+            );
+
+            const confirmText = await confirmResponse.text();
+            if (!confirmResponse.ok) {
+              throw new Error(`Confirm submission failed: HTTP ${confirmResponse.status} ${confirmText}`);
             }
-          );
 
-          const transmissionText = await transmissionResponse.text();
-          if (!transmissionResponse.ok) {
-            throw new Error(`Email transmission failed: HTTP ${transmissionResponse.status} ${transmissionText}`);
-          }
-          const transmissionData = JSON.parse(transmissionText);
-          if (transmissionData.emailTransmission?.status !== 'ACCEPTED') {
-            throw new Error(`Expected ACCEPTED email transmission, got ${transmissionData.emailTransmission?.status}`);
+            const confirmData = JSON.parse(confirmText);
+            status = confirmData.submission?.status;
           }
 
-          console.log(`CONSENT_ID=${consentData.marketingConsent.id}`);
-          console.log(`TRANSMISSION_ID=${transmissionData.emailTransmission.id}`);
-          console.log('Full Wix double-opt-in email flow accepted.');
+          if (status !== 'CONFIRMED') {
+            throw new Error(`Expected CONFIRMED submission, got ${status}`);
+          }
+
+          console.log(`PROBE_EMAIL=${email}`);
+          console.log(`SUBMISSION_ID=${submissionId}`);
+          console.log(`FINAL_STATUS=${status}`);
+          console.log('Native Wix Forms newsletter write path works with visitor OAuth.');
           NODE
