@@ -1,0 +1,66 @@
+name: Migrate to Wix Managed Headless runtime
+
+on:
+  push:
+    branches:
+      - migration/full-wix
+    paths:
+      - 'package.json'
+      - 'astro.config.mjs'
+      - '.github/workflows/migrate-wix-managed-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: migration/full-wix
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.34.0 --activate
+
+      - name: Resolve Wix Managed Headless dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Wix Managed Headless project
+        run: pnpm build
+        env:
+          SITE_URL: https://liviubucel-zebrabyte-0a09.wix-site-host.com/
+
+      - name: Reject active legacy runtime imports
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R --line-number --include='*.ts' --include='*.tsx' --include='*.astro' --include='*.mjs'             -E "from ['\"]cloudflare:workers['\"]|from ['\"].*sanity-queries['\"]|from ['\"]@sanity/" src astro.config.mjs; then
+            echo 'Legacy Cloudflare/Sanity runtime imports remain.'
+            exit 1
+          fi
+
+      - name: Commit resolved lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo 'Lockfile already current.'
+            exit 0
+          fi
+          git commit -m 'chore(wix): refresh managed runtime lockfile [skip ci]'
+          git push origin HEAD:migration/full-wix
