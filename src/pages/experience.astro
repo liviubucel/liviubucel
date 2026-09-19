@@ -89,7 +89,7 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
     <section class="mt-16 rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
       <h2 class="text-2xl font-bold text-neutral-100 mb-2">Download CV</h2>
       <p class="text-sm text-neutral-400 mb-6">
-        Request access to my CV. Only your name and email are required. Each download link is single-use and expires after 24 hours.
+        Request access to my CV. Only your name and email are required; the request is recorded natively in Wix and then the current CV opens.
       </p>
 
       <form id="cv-request-form" class="space-y-4 mb-6">
@@ -154,11 +154,11 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
       </form>
 
       <div class="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700">
-        <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Security notice</p>
+        <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Access & privacy</p>
         <ul class="space-y-2 text-sm text-neutral-400">
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Download tokens are cryptographically random and stored only as hashes.</span></li>
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Each download link can be used once and expires after 24 hours.</span></li>
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>The request flow stores no phone number, company name, or raw IP address.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Your request is recorded directly in Wix Forms.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>The current CV is managed in Wix and can move to Wix File Share without changing this page.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>The form requests only your name, email, and the consent needed to process the request.</span></li>
         </ul>
       </div>
     </section>
@@ -193,13 +193,16 @@ const seoDescription = seo?.description || "Relevant technical support, infrastr
           body: JSON.stringify(data),
         });
 
-        const result = (await response.json()) as { error?: string };
+        const result = (await response.json()) as { error?: string; downloadUrl?: string };
 
         if (response.ok) {
-          messageDiv.textContent = 'Success! Check your email for your one-use CV download link. It expires in 24 hours.';
+          messageDiv.textContent = 'Success! Your request was recorded in Wix. Opening the current CV...';
           messageDiv.classList.remove('text-neutral-300');
           messageDiv.classList.add('text-green-300');
           form.reset();
+          window.setTimeout(() => {
+            window.location.assign(result.downloadUrl || '/api/cv/download');
+          }, 350);
         } else {
           messageDiv.textContent = result.error || 'Failed to send request. Please try again.';
           messageDiv.classList.remove('text-neutral-300');
