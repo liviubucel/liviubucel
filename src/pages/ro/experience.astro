@@ -87,7 +87,7 @@ const seoDescription = seo?.description || "Experiență relevantă în suport t
     <section class="mt-16 rounded-xl border border-neutral-700 bg-neutral-800/30 p-5 md:p-7">
       <h2 class="text-2xl font-bold text-neutral-100 mb-2">Descarcă CV-ul</h2>
       <p class="text-sm text-neutral-400 mb-6">
-        Solicită acces la CV-ul meu. Sunt necesare doar numele și adresa de email. Fiecare link poate fi folosit o singură dată și expiră după 24 de ore.
+        Solicită acces la CV-ul meu. Sunt necesare doar numele și adresa de email; cererea este înregistrată nativ în Wix, apoi se deschide versiunea curentă a CV-ului.
       </p>
 
       <form id="cv-request-form" class="space-y-4 mb-6">
@@ -148,11 +148,11 @@ const seoDescription = seo?.description || "Experiență relevantă în suport t
       </form>
 
       <div class="bg-neutral-900/50 rounded-lg p-4 border border-neutral-700">
-        <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Notă de securitate</p>
+        <p class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2">Acces și confidențialitate</p>
         <ul class="space-y-2 text-sm text-neutral-400">
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Token-urile de descărcare sunt generate criptografic și sunt stocate doar sub formă de hash.</span></li>
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Fiecare link poate fi folosit o singură dată și expiră după 24 de ore.</span></li>
-          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Fluxul nu stochează număr de telefon, companie sau adresa IP în clar.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Cererea este înregistrată direct în Wix Forms.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Versiunea curentă a CV-ului este administrată în Wix și poate fi mutată în Wix File Share fără schimbarea paginii.</span></li>
+          <li class="flex gap-2"><span class="text-primary-400 flex-shrink-0">✓</span><span>Formularul solicită doar numele, emailul și consimțământul necesar procesării cererii.</span></li>
         </ul>
       </div>
     </section>
@@ -187,13 +187,16 @@ const seoDescription = seo?.description || "Experiență relevantă în suport t
           body: JSON.stringify(data),
         });
 
-        const result = (await response.json()) as { error?: string };
+        const result = (await response.json()) as { error?: string; downloadUrl?: string };
 
         if (response.ok) {
-          messageDiv.textContent = 'Succes! Verifică emailul pentru linkul unic de descărcare. Acesta expiră în 24 de ore.';
+          messageDiv.textContent = 'Succes! Cererea a fost înregistrată în Wix. Se deschide CV-ul curent...';
           messageDiv.classList.remove('text-neutral-300');
           messageDiv.classList.add('text-green-300');
           form.reset();
+          window.setTimeout(() => {
+            window.location.assign(result.downloadUrl || '/api/cv/download');
+          }, 350);
         } else {
           messageDiv.textContent = result.error || 'Trimiterea cererii a eșuat. Te rugăm să încerci din nou.';
           messageDiv.classList.remove('text-neutral-300');
