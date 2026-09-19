@@ -2,17 +2,8 @@ import { wixPublicClient } from './wix/client';
 import { ricosToSafeHtml } from './wix/ricos';
 import type { Language } from './i18n';
 
-// Transitional content facade. Wix is now the source of truth for profile,
-// SEO, certifications, portfolio and published blog content. Guestbook data
-// remains behind the compatibility boundary until its write-path migration is
-// complete.
-export {
-  getCategories,
-  getAuthors,
-  getGuestbookEntries,
-  submitGuestbookEntry,
-} from './sanity-queries';
-export type { Author, Category } from './sanity-queries';
+// Wix is the source of truth for profile, SEO, certifications, portfolio,
+// published blog content, and the public content facade.
 
 type UnknownRecord = Record<string, unknown>;
 
