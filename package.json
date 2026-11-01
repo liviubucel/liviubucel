@@ -67,7 +67,7 @@
     "solid-js": "^1.9.14",
     "styled-components": "^6.4.4",
     "svelte": "^5.56.7",
-    "zod": "^4.4.3"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@iconify-json/simple-icons": "^1.2.91",
